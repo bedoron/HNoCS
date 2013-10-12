@@ -1,0 +1,890 @@
+19:18:32 **** Clean-only build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug clean 
+cd src && make clean 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+Cleaning...
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:18:36 **** Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+MSGC: App.msg
+MSGC: CMP.msg
+MSGC: NoCs.msg
+ResponseDB.cc
+Utils.cc
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+cores/EchoApp.cc
+cores/DRAM.cc
+cores/CoreL1.cc
+cores/L2.cc
+MSGC: Central.msg
+cores/central/CSched.cc
+make: *** wait: No child processes.  Stop.
+make: *** Waiting for unfinished jobs....
+make: *** wait: No child processes.  Stop.
+make[1]: *** [../out/gcc-debug/src/cores/central/CSched.o] Terminated
+Command canceled
+19:18:47 **** Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+cores/central/CSched.cc
+cores/central/ParallelCentralSched.cc
+cores/sinks/AppSink.cc
+cores/sinks/InfiniteBWMultiVCSinkperSrc.cc
+cores/sinks/InfiniteBWMultiVCSink.cc
+cores/sources/CAppSrc.cc
+cores/sources/AppSrc.cc
+cores/sources/PktFifoSrc.cc
+cores/sources/CentSchedPktFifoSrc.cc
+routers/flat/CentSchedRouter.cc
+routers/hier/RouterSWHook.cc
+routers/hier/inPort/InPortAsync.cc
+routers/hier/inPort/ISLIPInPort.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+routers/hier/sched/wormhole/ISLIPSched.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+App_m.cc
+Central_m.cc
+CMP_m.cc
+NoCs_m.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:20:33 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:23:59 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/opCalc/static/XYOPCalc.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:36:44 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:37:05 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/opCalc/static/XYOPCalc.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:37:09 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:37:35 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+ResponseDB.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:38:22 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:38:27 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+13:20:02 **** Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+ResponseDB.cc
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+cores/DRAM.cc
+cores/CoreL1.cc
+cores/L2.cc
+cores/sinks/AppSink.cc
+cores/sources/AppSrc.cc
+routers/hier/RouterSWHook.cc
+routers/hier/inPort/InPortAsync.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+13:20:41 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+17:55:37 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+
+make: *** [checkmakefiles] Error 1
+=======================================================================
+src/Makefile does not exist. Please use "make makefiles" to generate it!
+=======================================================================
+
+17:57:32 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+
+=======================================================================
+src/Makefile does not exist. Please use "make makefiles" to generate it!
+make: *** [checkmakefiles] Error 1
+=======================================================================
+
+17:59:05 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+ResponseDB.cc
+Utils.cc
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+cores/EchoApp.cc
+cores/DRAM.cc
+cores/CoreL1.cc
+cores/L2.cc
+cores/central/CSched.cc
+cores/central/ParallelCentralSched.cc
+cores/sinks/AppSink.cc
+cores/sinks/InfiniteBWMultiVCSinkperSrc.cc
+cores/sinks/InfiniteBWMultiVCSink.cc
+cores/sources/CAppSrc.cc
+cores/sources/AppSrc.cc
+cores/sources/PktFifoSrc.cc
+cores/sources/CentSchedPktFifoSrc.cc
+routers/flat/CentSchedRouter.cc
+routers/hier/Predictor.cc
+routers/hier/PredictionObject.cc
+routers/hier/PredictorFactory.cc
+routers/hier/RouterSWHook.cc
+routers/hier/Predictors/RandomPredictor.cc
+routers/hier/Predictors/DefaultPredictor.cc
+routers/hier/inPort/InPortAsync.cc
+routers/hier/inPort/ISLIPInPort.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+routers/hier/sched/wormhole/ISLIPSched.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+App_m.cc
+Central_m.cc
+CMP_m.cc
+NoCs_m.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:00:27 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:01:29 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictorFactory.cc
+routers/hier/PredictorFactory.cc: In member function ‘PredictorIfc* PredictorFactory::build(const string&)’:
+routers/hier/PredictorFactory.cc:25:5: error: ‘cerr’ was not declared in this scope
+routers/hier/PredictorFactory.cc:25:5: note: suggested alternative:
+In file included from /home/doron/omnetpp-4.3/include/cownedobject.h:22:0,
+                 from /home/doron/omnetpp-4.3/include/carray.h:23,
+                 from /home/doron/omnetpp-4.3/include/omnetpp.h:21,
+                 from ./CMP_m.h:8,
+                 from routers/hier/PredictorIfc.h:11,
+                 from routers/hier/PredictorFactory.h:11,
+                 from routers/hier/PredictorFactory.cc:8:
+/usr/include/c++/4.7/iostream:63:18: note:   ‘std::cerr’
+make[1]: *** [../out/gcc-debug/src/routers/hier/PredictorFactory.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+18:01:45 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictorFactory.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:01:49 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:05:31 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictorFactory.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:06:10 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictorFactory.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:06:15 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:31:51 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictionObject.cc
+routers/hier/PredictionObject.cc:43:72: error: cannot declare member function ‘static PredictionObject* PredictionObject::getPrediction(NoCReqMsg*)’ to have static linkage [-fpermissive]
+routers/hier/PredictionObject.cc: In static member function ‘static PredictionObject* PredictionObject::getPrediction(NoCReqMsg*)’:
+routers/hier/PredictionObject.cc:45:1: warning: no return statement in function returning non-void [-Wreturn-type]
+make[1]: *** [../out/gcc-debug/src/routers/hier/PredictionObject.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+18:32:00 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictionObject.cc
+routers/hier/PredictorFactory.cc
+routers/hier/inPort/InPortSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:36:30 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictionObject.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+18:36:36 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictionObject.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+14:54:13 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘bool Predictor::CheckIfHit(SessionMeta*)’:
+routers/hier/Predictor.cc:46:33: error: expected ‘)’ before ‘;’ token
+routers/hier/Predictor.cc:46:33: error: could not convert ‘((Predictor*)this)->Predictor::m_predictionTable.std::map<_Key, _Tp, _Compare, _Alloc>::at<SessionMeta*, SimTime, std::less<SessionMeta*>, std::allocator<std::pair<SessionMeta* const, SimTime> > >((*(SessionMeta* const*)(& msg)))’ from ‘std::map<SessionMeta*, SimTime>::mapped_type {aka SimTime}’ to ‘bool’
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+15:02:47 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.h:21:0,
+                 from routers/hier/Predictor.cc:16:
+routers/hier/PredictorIfc.h:17:14: error: ‘simetime_t’ was not declared in this scope
+routers/hier/PredictorIfc.h:17:26: error: ‘simetime_t’ was not declared in this scope
+routers/hier/PredictorIfc.h:17:36: error: template argument 1 is invalid
+routers/hier/PredictorIfc.h:17:36: error: template argument 2 is invalid
+routers/hier/PredictorIfc.h:17:56: error: invalid type in declaration before ‘;’ token
+routers/hier/Predictor.cc: In member function ‘bool Predictor::CheckIfHit(SessionMeta*)’:
+routers/hier/Predictor.cc:49:9: error: ‘simulation_t’ was not declared in this scope
+routers/hier/Predictor.cc:49:22: error: expected ‘;’ before ‘now’
+routers/hier/Predictor.cc:51:13: error: ‘now’ was not declared in this scope
+routers/hier/Predictor.cc:51:28: error: base operand of ‘->’ is not a pointer
+routers/hier/Predictor.cc:51:57: error: base operand of ‘->’ is not a pointer
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+15:03:11 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.h:21:0,
+                 from routers/hier/Predictor.cc:16:
+routers/hier/PredictorIfc.h:17:14: error: ‘simetime_t’ was not declared in this scope
+routers/hier/PredictorIfc.h:17:26: error: ‘simetime_t’ was not declared in this scope
+routers/hier/PredictorIfc.h:17:36: error: template argument 1 is invalid
+routers/hier/PredictorIfc.h:17:36: error: template argument 2 is invalid
+routers/hier/PredictorIfc.h:17:56: error: invalid type in declaration before ‘;’ token
+routers/hier/Predictor.cc: In member function ‘bool Predictor::CheckIfHit(SessionMeta*)’:
+routers/hier/Predictor.cc:49:9: error: ‘simulation_t’ was not declared in this scope
+routers/hier/Predictor.cc:49:22: error: expected ‘;’ before ‘now’
+routers/hier/Predictor.cc:51:13: error: ‘now’ was not declared in this scope
+routers/hier/Predictor.cc:51:29: error: request for member ‘first’ in ‘interval’, which is of non-class type ‘PredictionInterval {aka int}’
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc:51:57: error: request for member ‘second’ in ‘interval’, which is of non-class type ‘PredictionInterval {aka int}’
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+15:03:39 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘bool Predictor::CheckIfHit(SessionMeta*)’:
+routers/hier/Predictor.cc:49:9: error: ‘simulation_t’ was not declared in this scope
+routers/hier/Predictor.cc:49:22: error: expected ‘;’ before ‘now’
+routers/hier/Predictor.cc:51:13: error: ‘now’ was not declared in this scope
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+15:03:51 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/PredictorFactory.cc
+In file included from routers/hier/PredictorFactory.cc:13:0:
+routers/hier/Predictors/DefaultPredictor.h:21:23: error: invalid covariant return type for ‘virtual simtime_t DefaultPredictor::predict(CMPMsg*)’
+In file included from routers/hier/PredictorFactory.h:11:0,
+                 from routers/hier/PredictorFactory.cc:9:
+routers/hier/PredictorIfc.h:27:32: error:   overriding ‘virtual PredictionInterval PredictorIfc::predict(CMPMsg*)’
+In file included from routers/hier/PredictorFactory.cc:14:0:
+routers/hier/Predictors/RandomPredictor.h:19:23: error: invalid covariant return type for ‘virtual simtime_t RandomPredictor::predict(CMPMsg*)’
+In file included from routers/hier/PredictorFactory.h:11:0,
+                 from routers/hier/PredictorFactory.cc:9:
+routers/hier/PredictorIfc.h:27:32: error:   overriding ‘virtual PredictionInterval PredictorIfc::predict(CMPMsg*)’
+make[1]: *** [../out/gcc-debug/src/routers/hier/PredictorFactory.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+15:23:32 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/PredictorFactory.cc
+routers/hier/Predictors/RandomPredictor.cc
+routers/hier/Predictors/DefaultPredictor.cc
+routers/hier/inPort/ISLIPInPort.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:151:2: error: ‘PredictionObject’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:151:20: error: ‘predObj’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:151:34: error: expected type-specifier before ‘PredictionObject’
+routers/hier/inPort/InPortSync.cc:151:34: error: expected ‘;’ before ‘PredictionObject’
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::handleInFlitMsg(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:284:3: error: ‘sadasdasdas’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:293:3: error: expected ‘;’ before ‘send’
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+16:02:36 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.h:23:0,
+                 from routers/hier/Predictor.cc:16:
+routers/hier/inPort/InPortSync.h:59:2: error: ‘Predictor’ does not name a type
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:36:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:37:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:38:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:39:63: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+16:03:02 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.h:23:0,
+                 from routers/hier/Predictor.cc:16:
+routers/hier/inPort/InPortSync.h:59:2: error: ‘Predictor’ does not name a type
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:36:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:37:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:38:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:39:63: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+16:03:49 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:36:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:37:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:38:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:39:63: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+16:06:30 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:36:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:37:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:38:64: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+routers/hier/Predictor.cc:39:63: error: invalid conversion from ‘int’ to ‘cModule*’ [-fpermissive]
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+16:09:13 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+routers/hier/sched/wormhole/ISLIPSched.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+../out/gcc-debug/src/routers/hier/Predictor.o: In function `Predictor::Hit(NoCFlitMsg*)':
+/home/doron/omnetpp-4.3/workspace/HNOCS/src/routers/hier/Predictor.cc:85: undefined reference to `Predictor::HitFlow(NoCFlitMsg*, SessionMeta*)'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+collect2: error: ld returned 1 exit status
+make[1]: *** [../out/gcc-debug/src/hnocs] Error 1
+make: *** [all] Error 2
+16:14:32 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+16:50:36 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:47:16: error: ‘inPort’ was not declared in this scope
+routers/hier/Predictor.cc:51:44: error: ‘inPort’ was not declared in this scope
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+16:51:05 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:48:16: error: ‘inPort’ was not declared in this scope
+routers/hier/Predictor.cc:52:44: error: ‘inPort’ was not declared in this scope
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+16:52:57 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.cc:16:0:
+routers/hier/Predictor.h:43:5: error: ‘InPortSync’ does not name a type
+routers/hier/Predictor.h:61:5: error: ‘InPortSync’ does not name a type
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+16:53:16 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/inPort/InPortSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:06:02 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+19:46:58 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/sched/wormhole/SchedSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+20:41:12 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:163:9: error: ‘ResponseDB’ has not been declared
+routers/hier/inPort/InPortSync.cc:164:44: error: ‘gate’ cannot be used as a function
+routers/hier/inPort/InPortSync.cc:165:15: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:166:27: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:170:19: warning: unused variable ‘adjPred’ [-Wunused-variable]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make: *** [all] Error 2
+20:41:29 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:163:9: error: ‘ResponseDB’ has not been declared
+routers/hier/inPort/InPortSync.cc:164:44: error: ‘Gate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:165:15: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:166:27: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:164:17: warning: unused variable ‘gate’ [-Wunused-variable]
+routers/hier/inPort/InPortSync.cc:170:19: warning: unused variable ‘adjPred’ [-Wunused-variable]
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+20:41:43 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:163:9: error: ‘ResponseDB’ has not been declared
+routers/hier/inPort/InPortSync.cc:165:15: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:166:27: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:164:17: warning: unused variable ‘gate’ [-Wunused-variable]
+routers/hier/inPort/InPortSync.cc:170:19: warning: unused variable ‘adjPred’ [-Wunused-variable]
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+20:41:54 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:163:9: error: ‘ResponseDB’ has not been declared
+routers/hier/inPort/InPortSync.cc:166:27: error: ‘oGate’ was not declared in this scope
+routers/hier/inPort/InPortSync.cc:170:19: warning: unused variable ‘adjPred’ [-Wunused-variable]
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+20:42:05 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:163:9: error: ‘ResponseDB’ has not been declared
+routers/hier/inPort/InPortSync.cc:170:19: warning: unused variable ‘adjPred’ [-Wunused-variable]
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+21:18:56 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+ResponseDB.cc
+In file included from SessionMeta.h:24:0,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+CMP_m.h:46:7: error: redefinition of ‘class NoCFlitMsg’
+In file included from App_m.h:17:0,
+                 from CMP_m.h:17,
+                 from SessionMeta.h:24,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+./NoCs_m.h:83:7: error: previous definition of ‘class NoCFlitMsg’
+In file included from SessionMeta.h:24:0,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+CMP_m.h: In function ‘void doPacking(cCommBuffer*, NoCFlitMsg&)’:
+CMP_m.h:87:13: error: redefinition of ‘void doPacking(cCommBuffer*, NoCFlitMsg&)’
+In file included from App_m.h:17:0,
+                 from CMP_m.h:17,
+                 from SessionMeta.h:24,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+./NoCs_m.h:139:13: error: ‘void doPacking(cCommBuffer*, NoCFlitMsg&)’ previously defined here
+In file included from SessionMeta.h:24:0,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+CMP_m.h: In function ‘void doUnpacking(cCommBuffer*, NoCFlitMsg&)’:
+CMP_m.h:88:13: error: redefinition of ‘void doUnpacking(cCommBuffer*, NoCFlitMsg&)’
+In file included from App_m.h:17:0,
+                 from CMP_m.h:17,
+                 from SessionMeta.h:24,
+                 from ResponseDB.h:15,
+                 from ResponseDB.cc:7:
+./NoCs_m.h:140:13: error: ‘void doUnpacking(cCommBuffer*, NoCFlitMsg&)’ previously defined here
+In file included from ResponseDB.h:15:0,
+                 from ResponseDB.cc:7:
+SessionMeta.h: At global scope:
+SessionMeta.h:92:7: error: ‘void SessionMeta::add(NoCFlitMsg*)’ cannot be overloaded
+SessionMeta.h:91:7: error: with ‘void SessionMeta::add(NoCFlitMsg*)’
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/ResponseDB.o] Error 1
+make: *** [all] Error 2
+21:30:53 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+ResponseDB.cc
+Utils.cc
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+cores/DRAM.cc
+cores/CoreL1.cc
+cores/L2.cc
+cores/sinks/AppSink.cc
+cores/sources/AppSrc.cc
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘void Predictor::Predict(NoCFlitMsg*)’:
+routers/hier/Predictor.cc:120:64: error: invalid conversion from ‘NoCFlitMsg*’ to ‘int’ [-fpermissive]
+In file included from routers/hier/Predictor.cc:18:0:
+./ResponseDB.h:46:15: error:   initializing argument 1 of ‘SessionMeta* ResponseDB::find(int) const’ [-fpermissive]
+routers/hier/Predictor.cc:121:50: error: invalid conversion from ‘NoCFlitMsg*’ to ‘int’ [-fpermissive]
+In file included from routers/hier/Predictor.h:23:0,
+                 from routers/hier/Predictor.cc:16:
+./SessionMeta.h:104:7: error:   initializing argument 1 of ‘bool SessionMeta::isRequest(int) const’ [-fpermissive]
+routers/hier/Predictor.cc: In member function ‘bool Predictor::PredictIfRequest(NoCFlitMsg*)’:
+routers/hier/Predictor.cc:145:17: warning: unused variable ‘moomsg’ [-Wunused-variable]
+routers/hier/Predictor.cc:147:1: warning: control reaches end of non-void function [-Wreturn-type]
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+21:31:06 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘void Predictor::Predict(NoCFlitMsg*)’:
+routers/hier/Predictor.cc:120:64: error: invalid conversion from ‘NoCFlitMsg*’ to ‘int’ [-fpermissive]
+In file included from routers/hier/Predictor.cc:18:0:
+./ResponseDB.h:46:15: error:   initializing argument 1 of ‘SessionMeta* ResponseDB::find(int) const’ [-fpermissive]
+routers/hier/Predictor.cc:121:50: error: invalid conversion from ‘NoCFlitMsg*’ to ‘int’ [-fpermissive]
+In file included from routers/hier/Predictor.h:23:0,
+                 from routers/hier/Predictor.cc:16:
+./SessionMeta.h:104:7: error:   initializing argument 1 of ‘bool SessionMeta::isRequest(int) const’ [-fpermissive]
+routers/hier/Predictor.cc: In member function ‘bool Predictor::PredictIfRequest(NoCFlitMsg*)’:
+routers/hier/Predictor.cc:145:17: warning: unused variable ‘moomsg’ [-Wunused-variable]
+routers/hier/Predictor.cc:147:1: warning: control reaches end of non-void function [-Wreturn-type]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+21:32:22 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘bool Predictor::PredictIfRequest(NoCFlitMsg*)’:
+routers/hier/Predictor.cc:145:17: warning: unused variable ‘moomsg’ [-Wunused-variable]
+routers/hier/Predictor.cc:147:1: warning: control reaches end of non-void function [-Wreturn-type]
+routers/hier/PredictionObject.cc
+routers/hier/PredictionObject.cc: In constructor ‘PredictionObject::PredictionObject(NoCFlitMsg*, uint32_t, uint32_t)’:
+routers/hier/PredictionObject.cc:21:49: error: invalid conversion from ‘NoCFlitMsg*’ to ‘int’ [-fpermissive]
+In file included from routers/hier/PredictionObject.cc:17:0:
+./ResponseDB.h:46:15: error:   initializing argument 1 of ‘SessionMeta* ResponseDB::find(int) const’ [-fpermissive]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/PredictionObject.o] Error 1
+make: *** [all] Error 2
+21:33:09 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/PredictionObject.cc
+routers/hier/PredictorFactory.cc
+routers/hier/RouterSWHook.cc
+routers/hier/Predictors/RandomPredictor.cc
+routers/hier/Predictors/DefaultPredictor.cc
+routers/hier/inPort/ISLIPInPort.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/inPort/InPortSync.cc: In member function ‘void InPortSync::sendReq(NoCFlitMsg*)’:
+routers/hier/inPort/InPortSync.cc:173:18: error: ‘class Predictor’ has no member named ‘predict’
+routers/hier/inPort/InPortSync.cc:173:31: error: ‘class NoCFlitMsg’ has no member named ‘get’
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/inPort/InPortSync.o] Error 1
+make: *** [all] Error 2
+21:35:47 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+In file included from routers/hier/Predictor.cc:16:0:
+routers/hier/Predictor.h:65:44: error: ‘outPort’ has not been declared
+routers/hier/Predictor.cc: In member function ‘bool Predictor::PredictIfRequest(NoCFlitMsg*, int)’:
+routers/hier/Predictor.cc:145:17: warning: unused variable ‘moomsg’ [-Wunused-variable]
+routers/hier/Predictor.cc:147:1: warning: control reaches end of non-void function [-Wreturn-type]
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+21:37:31 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘bool Predictor::PredictIfRequest(NoCFlitMsg*, int)’:
+routers/hier/Predictor.cc:145:18: warning: unused variable ‘meta’ [-Wunused-variable]
+routers/hier/Predictor.cc:149:17: warning: unused variable ‘moomsg’ [-Wunused-variable]
+routers/hier/Predictor.cc:151:1: warning: control reaches end of non-void function [-Wreturn-type]
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+routers/hier/sched/wormhole/ISLIPSched.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+CMP_m.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+21:48:08 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/inPort/InPortSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+22:00:25 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+22:00:35 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+22:01:30 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+22:01:35 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:12:20 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘SchedSync& Predictor::getSched()’:
+routers/hier/Predictor.cc:112:13: error: invalid initialization of reference of type ‘SchedSync&’ from expression of type ‘Sched’
+routers/hier/Predictor.cc:113:1: warning: control reaches end of non-void function [-Wreturn-type]
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make: *** [all] Error 2
+23:13:10 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/Predictor.cc: In member function ‘virtual void Predictor::initialize()’:
+routers/hier/Predictor.cc:56:5: error: ‘m_sched’ was not declared in this scope
+make[1]: *** [../out/gcc-debug/src/routers/hier/Predictor.o] Error 1
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make: *** [all] Error 2
+23:13:24 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/Predictor.cc
+routers/hier/inPort/InPortSync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:37:19 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+MSGC: NoCs.msg
+ResponseDB.cc
+Utils.cc
+SessionMeta.cc
+In file included from /usr/include/c++/4.7/backward/strstream:52:0,
+                 from SessionMeta.cc:21:
+/usr/include/c++/4.7/backward/backward_warning.h:33:2: warning: #warning This file includes at least one deprecated or antiquated header which may be removed without further notice at a future date. Please use a non-deprecated interface with equivalent functionality instead. For a listing of replacement headers and interfaces, consult the file backward_warning.h. To disable this warning use -Wno-deprecated. [-Wcpp]
+cores/EchoApp.cc
+cores/DRAM.cc
+cores/CoreL1.cc
+cores/L2.cc
+cores/sinks/AppSink.cc
+cores/sinks/InfiniteBWMultiVCSinkperSrc.cc
+cores/sinks/InfiniteBWMultiVCSink.cc
+cores/sources/CAppSrc.cc
+cores/sources/AppSrc.cc
+cores/sources/PktFifoSrc.cc
+cores/sources/CentSchedPktFifoSrc.cc
+routers/flat/CentSchedRouter.cc
+routers/hier/Predictor.cc
+routers/hier/PredictorFactory.cc
+routers/hier/RouterSWHook.cc
+routers/hier/Predictors/RandomPredictor.cc
+routers/hier/Predictors/DefaultPredictor.cc
+routers/hier/inPort/InPortAsync.cc
+routers/hier/inPort/ISLIPInPort.cc
+routers/hier/inPort/InPortSync.cc
+routers/hier/opCalc/static/XYOPCalc.cc
+routers/hier/sched/wormhole/ISLIPSched.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+In file included from routers/hier/sched/wormhole/SchedAsync.cc:39:0:
+routers/hier/sched/wormhole/SchedAsync.h:86:2: error: ‘queue’ does not name a type
+make[1]: *** [../out/gcc-debug/src/routers/hier/sched/wormhole/SchedAsync.o] Error 1
+make: *** [all] Error 2
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:38:35 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/sched/wormhole/SchedAsync.cc
+routers/hier/vcCalc/free/FLUVCCalc.cc
+App_m.cc
+CMP_m.cc
+NoCs_m.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:51:11 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+routers/hier/inPort/InPortSync.cc
+routers/hier/sched/wormhole/SchedSync.cc
+routers/hier/sched/wormhole/SchedAsync.cc
+Creating executable: ../out/gcc-debug/src/hnocs
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:51:19 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+23:51:40 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'

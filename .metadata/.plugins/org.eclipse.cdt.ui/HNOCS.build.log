@@ -1,0 +1,8 @@
+23:51:40 **** Incremental Build of configuration gcc-debug for project HNOCS ****
+make MODE=debug CONFIGNAME=gcc-debug all 
+cd src && make 
+make[1]: Entering directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+make[1]: Leaving directory `/home/doron/omnetpp-4.3/workspace/HNOCS/src'
+
+23:51:40 Build Finished (took 118ms)
+

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Create method SetOutPort" description="Extract Method Refactoring" fileName="file:/home/doron/omnetpp-4.3/workspace/HNOCS/src/routers/hier/opCalc/static/XYOPCalc.cc" flags="4" id="org.eclipse.cdt.internal.ui.refactoring.extractfunction.ExtractFunctionRefactoring" name="SetOutPort" replaceDuplicates="false" selection="8087,2243" stamp="1381574240165" visibility="private"/>
+</session>

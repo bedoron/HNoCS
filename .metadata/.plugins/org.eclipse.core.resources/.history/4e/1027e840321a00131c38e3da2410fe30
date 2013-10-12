@@ -1,0 +1,31 @@
+/*
+ * PredictorFactory.cpp
+ *
+ *  Created on: Aug 29, 2013
+ *      Author: doron
+ */
+
+#include "PredictorFactory.h"
+
+// ----- Predictors
+#include "Predictors/DefaultPredictor.h"
+#include "Predictors/RandomPredictor.h"
+
+PredictorFactory::PredictorFactory() { }
+
+PredictorFactory& PredictorFactory::instance() {
+    static PredictorFactory instance;
+    return instance;
+}
+
+PredictorIfc* PredictorFactory::build(const string &method) {
+    if(method == "Random")
+        return new RandomPredictor();
+
+    cerr << "No " << method << " predictor, using default";
+    EV << "No " << method << " predictor, using default";
+    return new DefaultPredictor();
+}
+
+PredictorFactory::~PredictorFactory() { }
+
