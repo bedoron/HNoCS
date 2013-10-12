@@ -1,8 +1,0 @@
-MODULES_MANAGER_V2
-AnalysisThread|/home/hnocs/workspace/HNOCS/utils/graphs/AnalysisThread.py
-AnalyzePorts|/home/hnocs/workspace/HNOCS/utils/graphs/AnalyzePorts.py
-DBManager|/home/hnocs/workspace/HNOCS/utils/graphs/DBManager.py
-JSONParser|/home/hnocs/workspace/HNOCS/utils/graphs/JSONParser.py
-ShowDataSets|/home/hnocs/workspace/HNOCS/utils/graphs/ShowDataSets.py
-VecParser|/home/hnocs/workspace/HNOCS/utils/graphs/VecParser.py
-python_grapher|/home/hnocs/workspace/HNOCS/utils/graphs/python_grapher.py

@@ -6,6 +6,8 @@ history.repositoryUser=Yi5lLmRvcm9u
 history.selectCheckoutUrl=aHR0cHM6Ly9yZWRzdm4uZWYudGVjaG5pb24uYWMuaWwvc3ZuL25zc2wtaG5vY3MxL2JyYW5jaGVzL2Rvcm9uX3lldmdlbnk\=
 org.eclipse.team.svn.ui.panel.callback.PromptCredentialsPanel.height=248
 org.eclipse.team.svn.ui.panel.callback.PromptCredentialsPanel.width=470
+org.eclipse.team.svn.ui.panel.common.BranchPanel.height=860
+org.eclipse.team.svn.ui.panel.common.BranchPanel.width=625
 org.eclipse.team.svn.ui.panel.local.AddToSVNPanel.height=224
 org.eclipse.team.svn.ui.panel.local.AddToSVNPanel.width=600
 org.eclipse.team.svn.ui.panel.local.CommitPanel.height=406
