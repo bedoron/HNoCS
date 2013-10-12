@@ -4,6 +4,7 @@
 *.o
 *.a
 *.so
+.tkenvrc
 HNOCS/out/*
 HNOCS/simulations/*/results/*
 HNOCS/simulations/CMPTraces-16threads-simsmall/*
