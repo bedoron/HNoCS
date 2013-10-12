@@ -1,0 +1,68 @@
+EXPERIMENT: Congestion Spread Central Scheduler vs Baseline NoC
+
+PLOT: Congestion Case MAX Latency vs Offered Load 
+SIMS: hnocs central_sched  central_vs_baseline.ini cong-6x6 all
+SIMS: hnocs baseline       central_vs_baseline.ini cong-6x6 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: cong-6x6 DIR: baseline      X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:EoP-end-to-end-latency"  ORDER: D T:MAX 
+XYCONTOUR: "CENT"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:EoP-end-to-end-latency"  ORDER: D T:MAX
+
+ENDPLOT
+
+PLOT: Congestion Case AVG Latency vs Offered Load 
+SIMS: hnocs central_sched  central_vs_baseline.ini cong-6x6 all
+SIMS: hnocs baseline       central_vs_baseline.ini cong-6x6 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: cong-6x6 DIR: baseline      X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:EoP-end-to-end-latency"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:EoP-end-to-end-latency"  ORDER: D
+
+ENDPLOT
+
+PLOT: Congestion Case MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini cong-6x6 all
+SIMS: hnocs baseline       central_vs_baseline.ini cong-6x6 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: cong-6x6 DIR: baseline      X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:.*Total-BW"  ORDER: D T:MIN
+XYCONTOUR: "CENT"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:.*Total-BW"  ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Congestion Case AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini cong-6x6 all
+SIMS: hnocs baseline       central_vs_baseline.ini cong-6x6 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: cong-6x6 DIR: baseline      X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:.*Total-BW"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: D XE: "4.0/$x" Y: "core.(13|19|25)..sink:.*Total-BW"  ORDER: D
+
+ENDPLOT
+
+PLOT: Congestion Case Latency vs Throughput per DST
+SIMS: hnocs central_sched  central_vs_baseline.ini cong-6x6 all
+SIMS: hnocs baseline       central_vs_baseline.ini cong-6x6 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE to 13"  CVARS: P,V CFG: cong-6x6 DIR: baseline X: "core.13..sink.*Total-BW"   Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D 
+XYCONTOUR: "BASE to 19"  CVARS: P,V CFG: cong-6x6 DIR: baseline X: "core.19..sink.*Total-BW"   Y: "core.19..sink:EoP-end-to-end-latency"  ORDER: D 
+XYCONTOUR: "BASE to 25"  CVARS: P,V CFG: cong-6x6 DIR: baseline X: "core.25..sink.*Total-BW"   Y: "core.25..sink:EoP-end-to-end-latency"  ORDER: D 
+XYCONTOUR: "CENT to 13"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: "core.13..sink.*Total-BW"   Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D  
+XYCONTOUR: "CENT to 19"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: "core.19..sink.*Total-BW"   Y: "core.19..sink:EoP-end-to-end-latency"  ORDER: D 
+XYCONTOUR: "CENT to 25"  CVARS: P,V CFG: cong-6x6 DIR: central_sched X: "core.25..sink.*Total-BW"   Y: "core.25..sink:EoP-end-to-end-latency"  ORDER: D 
+
+ENDPLOT
+
+
+ENDEXPERIMENT

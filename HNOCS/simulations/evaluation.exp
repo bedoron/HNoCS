@@ -1,0 +1,413 @@
+EXPERIMENT: Evaluation of Central Scheduler vs Baseline NoC
+
+PLOT: Tornado MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini tornado-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini tornado-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Tornado AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini tornado-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini tornado-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Tornado AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini tornado-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini tornado-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Tornado MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini tornado-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini tornado-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Neighbor MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini neighbor-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini neighbor-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: neighbor-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: neighbor-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Neighbor AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini neighbor-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini neighbor-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: neighbor-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: neighbor-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Neighbor AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini neighbor-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini neighbor-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: neighbor-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: neighbor-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Neighbor MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini neighbor-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini neighbor-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: neighbor-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: neighbor-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Bit-Complement MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-complement-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-complement-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-complement-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-complement-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Bit-Complement AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-complement-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-complement-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-complement-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-complement-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Bit-Complement AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-complement-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-complement-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-complement-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: bit-complement-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Bit-Complement MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-complement-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-complement-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-complement-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: bit-complement-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Bit-Transpose MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-transpose-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-transpose-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-transpose-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-transpose-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Bit-Transpose AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-transpose-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-transpose-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-transpose-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-transpose-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Bit-Transpose AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-transpose-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-transpose-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-transpose-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: bit-transpose-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Bit-Transpose MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-transpose-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-transpose-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-transpose-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: bit-transpose-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Bit-Shuffle MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-shuffle-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-shuffle-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-shuffle-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-shuffle-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Bit-Shuffle AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-shuffle-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-shuffle-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-shuffle-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-shuffle-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Bit-Shuffle AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-shuffle-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-shuffle-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-shuffle-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: bit-shuffle-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Bit-Shuffle MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-shuffle-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-shuffle-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-shuffle-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: bit-shuffle-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Bit-Rotate MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-rotate-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-rotate-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-rotate-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-rotate-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Bit-Rotate AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-rotate-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-rotate-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-rotate-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-rotate-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Bit-Rotate AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-rotate-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-rotate-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-rotate-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: bit-rotate-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Bit-Rotate MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-rotate-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-rotate-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-rotate-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: bit-rotate-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+########################################################################
+
+
+PLOT: Bit-Reverse MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-reverse-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-reverse-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-reverse-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-reverse-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Bit-Reverse AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-reverse-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-reverse-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL"  CVARS: P CFG: bit-reverse-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA"  CVARS: P CFG: bit-reverse-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Bit-Reverse AVG Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-reverse-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-reverse-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-reverse-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA" CVARS: P CFG: bit-reverse-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: Bit-Reverse MAX Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini bit-reverse-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini bit-reverse-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL" CVARS: P CFG: bit-reverse-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA" CVARS: P CFG: bit-reverse-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+##############################################################################
+PLOT: Uniform Throughput vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini uniform-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini uniform-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BL MIN"  CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "GANA MIN"  CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:Sink-Total-BW-MBps" ORDER: D T:MIN
+XYCONTOUR: "BL AVG"  CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+XYCONTOUR: "GANA AVG"  CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:.*Total-BW"  ORDER: D 
+
+ENDPLOT
+
+PLOT: Uniform Latency vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini uniform-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini uniform-8x8 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL AVG" CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D 
+XYCONTOUR: "GANA AVG" CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "BL MAX" CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+XYCONTOUR: "GANA MAX" CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "core.*..sink:EoP-end-to-end-latency" ORDER: D T: MAX
+
+ENDPLOT
+
+PLOT: Uniform Source Queue Size vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini uniform-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini uniform-8x8 all
+
+XLABEL: BW [GB/sec]
+YLABEL: NI Queue Size Ratio [Packets]
+
+XYCONTOUR: "BL UNI"   CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D
+XYCONTOUR: "GANA UNI" CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D
+XYCONTOUR: "BL UNI MAX"   CVARS: P CFG: uniform-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D T:MAX
+XYCONTOUR: "GANA UNI MAX" CVARS: P CFG: uniform-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D T:MAX
+
+ENDPLOT
+
+PLOT: Tornado Source Queue Size vs Offered Load
+SIMS: hnocs central_sched  central_vs_baseline.ini tornado-8x8 all
+SIMS: hnocs baseline       central_vs_baseline.ini tornado-8x8 all
+
+XLABEL: BW [GB/sec]
+YLABEL: NI Queue Size Ratio [Packets]
+
+XYCONTOUR: "BL TOR"   CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D
+XYCONTOUR: "GANA TOR" CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D
+XYCONTOUR: "BL TOR MAX"   CVARS: P CFG: tornado-8x8 DIR: baseline      X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D T:MAX
+XYCONTOUR: "GANA TOR MAX" CVARS: P CFG: tornado-8x8 DIR: central_sched X: D XE: "4.0/$x" Y: "source-queue-size-percent" ORDER: D T:MAX
+
+ENDPLOT
+
+ENDEXPERIMENT

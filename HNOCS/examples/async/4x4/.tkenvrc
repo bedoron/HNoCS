@@ -1,0 +1,3 @@
+# Partial Tkenv config file -- see $HOME/.tkenvrc as well
+inspector "Mesh.router[6]" "idealRouter" "2" "501x530+1278+25:normal"
+

@@ -1,0 +1,18 @@
+from AnalysisThread import AnalyzeGraph
+
+# JSON DB Organization
+# Typical line in router should look like:
+# [ router1, router2, ...... ]
+# where each is 
+# [ .... , 
+#    {    "router_id": 0, "session_id": 2511, "session_type": "L2_DRAM", "response_ts": 0.000449854, 
+#    "request_ts": 0.000449374, "request_out_port": 2, "response_out_port": 2 }, ...... ]
+
+
+class AnalyzePorts(AnalyzeGraph):
+    
+    def analyze(self, entry_name):
+        router_id = self.parser.toJsonEntry(entry_name)
+        router = self.json[]
+        return AnalyzeGraph.analyze(self, db, entry_name)
+        

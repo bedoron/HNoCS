@@ -1,0 +1,20 @@
+15 Sep 2011, Eitan Zahavi, zahavi.eitan@gmail.com
+Application concept introduced. This includes the following new files:
+CMP.msg         - Defines Application messages that performs memory access.
+App_Ifc.ned     - An application generating messages and connected to both a
+                  source and a sink. Application messages are encapsulated and
+                  de-encapsulataed by the approriate source and sink modules
+cores/AppNI.ned - A type of network interface which encapsulates a vector
+                  of applications connected through one source and one sink
+                  to the NoC
+cores/EchoApp.* - A simple application to test and demo how applications work
+cores/CoreL1.*  - An application simulating a trivial processor and L1 core.
+cores/L2.*      - An application simulating a trivial L2 cache.
+cores/DRAM.*    - An application simulating a trivial DRAM controller.
+sources/AppSrc.*- A source driven by a vector of applications. Provides 
+                  arbitration, encapsulation and segmentation into FLITs.
+sinks/AppSink.* - A packet sink providing reassembly, de-encapsulation and
+                  completion of App messgaes from the NoC wire messages.
+
+12 Sep 2011, Eitan Zahavi, zahavi.eitan@gmail.com
+The entire code tree renamed to HNOCS from iNoCs.

@@ -1,0 +1,514 @@
+eval '(exit $?0)' && 
+  eval 'exec perl -S $0 ${1+"$@"}' && 
+  eval 'exec perl -S $0 $argv:q'
+  if 0;
+
+#############################################################################
+#
+# Eitan Zahavi
+# Thu Apr 15 11:19:00 2010
+#
+#  - Collect Data from Scalars files of various runs and build a graph
+#
+#############################################################################
+
+=head1 TITLE
+
+genExprHistPlot - Generate Histogram Plot Data File from a set of runs of a single experiment
+
+=head1 SYNOPSIS
+
+genExprHistPlot -e expr-name -r report-histogram -c curve-var1,var2 [-p prefix]
+  [-l x-lbl][-k y-lbl][-b num-bins][-f from][-t to][-n var1=alt-name1]... 
+  [-d dir]
+
+=head1 DESCRIPTION
+
+Process a set of SCA files from OMNet and produce a CSV file with resulting 
+curves of AVG,MIN,MAX values of the provided histograms after aggregating all histograms
+that match the same values of the curve variables.
+
+If a set of variable names (matching the set of curve variables) are provided by the -n
+option the graph curve names use the provided names instead of the variable names.
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<--expr|-e experiment-name>
+
+The experiment name to work with - defines the selected files
+
+=item B<--report-hist|-r report-histogram>
+
+The regular expression to be used for selcting the histogram
+
+=item B<--curve-vars|-c var1,var2...>
+
+The list of regular expressions to be used for selecting the variables that
+their combination declares a single curve (line) on the graph.
+The format NONE is reserved and means there is no curve variable.
+Note the -n can be used to name the contour.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--dir|-d results-dir>
+
+The directory holding the SCA files to be scanned. Default is "." .
+
+=item B<--x-lbl|-l x-label>
+
+The label to be used as the X label (default is the x-var).
+
+=item B<--y-lbl|-k y-label>
+
+The label to be used as the Y label (default is the y-var).
+
+=item B<--prefix|-p contour-name-prefix>
+
+A name prefix for the given contour
+
+=item B<--names|-n curve-var=alt_name>
+
+If provided the alternate name is used in the curve name instead of the 
+variable name.
+
+=item B<--from|-f min-bin-value>
+
+If provided will define the minimum value of the histogram
+
+=item B<--to|-t max-bin-value>
+
+If provided will define the maximal value of the histogram
+
+=item B<--bins|-b num-bins>
+
+The number of bins to generate. (Default is 25).
+
+=item B<--where|-w var1=val1,var2=val2>
+
+A limitation applied to selected sca files. The variables must match the 
+given values. When multiple -w/--where are given they are ORed.
+
+=item B<--verbose|-v>
+
+Run in verbose mode
+
+=item B<--help|-h>
+
+Print a brief help message and exits.
+
+=item B<--man|-m>
+
+Print a detailed help message (man) and exits.
+
+=back
+
+=head1 LICENSE
+
+This code is licensed to Eitan Zahavi use only.
+
+=head1 Revision
+
+$Revision$
+
+=head1 AUTHOR
+
+Copyright (C) Eitan Zahavi 2010
+All rights reserved
+
+=cut
+
+#############################################################################
+
+use vars qw($VERSION);
+
+# use RCS info as we reposit in RCS
+($VERSION) = ('\$Revision\$' =~ m/(.*)/);
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use Pod::Usage;
+
+my $opt_verbose = 0;
+my ($opt_help, $opt_man);
+my $opt_d = ".";
+my $opt_c;
+my $opt_p;
+my $opt_e;
+my $opt_r;
+my $opt_n;
+my $opt_f;
+my $opt_t;
+my $opt_b = 25;
+my $opt_xl = "";
+my $opt_yl = "";
+my %ALT_NAMES;
+my $opt_s;
+my $opt_q;
+my @WHERE;
+
+GetOptions(
+    'w|where=s'      => sub { my ($n,$v) = @_; push @WHERE, $v} ,
+    'p|prefix=s'     => \$opt_p,
+    'e|expr=s'       => \$opt_e,
+    'r|report-hist=s'=> \$opt_r,
+    'l|x-lbl=s'      => \$opt_xl,
+    'k|y-lbl=s'      => \$opt_yl,
+    'c|curve-vars=s' => \$opt_c,
+    'f|from=s'       => \$opt_f,
+    't|to=s'         => \$opt_t,
+    'b|bins=s'       => \$opt_b,
+    'd|dir=s'        => \$opt_d,
+    'n|names=s'      => \%ALT_NAMES,
+    'v|verbose'      => \$opt_verbose,
+    'h|help'         => \$opt_help,
+    'm|man'          => \$opt_man,
+    ) or pod2usage(-verbose => 1) && exit;
+
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+# Replace the below with a check for mandatory arguments
+pod2usage("$0: Missing mandatory arguments.") && exit
+    if (! (defined($opt_r) && defined($opt_c) && defined($opt_e)));
+
+###############################################################
+#
+# DATA MODEL
+#
+my @SCA_FILES;
+
+my $histId = -1;
+my @HIST_VALS; # an array of arrays
+my @HIST_DELTA;
+my @HIST_FIRST;
+my @HIST_LAST;
+my %CONTOUR_HISTS; # hist ids of the CONTOUR
+
+my %GRAPH_X;
+my %GRAPH_Y;
+my %GRAPH_X_MIN;
+my %GRAPH_Y_MIN;
+my %GRAPH_X_MAX;
+my %GRAPH_Y_MAX;
+my %GRAPH_N_FILES;
+
+###############################################################
+#
+# ROUTINES
+#
+sub getExprScaFiles($$) {
+    my ($dir, $expr) = @_;
+    opendir(DIR, $dir) or die $!;
+
+    while (my $file = readdir(DIR)) {
+	# We only want files
+	next unless (-f "$dir/$file");
+	
+	# Use a regular expression to find files ending in .txt
+	next unless ($file =~ m/${expr}-[0-9]+\.sca$/);
+	push @SCA_FILES, "$dir/$file";
+    }
+    closedir(DIR); 
+    print STDERR "-V- Found ".scalar(@SCA_FILES)." files in $dir\n" if $opt_verbose;
+}
+
+sub parseScaFile($$$) {
+    my ($fileName, $hVar, $contourVars) = @_;
+    if (!open(S,"<$fileName")) {
+	print STDERR "-E- Failed to open file $fileName\n";
+	return 1
+    }
+    
+    my %ATTRS;
+    my $isHist = 0;
+    my $beforeAnyVal = 0;
+    my $lastNonZeroBin;
+    my $lastNonZeroIdx;
+    my $delta;
+    my $prevBin;
+    my @VALS;
+    my $mod;
+    my $name;
+    my $ignoreThisHist;
+    my @HISTS;
+    while (<S>) {
+	my $line = $_;
+	if ($line =~ m/attr\s+(\S+)\s+(\S+)/) {
+	    my ($var,$val) = ($1,$2);
+	    # collect attributes to build the contour
+	    $ATTRS{$var} = $val;
+	} elsif ($line =~ m/^statistic\s+(\S+)\s+"?([^"]+)"?/) {
+	    ($mod, $name) = ($1,$2);
+
+	    # if there are values add 
+	    if ($isHist) {
+		if (@VALS && !$ignoreThisHist) {
+		    @{ $HIST_VALS[$histId] } = @VALS[0..$lastNonZeroIdx];
+		    push @HISTS, $histId;
+		    $HIST_LAST[$histId] = $prevBin;
+		}
+	    }
+
+	    if ("$mod:$name" =~ m/${hVar}/) {
+#		print STDERR "-I- $mod:$name matched: $hVar\n";
+		$ignoreThisHist = 0;
+		$isHist = 1;
+		$beforeAnyVal = 1;
+		$lastNonZeroIdx = 0;
+		undef(@VALS);
+		undef($delta);
+		undef($prevBin);
+		$histId++;
+	    } else {
+		$isHist = 0;
+	    }
+	} elsif ($isHist) {
+	    if ($line =~ m/^bin\s+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s+(\S+)/) {
+		my ($bin,$cnt) = ($1,$3);
+		if ($cnt) {
+		    if ($beforeAnyVal) {
+			$HIST_FIRST[$histId] = $bin;
+			$beforeAnyVal = 0;
+		    }
+		    push @VALS, $cnt;
+		    $lastNonZeroBin = $bin;
+		    $lastNonZeroIdx = $#VALS;
+		} else {
+		    if (!$beforeAnyVal) {
+			push @VALS, $cnt;
+		    }
+		}
+
+		# calc first delta
+		if (!defined($delta) && defined($prevBin)) {
+		    $delta = $bin - $prevBin;
+		    $HIST_DELTA[$histId] = $delta;
+		    print STDERR "-V- Delta for hist: $mod:$name is $delta\n"
+			if $opt_verbose;
+		} elsif (defined($delta)) {
+		    my $d = $bin - $prevBin;
+		    if (abs($delta - $d)/$delta > 0.001) {
+			print STDERR "-E- Missmatch Delta for hist: $mod:$name ".
+			    "first delta: $bin - $prevBin = $delta but got: $d. Ignoring this histogram!\n";
+			$ignoreThisHist = 1;
+		    }
+		}
+		$prevBin = $bin;
+	    }
+	}
+    }
+
+    if ($isHist) {
+	if (@VALS && !$ignoreThisHist) {
+	    @{ $HIST_VALS[$histId] } = @VALS[0..$lastNonZeroIdx];
+	    push @HISTS, $histId;
+	    $HIST_LAST[$histId] = $prevBin;
+	}
+    }
+
+    close(S);
+
+    if ($histId < 0) {
+	print STDERR "-E- Fail to find any histogram in file: $fileName\n";
+	return 1;
+    }
+
+    # we may need to skip this file based on WHERE
+    if (@WHERE) {
+	my $match = 0;
+	foreach my $where (@WHERE) {
+	    my $anyUnmatch = 0;
+	    foreach my $vNv (split(/,/,$where)) {
+		if ($vNv =~ m/(.*)=(.*)/) {
+		    my ($var,$val) = ($1,$2);
+		    if (!defined($ATTRS{$var}) || ($ATTRS{$var} != $val)) {
+			print STDERR "-V- Unmatched where:$where on var $var required ".
+			    "$val but got $ATTRS{$var}\n" if $opt_verbose;
+			$anyUnmatch = 1;
+			last;
+		    }
+		} else {
+		    print STDERR "-E- Cannot parse WHERE expression: $where\n";
+		    exit(1);
+		}
+	    }
+
+	    if (!$anyUnmatch) {
+		print STDERR "-V- matched where:$where\n" if $opt_verbose;
+		$match = 1;
+		last;
+	    }
+	}
+	if (!$match) {
+	    return 0;
+	}
+    }
+
+    my $contour = "";
+    if (defined($opt_p)) {
+	$contour = "$opt_p ";
+    }
+
+    # calc the countour name to add this point to
+    if ($contourVars ne "NONE") {
+	foreach my $v (split(/,/,$contourVars)) {
+	    if (!defined($ATTRS{$v})) {
+		print STDERR "-E- Undefined line variable:$v value in file:$fileName\n";
+		return 1;
+	    }
+	    if (defined($ALT_NAMES{$v})) {
+		$contour .= "$ALT_NAMES{$v}=$ATTRS{$v} ";
+	    } else {
+		if ($v eq "configname") {
+		    $contour .= "$ATTRS{$v} ";
+		} else {
+		    $contour .= "$v=$ATTRS{$v} ";
+		}
+	    }
+	}
+    } else {
+	$contour = "";
+    }
+
+    # collect all hists
+    if (defined($CONTOUR_HISTS{$contour})) {
+	push @{ $CONTOUR_HISTS{$contour}}, @HISTS;
+    } else {
+	@{ $CONTOUR_HISTS{$contour} } =  @HISTS;
+    }
+    print STDERR "-V- File: $fileName added ".scalar(@HISTS)." histograms to contour $contour\n" if $opt_verbose
+;    
+    # Can not simply merge single file hists into a contour since other files may contribute
+    # to the same contour, change its min and max and thus the bins
+}
+
+# given the contour name create the graph for that contour by 
+# first calculating the bins and then merging each of its histograms
+sub mergeContourHistograms {
+    my ($contour) = @_;
+    
+    if (!defined($CONTOUR_HISTS{$contour}) || !scalar(@{$CONTOUR_HISTS{$contour}})) {
+	print STDERR "-E- Empty contour: $contour???\n";
+	return;
+    }
+
+    my $minV;
+    if (defined($opt_f)) {
+	$minV = $opt_f;
+    } else {
+	for my $histId (@{$CONTOUR_HISTS{$contour}}) {
+	    my $f = $HIST_FIRST[$histId];
+	    $minV = $f if !defined($minV) || ($f < $minV);
+	}
+    }
+
+    my $maxV;
+    if (defined($opt_t)) {
+	$maxV = $opt_t;
+    } else {
+	for my $histId (@{$CONTOUR_HISTS{$contour}}) {
+	    my $f = $HIST_LAST[$histId];
+	    $maxV = $f if !defined($maxV) || ($f > $maxV);
+	}
+    }
+    
+    my $cDelta = ($maxV - $minV)/$opt_b;
+    print STDERR "-I- Populating contour: \"$contour\" min: $minV max: $maxV bins: $opt_b from:".scalar(@{$CONTOUR_HISTS{$contour}})." histograms\n";
+    
+    # populate by scanning every histogram
+    for my $histId (@{$CONTOUR_HISTS{$contour}}) {
+	my $hBin = 0;
+	my $hBinMin = $HIST_FIRST[$histId];
+	my $hDelta = $HIST_DELTA[$histId];
+	my $hBinMax = $hBinMin + $hDelta;
+
+	my $cBin = ($hBinMin - $minV)/$cDelta;
+	$cBin = 0 if ($cBin < 0);
+	my $cBinMin = $minV+$cBin*$cDelta;
+	my $cBinMax = $minV + ($cBin+1)*$cDelta;
+	my $cBinMid = $cBinMin+$cDelta/2.0;
+
+	for my $val (@{ $HIST_VALS[$histId]}) {
+	    # we need to repeat as the hBin may extends after the cBin
+	    my $done;
+	    do {
+		print STDERR "-V- at histId: $histId cBin:[$cBinMin,$cBinMax) hBin:[$hBinMin, $hBinMax)\n" if $opt_verbose;
+		# need to decide how much of this val to spread into bin or bin+1
+		my $oMin = $hBinMin;
+		$oMin = $cBinMin if $cBinMin > $hBinMin;
+		my $oMax = $hBinMax;
+		$oMax = $cBinMax if $cBinMax < $hBinMax;
+		
+		if ($oMin < $oMax && $cBin < $opt_b) {
+		    my $relV = $val * ($oMax - $oMin)/$hDelta;
+		    ${ $GRAPH_X{$contour} }[$cBin] = $cBinMid;
+		    ${ $GRAPH_Y{$contour} }[$cBin] += $relV;
+		}
+
+		# if the hist bin extends to next cbin advance it
+		if ($hBinMax >= $cBinMax) {
+		    $cBin++;
+		    $cBinMin = $cBinMax;
+		    $cBinMax += $cDelta;
+		    $cBinMid = $cBinMin+$cDelta/2.0;
+		    if ($cBinMin >= $maxV) {
+			$done = 1;
+		    } else {
+			$done = 0;
+		    }
+		} else {
+		    $done = 1;
+		}
+	    } while (!$done);
+	    last if ($cBinMin >= $maxV);
+
+	    # advance the hist bin
+	    $hBinMin = $hBinMax;
+	    $hBinMax += $hDelta;
+	}
+    }
+}
+
+###############################################################
+#
+# Main flow
+#
+getExprScaFiles($opt_d, $opt_e);
+
+foreach my $scaFile (@SCA_FILES) {
+    parseScaFile($scaFile, $opt_r, $opt_c);
+}
+
+foreach my $contour (sort(keys(%CONTOUR_HISTS))) {
+    mergeContourHistograms($contour);
+}
+
+# format the CSV - need to sort by X
+foreach my $contour (sort(keys(%CONTOUR_HISTS))) {
+    my %Y_BY_X;
+    
+#  print "$t $opt_y of AVG $opt_x\n";
+    my $name = $contour;
+    $name =~ s/[\\"]//g;
+    print "CONTOUR:, $name\n";
+    print "X: $opt_xl";
+    for (my $i = 0; $i < scalar(@{$GRAPH_X{$contour} }); $i++) {
+	${ $GRAPH_X{$contour} }[$i] = 0 if !defined(${ $GRAPH_X{$contour} }[$i]);
+	print ",${ $GRAPH_X{$contour} }[$i]";
+    }
+    print "\nY: $opt_yl";
+    for (my $i = 0; $i < scalar(@{$GRAPH_X{$contour} }); $i++) {
+	${ $GRAPH_Y{$contour} }[$i] = 0 if !defined(${ $GRAPH_Y{$contour} }[$i]);
+	print ",${ $GRAPH_Y{$contour} }[$i]";
+    }
+    print "\n\n";
+}
+

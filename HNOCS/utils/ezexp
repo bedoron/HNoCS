@@ -1,0 +1,745 @@
+eval '(exit $?0)' && 
+  eval 'exec perl -S $0 ${1+"$@"}' && 
+  eval 'exec perl -S $0 $argv:q'
+  if 0;
+
+#############################################################################
+#
+# Eitan Zahavi
+#
+# Thu May 23 12:00:00 2010
+#
+#  Batch Experiment Generation - Reading Experiment definition writing out
+#  experiment make files
+#
+#############################################################################
+
+=head1 TITLE
+
+ezexp - generate a makefile for runing simulations and getting plots
+
+=head1 SYNOPSIS
+
+ezexp experiment-file ...
+
+=head1 DESCRIPTION
+
+Read in experiment definition file and generate a makefile that run the 
+simulations, collects the data and generate the plots and summary report.
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<experiment-file ...>
+
+The experiment definition file holding its definitions. See later section
+with documentation
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--keep-data|-k>
+
+Keep the data files for ezplot
+
+=item B<--bindir|-b>
+
+The directory to serach binaries in (may be required if multiple exist or
+using an arbitrary directory structure not following IDE conventions)
+
+=item B<--tmp|-t tmp-dir>
+
+The directory to hold temporary files
+
+=item B<--verbose|-v>
+
+Run in verbose mode
+
+=item B<--help|-h>
+
+Print a brief help message and exits.
+
+=item B<--man|-m>
+
+Print a detailed help message (man) and exits.
+
+=back
+
+=head1 EXPERIMENT DEFINITION FILE
+
+The following syntactic elements are available in the data file:
+
+# comment
+
+EXPERIMENT: <name>
+
+GRAPH: <name>
+
+SIMS: <model> <dir> <ini> <cfg> <runs>
+
+TITLE: <main title>
+
+SUBTITLE: <sub title>
+
+XLABEL: <label>
+
+YLABEL: <label>
+
+XSCALE: <min>:<max> [log]
+
+YSCALE: <min>:<max> [log]
+
+KEY_CMD: <any valid gnuplot key command>
+
+XYCONTOUR: <a list of options for genExprXYPlot. See  XYCONTOUR section below>
+
+ENDGRAPH
+
+TABLE: <table name>
+
+SCALAR: "<name>" <cmd>
+
+ENDTABLE
+
+ENDEXPERIMENT
+
+----------------------------------------------------------------
+
+Example voq_islip_vs_baseline.exp:
+
+=over 8
+
+EXPERIMENT: Comparing VOQ-ISLIP Scheduler vs Baseline Scheduler NoC
+
+SIMS: hnocs baseline omnetpp.ini  2-flows all
+
+SIMS: hnocs voq_islip omnetpp.ini 2-flows 0-9
+
+SIMS: hnocs baseline omnetpp.ini  3-flows 0,2-9
+
+GRAPH: 2 flows Latency vs Throughput
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL CORE:2"  CFG: 2-flows DIR: baseline X: "core.2.*Total-BW"  Y: "core.2.*latency" ORDER: D
+XYCONTOUR: "BL CORE:15" CFG: 2-flows DIR: baseline X: "core.15.*Total-BW" Y: "core.15.*latency" ORDER: D
+
+ENDGRAPH
+
+GRAPH: 2 flows Latency vs Offered Load
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL CORE:2"  CFG: 2-flows DIR: baseline X:D XE:"32.0/$x" Y: "core.2.*latency" ORDER: D
+XYCONTOUR: "BL CORE:15" CFG: 2-flows DIR: baseline X:D XE:"32.0/$x" Y: "core.15.*latency" ORDER: D
+
+ENDGRAPH
+
+GRAPH: 2 flows Throughut vs Offered Load
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BL CORE:2"  CFG: 2-flows DIR: baseline X:D XE:"32.0/$x" Y: "core.2.*Total-BW"  ORDER: X
+XYCONTOUR: "BL CORE:15" CFG: 2-flows DIR: baseline X:D XE:"32.0/$x" Y: "core.15.*Total-BW" ORDER: X
+
+ENDGRAPH
+
+=back
+
+=head1 XYCONTOUR OPTIONS
+
+The options available for XYCONTOUR are translated to command line
+options of the genExprXYPlot according to the following map. The full
+documentation can be obtaines by running: 'genExprXYPlot -m'
+
+=over 8
+
+XYCONTOUR  |  genExprXYPlot
+
+===========================
+
+1st param  | -e expr-name
+
+X:         | -x x-val
+
+Y:         | -y y-val
+
+CVARS:     | -c curve-var1,var2 
+
+ORDER:     | -o order-var
+
+DIR:       | -d dir
+
+T:         | -t type
+
+XE:        | --x-expr perl-expr
+
+YE:        | --y-expr perl-expr
+
+WHERE:     | -w var1=val1,var2=val2
+
+=back
+
+=head1 LICENSE
+
+This code is licensed to Eitan Zahavi use only.
+
+=head1 Revision
+Revision 0.1
+
+=head1 AUTHOR
+
+Copyright (C) Eitan Zahavi 2010
+All rights reserved
+
+=cut
+
+#############################################################################
+
+use vars qw($VERSION);
+
+# use RCS info as we reposit in RCS
+($VERSION) = ('Revision 0.1');
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use Pod::Usage;
+
+my $opt_verbose = 0;
+my ($opt_help, $opt_man);
+
+my $TMP = "/tmp";
+my $opt_o;
+my $opt_f;
+my $opt_s;
+my $opt_b;
+my $opt_n;
+my $opt_k;
+my $cmd = "@ARGV";
+
+GetOptions(
+			  'k|keep-data'    => \$opt_k,
+			  't|tmp=s'        => \$TMP,
+			  'n|ned=s'        => \$opt_n,
+			  'b|bindir=s'     => \$opt_b,
+			  'o|outfile=s'    => \$opt_o,
+			  'v|verbose'      => \$opt_verbose,
+			  'h|help'         => \$opt_help,
+			  'm|man'          => \$opt_man,
+	    ) or pod2usage(-verbose => 1) && exit;
+
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+pod2usage("$0: No data file given.") && exit if (! scalar(@ARGV));
+
+###############################################################
+#
+# DATA MODEL
+#
+
+# we use object Ids which are indexes in global arrays - init their counts
+my $plots = 0;
+my $sims = 0;
+my $contours = 0;
+
+# Plot names and index
+my %PLOT_ID_BY_NAME;
+my %PLOT_NAME_BY_ID;
+
+# Sim definition and IDs names and index SIM
+# SIM def is: "<model> <dir> <ini> <cfg> <runs>"
+my %SIM_DEF_BY_ID;
+my %SIM_ID_BY_DEF;
+
+# SIM IDXs BY PLOT IDX: PLOT_SIMS_BY_ID[$pId] = (sId sId...)
+my @PLOT_SIMS_BY_ID;
+
+# PLOT features by plot ID
+my @PLOT_SUB_TITLE;
+my @PLOT_LEGEND_CMD;
+my @PLOT_X_LBL;
+my @PLOT_Y_LBL;
+# scale is min:max log e.g. 0:10
+my @PLOT_X_SCALE;
+my @PLOT_Y_SCALE;
+my @PLOT_X_IS_LOG;
+my @PLOT_Y_IS_LOG;
+
+# Each plot may have several CONTOURS. We keep all countours in a 
+# global definition by ID.
+
+# $PLOT_COUNTOURS[pId] = (cId cId)
+my @PLOT_COUNTOURS;
+
+# Keep Contour definitions by Id
+# A Contour definition is <XY|BAR> <attr:> <vals> <attr:> <val> 
+# the exact attributes are not specified here
+my @CONTOUR_NAME;
+my @CONTOUR_TYPE;
+my @CONTOUR_ATTS;
+
+# Experiment name and base for files (replace spaces with _)
+my $experimentName;
+my $experimentBase;
+
+# Collect model names used by the various simulations
+my %MODELS;
+my %MODEL_EXE;
+
+################################################################################
+#
+# ROUTINES
+#
+sub parseExperimentFile($) {
+  my ($fileName) = @_;
+  if (!open(INFILE,"<$fileName")) {
+	 print STDERR "-E- Failed to open file $fileName\n";
+	 return 1
+  }
+
+  # global context 
+  my ($plot, $contour);
+
+  # state
+  my $state = "idle";
+  my $lineNum = 0;
+
+  while (<INFILE>) {
+	 my $line = $_;
+
+	 $lineNum++;
+
+	 # skip comemnts or empty lines
+	 next if ($line =~ m/^\s*(#|$)/);
+
+	 if ($state eq "idle") {
+		if ($line =~ m/^EXPERIMENT:\s*(.*)$/) {
+		  if (defined($experimentBase)) {
+			 print STDERR "-E- Multipele EXPERIMENT are not supported (line: $lineNum)\n";
+			 exit(1); 
+		  }
+		  $experimentName = $1;
+		  $experimentBase = $experimentName;
+		  $experimentBase =~ s/ /_/g;
+		  $state = "experiment";
+		} else {
+		  print STDERR "-E- Expected EXPERIMENT in line: $lineNum\n";
+		  exit(1);
+		}
+	 } elsif ($state eq "experiment") {
+		if ($line =~ m/^PLOT:\s*(.*)$/) {
+		  my $plotName = $1;
+		  $plot = $plots++;
+		  $PLOT_ID_BY_NAME{$plotName} = $plot;
+		  $PLOT_NAME_BY_ID{$plot} = $plotName;
+		  $state = "plot";
+		} elsif ($line =~ m/^TABLE:\s*(.*)$/) {
+		  $state = "table";
+		  print STDERR "-E- TABLE is not supported (line: $lineNum)\n";
+		  exit(1);
+		} elsif ($line =~ m/^ENDEXPERIMENT/) {
+		  $state = "idle";
+		}
+	 } elsif ($state eq "plot") {
+		if ($line =~ m/^SUBTITLE:\s*(.*)$/) {
+		  $PLOT_SUB_TITLE[$plot] = $1;
+		} elsif ($line =~ m/^LEGEND_CMD:\s*(.*)$/) {
+		  $PLOT_LEGEND_CMD[$plot] = $1;
+		} elsif ($line =~ m/^(X|Y)LABEL:\s*(.*)$/) {
+		  my ($axe, $lbl) = ($1,$2);
+		  if ($axe eq "X") {
+			 $PLOT_X_LBL[$plot] = $lbl;
+		  } else {
+			 $PLOT_Y_LBL[$plot] = $lbl;
+		  }
+		} elsif ($line =~ m/^(X|Y)SCALE:\s*(\S+:\S+)(\s+(log))?$/) {
+		  my ($axe, $scale, $lg) = ($1,$2,$4);
+		  if ($axe eq "X") {
+			 $PLOT_X_SCALE[$plot] = $scale;
+			 $PLOT_X_IS_LOG[$plot] = ($lg ne "");
+		  } else {
+			 $PLOT_Y_SCALE[$plot] = $scale;
+			 $PLOT_Y_IS_LOG[$plot] = ($lg ne "");
+		  }
+		} elsif ($line =~ m/^SIMS:\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$/) {
+		  # <model> <dir> <ini> <cfg> <runs>
+		  my ($model, $dir, $ini, $cfg, $runs) = ($1, $2, $3, $4, $5);
+		  my $simDef = "$model $dir $ini $cfg $runs";
+		  $MODELS{$model} = $dir;
+		  my $sim = $SIM_ID_BY_DEF{$simDef};
+		  if (!defined($sim)) {
+			 $sim = $sims++;
+			 $SIM_DEF_BY_ID{$sim} = $simDef;
+			 $SIM_ID_BY_DEF{$simDef} = $sim;
+		  }
+		  push @{ $PLOT_SIMS_BY_ID[$plot] }, $sim;
+		} elsif ($line =~ m/^XYCONTOUR:\s*"([^"]+)"\s+(.*)$/) {
+		  my ($name,$atts) = ($1,$2);
+		  $contour = $contours++;
+		  push @{ $PLOT_COUNTOURS[$plot] }, $contour;
+		  $CONTOUR_TYPE[$contour] = "XY";
+		  $CONTOUR_NAME[$contour] = $name;
+		  $CONTOUR_ATTS[$contour] = $atts;
+		} elsif ($line =~ m/^ENDPLOT/) {
+		  $state = "experiment";
+		} else {
+		  print STDERR "-E- Unsupported syntax during PLOT in line: $lineNum\n";
+		  exit(1);
+		}
+	 } else {
+		print STDERR "-E- Unknown state $state... in line $lineNum\n";
+		exit(1);
+	 }
+  }
+  close(INFILE);
+  print STDERR "-I- $fileName defined $plots plost with total of $contours lines from $sims simulations\n";
+}
+
+# find the executable for the models used. Fill in MODEL_EXE
+sub findModels() {
+  # try to locate the out dir
+  my $outDir;
+  if (defined($opt_b)) {
+	 $outDir = $opt_b;
+  } else {
+	 if (-d "./out") {
+		$outDir = "./out";
+	 } elsif (-d "../out") {
+		$outDir = "../out";
+	 } elsif (-d "../../out") {
+		$outDir = "../../out";
+	 } else {
+		print STDERR "-E- failed to find the out dir. Please sepcify the -b/--bindir.\n";
+		exit(1);
+	 }
+  }
+
+  foreach my $model (keys(%MODELS)) {
+	 my $res = `find $outDir -type f -name $model -o -name $model.exe`;
+	 # if ambiguous - ask for it
+	 my @OPTS = split(/\n/,$res);
+	 if (scalar(@OPTS) > 1) {
+		print STDERR "-E- failed to find a single $model executable. Please sepcify the -b/--bindir.\n";
+		print STDERR "    Found in @OPTS\n";
+		exit(1);
+	 } elsif (scalar(@OPTS) < 1) {
+		print STDERR "-E- failed to find $model executable. Please sepcify the -b/--bindir.\n";
+		exit(1);
+	 } else {
+		chop $res;
+		$MODEL_EXE{$model} = $OPTS[0];
+		print STDERR "-I- Model: $model executable is: $OPTS[0]\n";
+	 }
+  }
+}
+
+# obtain the set of runs of the given sim def
+sub getRunsOfSim {
+  my ($model, $dir, $ini, $cfg, $runs, $runList) = @_;
+  
+  if ($runs eq "all") {
+	 # get the number of runs by calling omnet
+	 print STDERR "-I- Invoking: $MODEL_EXE{$model} -x $cfg $dir/$ini\n";
+	 my $res = `$MODEL_EXE{$model} -x $cfg $dir/$ini`;
+	 if ($res =~ m/Number of runs: ([0-9]+)/) {
+		my $nRuns = $1;
+		for (my $i = 0; $i < $nRuns; $i++) {
+		  push @{ $runList }, $i;
+		}
+	 } else {
+		print STDERR "-E- Can not obtain number of runs for sim: $model, $dir, $ini, $cfg, $runs\n";
+	 }
+	 if (!scalar(@{ $runList })) {
+		print STDERR "-E- No runs found for $cfg $dir $ini \n";
+		exit(1);
+	 }
+  } elsif ($runs =~ m/([0-9]+)(-([0-9]+))?(,.*)/) {
+	 my $rest = $runs;
+	 my $start;
+	 my $end;
+	 while ($rest =~ m/([0-9]+)(-([0-9]+))?(,.*)/) {
+		($start, $end, $rest) = ($1, $2, $3);
+		if ($end ne "") {
+		  for (my $i = $start; $i <= $end; $i++) {
+			 push  @{ $runList }, $i;
+		  }
+		} else {
+		  push  @{ $runList }, $start;
+		}
+	 }
+  }
+  print STDERR "-I- For $model, $dir, $ini, $cfg, $runs got runs: @{$runList} \n";
+}
+
+# get contour id and generate a string or null
+sub genXYContourCmd {
+  my $c = shift;
+
+  my $attr = $CONTOUR_ATTS[$c];
+  my $anyErr = 0;
+  my $cntStr;
+
+  # name
+  $cntStr = "-p \"$CONTOUR_NAME[$c]\" ";
+
+  # contour vars
+  if ($attr =~ m/CVARS:\s*(\S+)/) {
+	 $cntStr .= "-c $1 ";
+  }
+
+  if ($attr =~ m/CFG:\s*(\S+)/) {
+	 $cntStr .= "-e $1 ";
+  } else {
+	 $anyErr++;
+	 print STDERR "-W- Contour $CONTOUR_NAME[$c]  has no CFG!\n";
+  }
+  
+  if ($attr =~ m/DIR:\s*(\S+)/) {
+	 $cntStr .= "-d $1/results ";
+  } else {
+	 $anyErr++;
+	 print STDERR "-W- Contour $CONTOUR_NAME[$c]  has no DIR!\n";
+  }
+  
+  if ($attr =~ m/X:\s*\"([^"]+)\"/) {
+	 $cntStr .= "-x \"$1\" ";
+  } elsif ($attr =~ m/X:\s*(\S+)/) {
+	 $cntStr .= "-x \"$1\" ";
+  } else {
+	 $anyErr++;
+	 print STDERR "-W- Contour $CONTOUR_NAME[$c]  has no X!\n";
+  }
+  
+  if ($attr =~ m/Y:\s*\"([^"]+)\"/) {
+	 $cntStr .= "-y \"$1\" ";
+  } elsif ($attr =~ m/Y:\s*(\S+)/) {
+	 $cntStr .= "-x \"$1\" ";
+  } else {
+	 $anyErr++;
+	 print STDERR "-W- Contour $CONTOUR_NAME[$c]  has no Y!\n";
+  }
+
+  # optional settings
+
+  my $doubleDolar = q($$);
+  if ($attr =~ m/XE:\s*\"([^"]+)\"/) {
+	 my $expr = $1;
+	 $expr =~ s/\$/$doubleDolar/g;
+	 $cntStr .= "--x-expr '$expr' ";
+  } elsif ($attr =~ m/XE:\s*'([^']+)'/) {
+	 my $expr = $1;
+	 $expr =~ s/\$/$doubleDolar/g;
+	 $cntStr .= "--x-expr '$expr' ";
+  } 
+
+  if ($attr =~ m/YE:\s*\"([^"]+)\"/) {
+	 my $expr = $1;
+	 $expr =~ s/\$/$doubleDolar/g;
+	 $cntStr .= "--y-expr '$expr' ";
+  } elsif ($attr =~ m/YE:\s*'([^']+)'/) {
+	 my $expr = $1;
+	 $expr =~ s/\$/$doubleDolar/g;
+	 $cntStr .= "--y-expr '$expr' ";
+  }
+
+  if ($attr =~ m/ORDER:\s*(\S+)/) {
+	 $cntStr .= "-o \"$1\" ";
+  }
+
+  if ($attr =~ m/T:(MIN|MAX)/) {
+	 my $t = lc($1);
+	 $cntStr .= " -t $t ";
+  }
+
+  foreach my $where ($attr =~ m/W:\s*(\S+)/g) {
+	 $cntStr .= "-w \"$where\" ";
+  }
+
+  if ($anyErr) {
+	 return "";
+  } else {
+	 return $cntStr;
+  }
+}
+
+# Generate the plot commands in makefile format 
+sub genPlotCmds {
+  my ($plot, $tmp) = @_;
+  
+  my $res;
+  $res = "\t\@ echo GRAPH: $PLOT_NAME_BY_ID{$plot} > $tmp\n";
+
+  if (defined($PLOT_SUB_TITLE[$plot])) {
+	 $res .= "\t@ echo SUB_TITLE: $PLOT_SUB_TITLE[$plot] >> $tmp\n";
+  }
+
+  if (defined($PLOT_LEGEND_CMD[$plot])) {
+	 $res .= "\t@ echo KEY_CMD: $PLOT_LEGEND_CMD[$plot] >> $tmp\n";	
+  }
+
+  if (defined($PLOT_X_LBL[$plot])) {
+	 $res .= "\t@ echo XLABEL: $PLOT_X_LBL[$plot] >> $tmp\n";
+  }
+
+  if (defined($PLOT_Y_LBL[$plot])) {
+	 $res .= "\t@ echo YLABEL: $PLOT_Y_LBL[$plot] >> $tmp\n";
+  }
+
+  if (defined($PLOT_X_SCALE[$plot])) {
+	 $res .= "\t@ echo XSCALE: $PLOT_X_SCALE[$plot] >> $tmp\n";
+  }
+
+  if (defined($PLOT_X_SCALE[$plot])) {
+	 $res .= "\t@ echo YSCALE: $PLOT_X_SCALE[$plot] >> $tmp\n";
+  }
+
+  # TODO:
+  # my @PLOT_X_IS_LOG;
+  # my @PLOT_Y_IS_LOG;
+  my $nc = 0;
+  foreach my $c (@{ $PLOT_COUNTOURS[$plot] }) {
+	 $nc++;
+	 if ($CONTOUR_TYPE[$c] eq "XY") {
+		my $cmd = genXYContourCmd($c);
+		if ($cmd ne "") {
+		  $res .= "\t@ genExprXYPlot $cmd >> $tmp\n";
+		} else {
+		  return "";
+		}
+	 } else {
+		print STDERR "-W- Contour $CONTOUR_TYPE[$c]  is not supported\n";
+		return "";
+	 }
+  }
+  $res .= "\t@ echo ENDGRAPH >> $tmp\n";
+  print STDERR "-I- Genareted code for PLOT \"$PLOT_NAME_BY_ID{$plot}\" with $nc contours\n";
+  return $res;
+}
+
+# Write out the Makefile for the experiment
+sub writeMakefile {
+  if (!open(MF, ">$experimentBase.mk")) {
+	 print STDERR "-E- Failed to open makefile: $experimentBase.mk\n";
+	 exit(1);
+  }
+  print STDERR "-I- Writing out makefile: $experimentBase.mk\n";
+
+  print MF "#############################################################\n";
+  print MF "#\n# EXPERIMENT MAKEFILE\n#\n";
+  print MF "# Command: $0 $cmd\n";
+  print MF "#############################################################\n";
+
+  # the makefile is built from a header defining some common variables
+  # a simulations section - defining the dependency of each sca file 
+  # on its configuration and lastly the plot generation code
+  if (defined($opt_n)) {
+	 print MF "NED=$opt_n\n";
+  } else {
+	 if (!defined($ENV{'NEDPATH'})) {
+		print MF "NED=\n";
+		print STDERR "-W- Need to add NED path to the Makefile\n";
+	 } else {
+		print MF "NED=\$(NEDPATH) \n";		
+	 }
+  }
+  print MF "\n\n";
+
+  print MF "all:";
+  for (my $plot = 0; $plot < scalar(keys(%PLOT_NAME_BY_ID)); $plot++) {
+	 my $plotName = $PLOT_NAME_BY_ID{$plot};
+	 $plotName =~ s/ +/_/g;
+	 print MF " \\\n\t$plotName.gif ";
+  }
+
+  print MF "\n\n";
+  
+  # all models
+  foreach my $model (keys(%MODELS)) {
+	 print MF "$model = $MODEL_EXE{$model}\n";
+  }
+  
+  print MF "\n";
+
+  print MF "#############################################################\n";
+  print MF "#\n# SIMULATIONS\n#\n";
+  print MF "#############################################################\n";
+
+  # write simulation dependecies
+  for (my $sim = 0; $sim < scalar(keys(%SIM_DEF_BY_ID)); $sim++) {
+	 my $simDef = $SIM_DEF_BY_ID{$sim};
+	 my ($model, $dir, $ini, $cfg, $runs) = (split / +/, $simDef);
+
+	 # resolve the set of runs
+	 my @RUNS;
+	 getRunsOfSim($model, $dir, $ini, $cfg, $runs, \@RUNS);
+	 if (scalar(@RUNS)) {
+		# we want to have a variable for dependency of the plots
+		print MF "SIM_${sim}_SCAS=";
+		foreach my $r (@RUNS) {
+		  print MF " \\\n\t$dir/results/$cfg-$r.sca";
+		}
+		print MF "\n\n";
+		
+		# a rule for each sca for simplicity...
+		foreach my $r (@RUNS) {
+		  print MF "$dir/results/$cfg-$r.sca: \$($model) $dir/$ini\n";
+		  print MF "\t@ echo SIM: $model $dir $ini $cfg $r\n";
+		  print MF "\t@ \$($model) -n \$(NED) -u Cmdenv -c $cfg -r $r $dir/$ini > $dir/results/$cfg-$r.log\n\n";
+		}
+		print MF "\n\n";
+	 } else {
+		print STDERR "-E- No runs found for $simDef\n";
+	 }
+  } # SIMS
+
+  print MF "#############################################################\n";
+  print MF "#\n# PLOTS\n#\n";
+  print MF "#############################################################\n";
+
+  # do all the plots
+  for (my $plot = 0; $plot < scalar(keys(%PLOT_NAME_BY_ID)); $plot++) {
+	 my $plotName = $PLOT_NAME_BY_ID{$plot};
+	 $plotName =~ s/ +/_/g;
+	 print MF "$plotName.gif:";
+	 foreach my $sim (@{ $PLOT_SIMS_BY_ID[$plot]}) {
+		print MF "\$(SIM_${sim}_SCAS) ";
+	 }
+
+	 print MF "\n\t@ echo PLOT: Generating $PLOT_NAME_BY_ID{$plot}\n";
+	 my $tmp;
+	 if (defined($opt_k)) {
+		$tmp = "$plotName.def.txt";
+	 } else {
+		$tmp = "$TMP/ezplot.$$.$plot";
+	 }
+	 my $cmds = genPlotCmds($plot, $tmp);
+	 if ($cmds ne "") {
+		print MF "$cmds";
+		print MF "\t@ ezplot -f gif -o $plotName $tmp\n";
+		print MF "\t@ mv -f $plotName.1.gif $plotName.gif\n";
+		print MF "\t@ rm -f $tmp\n\n" if (!defined($opt_k));
+	 }
+	 print MF "\n";
+  }
+  close(MF);
+}
+
+###############################################################
+#
+# Main flow
+#
+foreach my $fileName (@ARGV) {
+  parseExperimentFile($fileName);
+}
+
+# obtain the executable name for the models used
+findModels();
+
+writeMakefile();

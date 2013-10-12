@@ -1,0 +1,496 @@
+eval '(exit $?0)' && 
+  eval 'exec perl -S $0 ${1+"$@"}' && 
+  eval 'exec perl -S $0 $argv:q'
+  if 0;
+
+#############################################################################
+#
+# Eitan Zahavi
+# Thu Apr 15 11:19:00 2010
+#
+#  - Collect Data from Scalars files of various runs and build a graph
+#
+#############################################################################
+
+=head1 TITLE
+
+genExprXYPlot - Generate XY Plot Data File from a set of runs of a single experiment
+
+=head1 SYNOPSIS
+
+genExprXYPlot -e expr-name -x x-val -y y-val -c curve-var1,var2 [-p prefix]
+  [-o order-var][-l x-lbl][-k y-lbl][-n var1=alt-name1]... [-d dir][-t type]
+  [--x-expr perl-expr][--y-expr perl-expr][-w var1=val1,var2=val2]...
+
+=head1 DESCRIPTION
+
+Process a set of SCA files from OMNet and produce a CSV file with resulting 
+curves of AVG,MIN,MAX values of the provided scalar or statistics variables.
+
+If an ordering variable is defined the generated "line" is ordered 
+according to its values by sorting the graph points according to it's value.
+If it is not defined it is the same value as the X axis.
+
+If a set of variable names (matching the set of curve variables)  are provided
+the graph curve names use the provided names instead of the variable.
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<--expr|-e experiment-name>
+
+The experiment name to work with - defines the selected files
+
+=item B<--x-val|-x x-val>
+
+The regular expression to be used for selcting the scalar of the X value
+
+=item B<--y-val|-y y-val>
+
+The regular expression to be used for selcting the scalar of the Y value
+
+=item B<--curve-vars|-c var1,var2...>
+
+The list of regular expressions to be used for selcting the variables that
+their combination declares a single curve (line) on the graph.
+The format NONE is reserved and means there is no curve variable.
+Note the -n can be used to name the contour.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--dir|-d results-dir>
+
+The directory holding the SCA files to be scanned. Default is "." .
+
+=item B<--order-var|-o var>
+
+If provided the values of the variable will be used as the sorting method of
+(x,y) points on the provided graph.
+
+=item B<--x-lbl|-l x-label>
+
+The label to be used as the X label (default is the x-var).
+
+=item B<--y-lbl|-k y-label>
+
+The label to be used as the Y label (default is the y-var).
+
+=item B<--prefix|-p contour-name-prefix>
+
+A name prefix for the given contour
+
+=item B<--names|-n curve-var=alt_name>
+
+If provided the alternate name is used in the curve name instead of the variable name.
+
+=item B<--type|-t min|max|avg>
+
+When multiple runs match the same contour point the type defines how they are merged: weather plot the average (default) or min or max of all these runs data.
+
+=item B<--x-expr perl-expr>
+
+A perl expression using $x that will be evaluated to obtain the point x value (default $x)
+
+=item B<--y-expr perl-expr>
+
+A perl expression using $y that will be evaluated to obtain the point y value (default $y)
+
+=item B<--where|-w var1=val1,var2=val2>
+
+A limitation applied to selected sca files. The variables must match the given values.
+When multiple -w/--where are given they are ORed
+
+=item B<--verbose|-v>
+
+Run in verbose mode
+
+=item B<--help|-h>
+
+Print a brief help message and exits.
+
+=item B<--man|-m>
+
+Print a detailed help message (man) and exits.
+
+=back
+
+=head1 LICENSE
+
+This code is licensed to Eitan Zahavi use only.
+
+=head1 Revision
+
+$Revision$
+
+=head1 AUTHOR
+
+Copyright (C) Eitan Zahavi 2010
+All rights reserved
+
+=cut
+
+#############################################################################
+
+use vars qw($VERSION);
+
+# use RCS info as we reposit in RCS
+($VERSION) = ('$Revision$' =~ m/(.*)/);
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use Pod::Usage;
+
+my $opt_verbose = 0;
+my ($opt_help, $opt_man);
+my $opt_d = ".";
+my $opt_x;
+my $opt_y;
+my $opt_c;
+my $opt_p;
+my $opt_e;
+my $opt_o;
+my $opt_n;
+my $opt_xl = "";
+my $opt_yl = "";
+my $opt_t = "avg";
+my %ALT_NAMES;
+my $opt_s;
+my $opt_q;
+my @WHERE;
+
+GetOptions(
+			  'w|where=s'      => sub { my ($n,$v) = @_; push @WHERE, $v} ,
+			  'p|prefix=s'     => \$opt_p,
+			  'e|expr=s'       => \$opt_e,
+			  'x|x-var=s'      => \$opt_x,
+			  'y|y-var=s'      => \$opt_y,
+			  'l|x-lbl=s'      => \$opt_xl,
+			  'k|y-lbl=s'      => \$opt_yl,
+			  'c|curve-vars=s' => \$opt_c,
+			  'd|dir=s'        => \$opt_d,
+			  'o|ord=s'        => \$opt_o,
+			  'n|names=s'      => \%ALT_NAMES,
+			  's|x-expr=s'     => \$opt_s,
+			  'q|y-expr=s'     => \$opt_q,
+			  't|type=s'       => \$opt_t,
+			  'v|verbose'      => \$opt_verbose,
+			  'h|help'         => \$opt_help,
+			  'm|man'          => \$opt_man,
+	    ) or pod2usage(-verbose => 1) && exit;
+
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+# Replace the below with a check for mandatory arguments
+pod2usage("$0: Missing mandatory arguments.") && exit
+  if (! (defined($opt_x) && defined($opt_y) && defined($opt_c) && defined($opt_e)));
+
+###############################################################
+#
+# DATA MODEL
+#
+my @SCA_FILES;
+
+my %GRAPH_X;
+my %GRAPH_Y;
+my %GRAPH_X_MIN;
+my %GRAPH_Y_MIN;
+my %GRAPH_X_MAX;
+my %GRAPH_Y_MAX;
+my %GRAPH_N_FILES;
+
+###############################################################
+#
+# ROUTINES
+#
+sub getExprScaFiles($$) {
+  my ($dir, $expr) = @_;
+  opendir(DIR, $dir) or die $!;
+
+  while (my $file = readdir(DIR)) {
+	 # We only want files
+	 next unless (-f "$dir/$file");
+	
+	 # Use a regular expression to find files ending in .txt
+	 next unless ($file =~ m/${expr}-[0-9]+\.sca$/);
+	 push @SCA_FILES, "$dir/$file";
+  }
+  closedir(DIR); 
+}
+
+sub parseScaFile($$$$) {
+  my ($fileName, $xVar, $yVar, $contourVars) = @_;
+  if (!open(S,"<$fileName")) {
+	 print STDERR "-E- Failed to open file $fileName\n";
+	 return 1
+  }
+  
+  my %ATTRS;
+  my $xSum = 0;
+  my $ySum = 0;
+  my $xNum = 0;
+  my $yNum = 0;
+  my ($xMin, $xMax, $yMin, $yMax);
+  my $isXStat = 0;
+  my $isYStat = 0;
+
+  while (<S>) {
+	 my $line = $_;
+	 if ($line =~ m/attr\s+(\S+)\s+(\S+)/) {
+		my ($var,$val) = ($1,$2);
+		# collect attributes to build the contour
+		$ATTRS{$var} = $val;
+		if ($var =~ m/^$xVar$/) {
+		  $xSum += $val;
+		  $xNum++;
+		  $xMin = $val if ($val != 0) && (!defined($xMin) || ($xMin > $val));
+		  $xMax = $val if !defined($xMax) || ($xMax < $val);
+		} elsif ($var =~ m/^$yVar$/) {
+		  $yNum++;
+		  $ySum += $val;
+		  $yMin = $val if ($val != 0) && (!defined($yMin) || ($yMin > $val));
+		  $yMax = $val if !defined($yMax) || ($yMax < $val);
+		}
+	 } elsif ($line =~ m/^scalar\s+(\S+)\s+(\S+)\s+(\S+)/) {
+		# Scalar line
+		my ($mod, $name, $val) = ($1,$2,$3);
+		if ("$mod:$name" =~ m/${xVar}/) {
+		  $xNum++;
+		  $xSum += $val;
+		  $xMin = $val if ($val != 0) && (!defined($xMin) || ($xMin > $val));
+		  $xMax = $val if !defined($xMax) || ($xMax < $val);
+		} elsif ("$mod:$name" =~ m/${yVar}/) {
+		  $yNum++;
+		  $ySum += $val;
+		  $yMin = $val if ($val != 0) && (!defined($yMin) || ($yMin > $val));
+		  $yMax = $val if !defined($yMax) || ($yMax < $val);
+		}
+	 } elsif ($line =~ m/^statistic\s+(\S+)\s+(\S+)/) {
+		my ($mod, $name) = ($1,$2);
+		if ("$mod:$name" =~ m/${xVar}/) {
+		  $isXStat = 1;
+		  $isYStat = 0;
+		} elsif ("$mod:$name" =~ m/${yVar}/) {
+		  $isYStat = 1;
+		  $isXStat = 0;
+		} else {
+		  $isYStat = 0;
+		  $isXStat = 0;
+		}
+	 } elsif ($isXStat) {
+		if ($line =~ m/^field\s+count\s+(\S+)/) {
+		  my ($cnt) = ($1);
+		  $xNum += $cnt;
+		} elsif ($line =~ m/^field\s+sum\s+(\S+)/) {
+		  my ($s) = ($1);
+		  $xSum += $s;
+		} elsif ($line =~ m/^field\s+mean\s+(\S+)/) {
+		  my ($v) = ($1);
+		  $xMin = $v if ($v != 0) && (!defined($xMin) || ($xMin > $v));
+		  $xMax = $v if !defined($xMax) || ($xMax < $v);
+		}
+	 } elsif ($isYStat) {
+		if ($line =~ m/^field\s+count\s+(\S+)/) {
+		  my ($cnt) = ($1);
+		  $yNum += $cnt;
+		} elsif ($line =~ m/^field\s+sum\s+(\S+)/) {
+		  my ($s) = ($1);
+		  $ySum += $s;
+		} elsif ($line =~ m/^field\s+mean\s+(\S+)/) {
+		  my ($v) = ($1);
+		  $yMin = $v if ($v != 0) && ((!defined($yMin) || ($yMin > $v)));
+		  $yMax = $v if (!defined($yMax) || ($yMax < $v));
+		}
+	 }
+  }
+
+  close(S);
+
+  if ($xNum == 0) {
+	 print STDERR "-E- Fail to find any X: $xVar value in file: $fileName\n";
+	 return 1;
+  }
+  if ($yNum == 0) {
+	 print STDERR "-E- Fail to find any Y: $yVar value in file: $fileName\n";
+	 return 1;
+  }
+
+  # we may need to skip this file based on WHERE
+  if (@WHERE) {
+	 my $match = 0;
+	 foreach my $where (@WHERE) {
+		my $anyUnmatch = 0;
+		foreach my $vNv (split(/,/,$where)) {
+		  if ($vNv =~ m/(.*)=(.*)/) {
+			 my ($var,$val) = ($1,$2);
+			 if (!defined($ATTRS{$var}) || ($ATTRS{$var} != $val)) {
+				print STDERR "-V- Unmatched where:$where on var $var required $val but got $ATTRS{$var}\n" if $opt_verbose;
+				$anyUnmatch = 1;
+				last;
+			 }
+		  } else {
+			 print STDERR "-E- Cannot parse WHERE expression: $where\n";
+			 exit(1);
+		  }
+		}
+
+		if (!$anyUnmatch) {
+		  print STDERR "-V- matched where:$where\n" if $opt_verbose;
+		  $match = 1;
+		  last;
+		}
+	 }
+	 if (!$match) {
+		return 0;
+	 }
+  }
+
+  my $xAvg = $xSum / $xNum;
+  my $yAvg = $ySum / $yNum;
+  my $contour = "";
+  if (defined($opt_p)) {
+	 $contour = "$opt_p ";
+  }
+
+  # calc the countour name to add this point to
+  if ($contourVars ne "NONE") {
+	 foreach my $v (split(/,/,$contourVars)) {
+		if (!defined($ATTRS{$v})) {
+		  print STDERR "-E- Undefined line variable:$v value in file:$fileName\n";
+		  return 1;
+		}
+		if (defined($ALT_NAMES{$v})) {
+		  $contour .= "$ALT_NAMES{$v}=$ATTRS{$v} ";
+		} else {
+		  if ($v eq "configname") {
+			 $contour .= "$ATTRS{$v} ";
+		  } else {
+			 $contour .= "$v=$ATTRS{$v} ";
+		  }
+		}
+	 }
+  } else {
+	 $contour = "";
+  }
+
+  # use the order var of the x to set the ordering of pairs.
+  my $oVal = $xAvg;
+
+  if ($opt_o) {
+	 if (!defined($ATTRS{$opt_o})) {
+		print STDERR "-E- Fail to find ordering variable: $opt_o\n";
+		return 1;
+	 }
+	 $oVal = $ATTRS{$opt_o};
+  }
+
+  # may need to re-calc 
+  if (defined($opt_s)) {
+	 my $cmd = $opt_s;
+	 $cmd =~ s/\$x/$xAvg/g;
+	 $xAvg = eval $cmd;
+	 if (defined($xMin)) {
+		$cmd = $opt_s;
+		$cmd =~ s/\$x/$xMin/g;
+		$xMin = eval $cmd;
+	 }
+	 if (defined($xMax)) {
+		$cmd = $opt_s;
+		$cmd =~ s/\$x/$xMax/g;
+		$xMax = eval $cmd;
+	 }
+  }
+
+  if (defined($opt_q)) {
+	 my $cmd = $opt_q;
+	 $cmd =~ s/\$y/$yAvg/g;
+	 $yAvg = eval $cmd;
+	 if (defined($yMin)) {
+		$cmd = $opt_s;
+		$cmd =~ s/\$y/$yMin/g;
+		$yMin = eval $cmd;
+	 }
+
+	 if (defined($yMax)) {
+		$cmd = $opt_s;
+		$cmd =~ s/\$y/$yMax/g;
+		$yMax = eval $cmd;
+	 }
+  }
+
+  if (!defined(${ $GRAPH_X{$contour} }{$oVal})) {
+     ${ $GRAPH_X{$contour} }{$oVal} = $xAvg;
+     ${ $GRAPH_Y{$contour} }{$oVal} = $yAvg;
+     ${ $GRAPH_Y_MIN{$contour} }{$oVal} = $yMin;
+     ${ $GRAPH_Y_MAX{$contour} }{$oVal} = $yMax;
+     ${ $GRAPH_X_MIN{$contour} }{$oVal} = $xMin;
+     ${ $GRAPH_X_MAX{$contour} }{$oVal} = $xMax;
+     ${ $GRAPH_N_FILES{$contour} }{$oVal} = 1;
+  } else {
+     my $prevNum = ${ $GRAPH_N_FILES{$contour} }{$oVal};
+     ${ $GRAPH_X{$contour} }{$oVal} = 
+	($xAvg + $prevNum*${ $GRAPH_X{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_Y{$contour} }{$oVal} = 
+	($yAvg + $prevNum*${ $GRAPH_Y{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_Y_MIN{$contour} }{$oVal} =
+	($yMin + $prevNum*${ $GRAPH_Y_MIN{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_Y_MAX{$contour} }{$oVal} = 
+	($yMax + $prevNum*${ $GRAPH_Y_MAX{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_X_MIN{$contour} }{$oVal} = 
+	($xMin + $prevNum*${ $GRAPH_X_MIN{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_X_MAX{$contour} }{$oVal} = 
+	($xMax + $prevNum*${ $GRAPH_X_MAX{$contour} }{$oVal})/($prevNum+1);
+     ${ $GRAPH_N_FILES{$contour} }{$oVal} = $prevNum+1;
+  }
+
+  print STDERR "-V- Added point ($xAvg $yAvg) at $oVal to line $contour from $fileName\n" if $opt_verbose;
+}
+
+###############################################################
+#
+# Main flow
+#
+getExprScaFiles($opt_d, $opt_e);
+
+foreach my $scaFile (@SCA_FILES) {
+  parseScaFile($scaFile, $opt_x, $opt_y, $opt_c);
+}
+
+# print STDERR "-I- Total of ".scalar(keys(%GRAPH_X)) . " lines were parsed\n";
+foreach my $contour (sort(keys(%GRAPH_X))) {
+  print STDERR "-I- Built contour: \"$contour\" with ".scalar(keys(%{ $GRAPH_X{$contour} })). " points from: ".scalar(@SCA_FILES)." files\n";
+}
+
+# format the CSV - need to sort by X
+my $t = $opt_t;
+foreach my $contour (sort(keys(%GRAPH_X))) {
+  my %Y_BY_X;
+  
+#  print "$t $opt_y of AVG $opt_x\n";
+  my $name = $contour;
+  $name =~ s/[\\"]//g;
+  print "CONTOUR: $name\n";
+  print "X: $opt_xl";
+  foreach my $o (sort { $a <=> $b } (keys(%{ $GRAPH_X{$contour} }))) {
+	 print ",${ $GRAPH_X{$contour} }{$o}";
+  }
+  print "\nY: $opt_yl";
+  foreach my $o (sort { $a <=> $b } (keys(%{ $GRAPH_X{$contour} }))) {
+	 if ($t eq "avg") {
+		print ",${ $GRAPH_Y{$contour} }{$o}";
+	 } elsif ($t eq "min") {
+		print ",${ $GRAPH_Y_MIN{$contour} }{$o}";
+	 } elsif ($t eq "max") {
+		print ",${ $GRAPH_Y_MAX{$contour} }{$o}";
+	 }
+  }
+  print "\n\n";
+}
+
