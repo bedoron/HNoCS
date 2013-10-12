@@ -1,0 +1,207 @@
+eval '(exit $?0)' && 
+	eval 'exec perl -S $0 ${1+"$@"}' && 
+	eval 'exec perl -S $0 $argv:q'
+	if 0;
+
+#############################################################################
+#
+# Eitan Zahavi,,,
+# Thu Jul 14 17:01:12 2011
+#
+# trace2core - convert application traces to core based files
+#
+#############################################################################
+
+=head1 TITLE
+
+trace2core - convert application traces to core based files
+
+=head1 SYNOPSIS
+
+trace2cores [-p prefix] [-t trace-file]
+
+=head1 DESCRIPTION
+
+Converts a trace file to per core file.
+Only include the L2 transactions and convert cycle to cycle from prev.
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<--trace|-t trace-file>
+
+The the trace file to convert
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--prefix|-p file-name-prefix>
+
+Added to the output file names of the format <prefix>.core.<n>.trace.
+
+=item B<--verbose|-v>
+
+Run in verbose mode
+
+=item B<--help|-h>
+
+Print a brief help message and exits.
+
+=item B<--man|-m>
+
+Print a detailed help message (man) and exits.
+
+=back
+
+=head1 LICENSE
+
+This code is licensed to 
+
+=head1 Revision
+
+$Revision$
+
+=head1 AUTHOR
+
+Copyright (C) 2011 Eitan Zahavi, The Technion EE Department
+All rights reserved
+
+=cut
+
+#############################################################################
+#
+# Commands line parsing
+# 
+
+use vars qw($VERSION);
+
+# use RCS info as we reposit in RCS
+($VERSION) = ('$Revision$' =~ m/(.*)/);
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use Pod::Usage;
+
+my $opt_verbose = 0;
+my ($opt_help, $opt_man);
+my $opt_t;
+my $opt_p;
+GetOptions(	
+			  't|trace=s' =>  \$opt_t,
+			  'p|prefix=s' => \$opt_p,
+			  'v|verbose' => \$opt_verbose,
+			  'h|help'    => \$opt_help,
+			  'm|man'     => \$opt_man,
+) or pod2usage(-verbose => 1) && exit;
+
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+# Replace the below with a check for mandatory arguments
+pod2usage("$0: Missing mandatory -t|--trace arguments.") && exit
+  if (!defined($opt_t));
+
+#############################################################################
+#
+# Data Model : list all global variables
+# 
+
+#############################################################################
+#
+# Subroutines
+# 
+
+sub bighex {
+    my $hex = shift;
+	 if (length($hex) <= 8) {
+		return hex("0x$hex");
+	 }
+	 if ( $hex =~ m/^([0-9a-fA-F]*)([0-9a-fA-F]{8})$/) {
+		my ($high, $low) = ($1,$2);
+		return hex("0x$low") + (hex("0x$high") << 32);
+	 } else {
+		print STDERR "-E- Could not convert $hex\n";
+		exit(1);
+	 }
+}
+
+#############################################################################
+#
+# Main Flow
+# 
+
+# Trace file format
+# <Time> <CoreID>/<ThreadID> <ReadWrite> <CacheInfo> <MemAddr> <OperandSize>
+
+# Read the entire trace can convert to per coreId list of L1 miss events
+# and convert the format to:
+# time-from-prev r-0|w-1 l2-hit-0|1 address size
+
+if (!open(TF, "<$opt_t")) {
+  print STDERR "-E- Could not read trace file: $opt_t\n";
+  exit(1);
+}
+
+use bigint;
+
+my @LAST_T_BY_CORE;
+my @CORE_FILE;
+
+# m = miss L1 and L2; ph = L1 hit; sh = L2 hit
+# 11 11/0 R m 7fffb6aaee98 8
+while (my $line = <TF>) {
+  if ($line =~ m/(\d+)\s+(\d+)\/(\d+)\s+(R|W)\s+(m|ph|sh)\s+([a-f0-9]+)\s+([0-9]+)/) {
+	 my ($t, $core, $th, $op, $hit, $addr, $size) = ($1,$2,$3,$4,$5,$6,$7);
+	 my ($h, $o, $a, $dt, $l2);
+	 if ($hit ne "ph") {
+		# if not L1 hit just accumulate the delay
+		if ($hit eq "sh") {
+		  $h = 1;
+		} else {
+		  $h = 0;
+		}
+		if ($op eq "W") {
+		  $o = 1;
+		} else {
+		  $o = 0;
+		}
+		$a = bighex($addr);
+		# clac the L2
+		# $l2 = ($a / 4096) % 8;
+
+		if (!defined($LAST_T_BY_CORE[$core])) {
+		  $dt = $t;
+		} else {
+		  $dt = $t - $LAST_T_BY_CORE[$core];
+		}
+		$LAST_T_BY_CORE[$core] = $t;
+		if (!defined($CORE_FILE[$core])) {
+		  $CORE_FILE[$core] = "";
+		}
+		$CORE_FILE[$core] .= "$dt $o $h $a $size\n";
+	 }
+  } else {
+	 # print "-E- Unparsed: $line"; # According to Oved this line shoudl be in comment
+  }
+}
+
+if (defined($opt_p)) {
+  $opt_p .= ".";
+} else {
+  $opt_p = "";
+}
+
+for (my $i = 0; $i <= $#CORE_FILE; $i++) {
+  if (!open(FH, ">", "${opt_p}core.$i.trace")) {
+	 print "-E- Fail to open ${opt_p}core.$i.trace\n";
+	 exit(1);
+  }
+  print FH $CORE_FILE[$i];
+  close(FH);
+}

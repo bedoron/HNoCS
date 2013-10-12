@@ -1,0 +1,340 @@
+eval '(exit $?0)' && 
+  eval 'exec perl -S $0 ${1+"$@"}' && 
+  eval 'exec perl -S $0 $argv:q'
+  if 0;
+
+#############################################################################
+#
+# Eitan Zahavi
+#
+# Thu May 23 12:00:00 2010
+#
+#  Batch gnuplot based on XY Plot File 
+#
+#############################################################################
+
+=head1 TITLE
+
+ezplot - Generate XY Plot based on provided data file(s)
+
+=head1 SYNOPSIS
+
+ezplot -o/--outfile <outfile-basename> [-f/--format eps|svg][-s/--single-sheet] datafile1 ...
+
+=head1 DESCRIPTION
+
+Read in the graph definitions provided in the input files and convert them to
+gnuplot script. Then invoke gnuplot and generate the plots (one per each input graph).
+
+Without the output file will produce interactive window.
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<--outfile|-o base-filename>
+
+The output file basename 
+
+=item B<datafile1...>
+
+The data files holding the graph definitions
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--format|-f eps|svg>
+
+The output file format (default is eps)
+
+=item B<--single-sheet|-s>
+
+Produce all graphs on single sheet (default one file per graph)
+
+=item B<--verbose|-v>
+
+Run in verbose mode
+
+=item B<--help|-h>
+
+Print a brief help message and exits.
+
+=item B<--man|-m>
+
+Print a detailed help message (man) and exits.
+
+=back
+
+=head1 PLOT DATA FILE
+
+The following syntactic elements are available in the data file:
+
+# comment
+
+GRAPH: <name>
+
+TITLE: <main title>
+
+SUBTITLE: <sub title>
+
+XLABEL: <label>
+
+YLABEL: <label>
+
+XSCALE: <min>:<max> [log]
+
+YSCALE: <min>:<max> [log]
+
+KEY_CMD: <any valid gnuplot key command>
+
+CONTOUR: <legend name>
+
+X: , x1, x2, ....
+
+Y: , y1, y2, ....
+
+ENDGRAPH
+
+NOTES:
+
+1. If a single contour is provided multiple Y rows each one will get its own line labeled by its "name".
+
+2. TIILE default value if the graph name
+
+3. XLABEL default is the first contour X: name
+
+4. YLABEL default is the first contour Y: name
+
+=head1 LICENSE
+
+This code is licensed to Eitan Zahavi use only.
+
+=head1 Revision
+
+Revision 0.1
+
+=head1 AUTHOR
+
+Copyright (C) Eitan Zahavi 2010
+All rights reserved
+
+=cut
+
+#############################################################################
+
+use vars qw($VERSION);
+
+# use RCS info as we reposit in RCS
+($VERSION) = ('Revision 0.1');
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use Pod::Usage;
+
+my $opt_verbose = 0;
+my ($opt_help, $opt_man);
+
+my $opt_o = "ezplot.$$";
+my $opt_f = "x11";
+my $opt_s;
+
+my %ALT_NAMES;
+
+GetOptions(
+			  's|single-sheet' => \$opt_s,
+			  'o|outfile=s'    => \$opt_o,
+			  'f|format=s'     => \$opt_f,
+			  'v|verbose'      => \$opt_verbose,
+			  'h|help'         => \$opt_help,
+			  'm|man'          => \$opt_man,
+	    ) or pod2usage(-verbose => 1) && exit;
+
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+pod2usage("$0: No data file given.") && exit if (! scalar(@ARGV));
+
+###############################################################
+#
+# DATA MODEL
+#
+
+# count graphs
+my $graphs = 0;
+
+###############################################################
+#
+# ROUTINES
+#
+sub parseDataFile($) {
+  my ($fileName) = @_;
+  if (!open(INFILE,"<$fileName")) {
+	 print STDERR "-E- Failed to open file $fileName\n";
+	 return 1
+  }
+
+  my ($graph, $title, $sub_title, $xScale, $yScale, $xLog, $yLog, 
+		$contour, $xLbl, $yLbl, $key_cmd, $nVals);
+
+  # EACH GRAPH HAVE THIS DATA MODEL:
+  #---------------------------------
+  # collect the X values of each contour X_VALS{contour} = (x1, x2...)
+  my %X_VALS;
+  # collect the Y valie of each contour Y_VALS{contour} = (y1, y2 ...)
+  my %Y_VALS;
+  # collect all contour of the graph IN ORDER of the FILE
+  my @CONTOURS;
+
+  while (<INFILE>) {
+	 my $line = $_;
+	 next if ($line =~ m/^\s*(#|$)/);
+	
+	 if ($line =~ m/^GRAPH:\s*(.*)$/) {
+		($graph) = ($1);
+		$title = $graph;
+		$graphs++;
+		undef $sub_title; undef $xScale; undef $yScale; undef $key_cmd;
+		undef $nVals; undef $xLbl; undef $yLbl; undef $xLog;
+		undef $yLog; undef $contour;
+		undef @CONTOURS; undef %X_VALS; undef %Y_VALS;
+	 } elsif (defined($graph)) {
+		if ($line =~ m/^TITLE:\s*(.*)$/) {
+		  ($title) = ($1);
+		} elsif ($line =~ m/^SUBTITLE:\s*(.*)$/) {
+		  ($sub_title) = ($1);
+		} elsif ($line =~ m/^KEY_CMD:\s*(.*)$/) {
+		  ($key_cmd) = ($1);
+		} elsif ($line =~ m/^(X|Y)LABEL:\s*(.*)$/) {
+		  my ($axe, $lbl) = ($1,$2);
+		  if ($axe eq "X") {
+			 $xLbl = $lbl;
+		  } else {
+			 $yLbl = $lbl;
+		  }
+		} elsif ($line =~ m/^(X|Y)SCALE:\s*(\S+:\S+)(\s+(log))?$/) {
+		  my ($axe, $scale, $lg) = ($1,$2,$4);
+		  if ($axe eq "X") {
+			 $xScale = $scale;
+			 $xLog = ($lg ne "");
+		  } else {
+			 $yScale = $scale;
+			 $yLog = ($lg ne "");
+		  }
+		} elsif ($line =~ m/^CONTOUR:\s*(.*)$/) {
+		  ($contour) = ($1);
+		  push @CONTOURS, $contour;
+		} elsif (defined($contour)) {
+		  if ($line =~ m/^(X|Y):\s*([^,]+)?,(.*)$/) {
+			 my ($axe, $name, $vals) = ($1,$2,$3);
+			 my @VALS = split(', *', $vals);
+			 if ($axe eq "X") {
+				$nVals = scalar(@VALS);
+				@{ $X_VALS{$contour} } = @VALS;
+			 } else {
+				if ($nVals != scalar(@VALS)) {
+				  print STDERR "-E- Missmatching number of values on line $line\n";
+				  exit(1);
+				}
+				@{ $Y_VALS{$contour} } = @VALS;
+			 }
+		  } elsif ($line =~ /^ENDGRAPH$/) {
+			 # do the actual work
+			 genGraph($graphs, $title, $sub_title, $key_cmd,
+						 $xScale, $yScale, $xLog, $yLog,
+						 $xLbl, $yLbl, \%X_VALS, \%Y_VALS, \@CONTOURS);
+			 undef($graph);
+			 undef($contour);
+			 undef(@CONTOURS);
+			 undef(%X_VALS);
+			 undef(%Y_VALS);
+		  } else {
+			 print STDERR "-E- Did not expect $line in contour\n";
+			 exit(1);
+		  }
+		} else {
+		  print STDERR "-E- Did not expect $line here\n";
+		  exit(1);
+		}
+	 }
+  }
+  close(INFILE);
+
+  print STDERR "-V- parsed $fileName\n" if $opt_verbose;
+}
+
+# create one graph
+sub genGraph () {
+  my ($num, $title, $sub_title, $key_cmd, $xScale, $yScale, $xLog, $yLog,
+		$xLbl, $yLbl, $x_vals, $y_vals, $contours) = @_;
+
+  my $fn = "ezplot.$$.graph.$num.gp";
+  if (!open(PLOT_FILE, ">$fn")) {
+	 print STDERR "-E- Failed to open gnuplot graph file: $fn";
+	 exit(1);
+  }
+
+  if (defined($opt_f)) {
+	 if ($opt_f eq "eps") {
+		print PLOT_FILE  "set terminal postscript eps\n";
+	 } elsif ($opt_f eq "svg") {
+		print PLOT_FILE  "set terminal svg\n";
+	 } elsif ($opt_f eq "gif") {
+		print PLOT_FILE  "set terminal gif size 1000,800\n";
+	 } elsif ($opt_f eq "x11") {
+		#print PLOT_FILE  "set terminal x11\n";
+	 } else {
+		print STDERR "-E- Unrecognized output format: $opt_f (for out file:$opt_o)\n";
+		exit(1);
+	 }
+	 print PLOT_FILE  "set output \"$opt_o.$num.$opt_f\"\n";
+  }
+
+#  print PLOT_FILE  "set size 1.4, 1.2\n";
+  print PLOT_FILE  "set xlabel \"$xLbl\"\n";
+  print PLOT_FILE  "set ylabel \"$yLbl\"\n";
+  print PLOT_FILE  "set title \"$title\"\n";
+  if (defined($key_cmd)) {
+	 print PLOT_FILE "set key $key_cmd\n";
+  } else {
+	 print PLOT_FILE "set key outside\n";
+  }
+
+  # convert the data sets into gnuplot data file
+  my $plot_cmd = "plot";
+  for (my $i = 0; $i < scalar(@{$contours}); $i++) {
+	 my $contour = ${$contours}[$i];
+	 $plot_cmd .= "," if ($i > 0);
+	 $plot_cmd .= " '-' using 1:2 title \"$contour\" with linespoint";
+  }
+  print PLOT_FILE "$plot_cmd\n";
+  for (my $i = 0; $i < scalar(@{$contours}); $i++) {
+	 my $contour = ${$contours}[$i];
+	 for (my $j = 0; $j < scalar(@{ ${$x_vals}{$contour} }); $j++) {
+		print PLOT_FILE "${ ${$x_vals}{$contour} }[$j] ${ ${$y_vals}{$contour} }[$j]\n";
+	 }
+	 print PLOT_FILE "e\n";
+  }
+
+  print PLOT_FILE "quit\n" if (defined($opt_f) || ($opt_f ne "x11"));
+  close(PLOT_FILE);
+  if ($opt_f eq "x11") {
+	 `gnuplot -persist $fn`;
+  } else {
+	 `gnuplot $fn`;
+  }
+  `rm $fn`;
+}
+
+###############################################################
+#
+# Main flow
+#
+foreach my $fileName (@ARGV) {
+  parseDataFile($fileName);
+}
+

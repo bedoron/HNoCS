@@ -1,0 +1,10 @@
+#!/bin/bash
+
+n=16
+for benchmark in blackscholes bodytrack canneal dedup facesim ferret fluidanimate raytrace vips x264
+do
+ ./trace2cores -p ${benchmark} -t /no_backup/oved/cmpsim/cmpsim/scripts/yaniv/simsmall/cmpsim-parsec-${benchmark}-$n-1-S-MB-004-64-64-1-P-KB-064-64-64-1-1.trace
+        
+done
+
+    

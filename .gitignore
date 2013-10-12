@@ -2,4 +2,9 @@
 *.tar
 *.tgz
 *.png
+*.o
+*.a
+*.so
+HNOCS/out/*
 HNOCS/simulations/*/results/*
+HNOCS/.svn*

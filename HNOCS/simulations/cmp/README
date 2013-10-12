@@ -1,0 +1,27 @@
+The benchmarks is:
+  BLACKSCHOLES from the PARSEC suite. 
+
+The cache configuration is:
+ 64KB L1 and 4MB L2 caches, both with 64 bytes cache lines and 
+ associativity of 64 lines per set.
+
+Trace event format is as follows
+<Time> <CoreID>/<ThreadID> <ReadWrite> <CacheInfo> <MemoryAddress> <OperandSize>
+ 
+* <Time> is #cycles from the beginning.
+* <CoreID> and <ThreadID> are as their name implies and the numbers are 0-based.
+ In the simulated configuration(*), threads do not migrate between cores so you 
+ may use either number to identify the thread. The numbers are not identical 
+ due to the way the Simulator works but you can see that there are exactly 12 
+ distinct pairs of <CoreID>/<ThreadID>.
+* <ReadWrite> is either “R” or “W” for Read/Write, respectively.
+* <CacheInfo> is “m” for cache miss (i.e. external memory access), “ph” for 
+  private cache (L1) hit and “sh” for shared cache (L2) hit.
+* <OperandSize> is the operand size in bytes. Note that the simulation is on 
+  64-bit platform so 8 bytes operands are common.
+
+(*) Application’s thread count does not exceed the number of thread context in 
+    the architecture
+
+to create the core files:
+trace2cores -t trace-file [-p prefix] 

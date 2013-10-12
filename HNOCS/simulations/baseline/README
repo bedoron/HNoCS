@@ -1,0 +1,1 @@
+../../utils/genExprXYPlot -e Latency-vs-Offered-1-flow-1-VC-1-SU -d results -x "core.8.*Total-BW" -y "core.8.*latency" -c experiment -o D 

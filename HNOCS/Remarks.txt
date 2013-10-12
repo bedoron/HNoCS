@@ -1,0 +1,23 @@
+BL_2:
+
+1) should set the router control delay link not less than half clk and not more (include) than 1-clk of router link`s Capacity  
+
+	to avoid the case when sending EoP+req for new SoP, when the req arrives too early (i.e. lower control delay) and there is free outVC, 
+	the SoP will ger arbitration before EoP arrive to the sched.
+	Can be solved by identify flows also by their inVC, check in arbitration if new req inVC is already getting service -> but perform HoL for other reqs ....
+
+2) Max capacity (for now) is: 1e4 Gbps , should check again (2e4Gbps), VCcalc isnt used anymore... 
+
+
+BL_2_async:
+
+1) VC acquiring latency for 1st hop also includes part of queueing time: when SoP arrived to 1t inport -> sendReq -> 
+   if EoP of prev packet hasn`t finished transmission, the gnt`s SoP will be delayed because of it. 
+   Solution: 
+   (a) move VC acquiring  to sched , if 1st sched: mask the latency of transmission of the same flow (only the same!)
+   Notice that proper change is also required in Matlab ... 
+   (b) modify source to hold SoP for the time between send EoP-1 to EoP, in such a way the artificial VC acquiring 
+   latency will be moved to the queueing latency where it should be.. 
+
+   On the other hand, it can be modeled by the VC acauiring queue model, in such a way that packet "sees" also its self 
+   (i.e. previous packet of the same flow)

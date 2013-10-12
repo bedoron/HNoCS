@@ -1,0 +1,356 @@
+EXPERIMENT: Comparing Central Scheduler to Baseline NoC
+
+PLOT: 2 flows Latency vs Throughput per Dst
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-2 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-2 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE 0->14" CVARS: P,V CFG: flows-2 DIR: baseline      X: "core.14.*Total-BW" Y: "core.14..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "BASE 1->15" CVARS: P,V CFG: flows-2 DIR: baseline      X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT 0->14" CVARS: P,V CFG: flows-2 DIR: central_sched X: "core.14.*Total-BW" Y: "core.14..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT 1->15" CVARS: P,V CFG: flows-2 DIR: central_sched X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+################################################################################################################################################################
+
+PLOT: 3 flows Latency vs Throughput per Dst
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-3 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-3 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE 1->2"  CVARS: P,V CFG: flows-3 DIR: baseline      X: "core.2.*Total-BW"  Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 7->11" CVARS: P,V CFG: flows-3 DIR: baseline      X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 0->15" CVARS: P,V CFG: flows-3 DIR: baseline      X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+XYCONTOUR: "CENT 1->2"  CVARS: P,V CFG: flows-3 DIR: central_sched X: "core.2.*Total-BW"  Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 7->11" CVARS: P,V CFG: flows-3 DIR: central_sched X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 0->15" CVARS: P,V CFG: flows-3 DIR: central_sched X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+
+ENDPLOT
+
+PLOT: 3 flows Latency vs Throughput AVG
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-3 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-3 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE 1->2,7->11,0->15" CVARS: P,V CFG: flows-3 DIR: baseline      X: "core.(2|11|15).*Total-BW"  Y: "core.(2|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT 1->2,7->11,0->15" CVARS: P,V CFG: flows-3 DIR: central_sched X: "core.(2|11|15).*Total-BW"  Y: "core.(2|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+################################################################################################################################################################
+PLOT: 3 flows Conteding on 1 Link Latency vs Throughput per Dst
+SIMS: hnocs central_sched  fixed_n_random_flows.ini link-1-hsd-3 all
+SIMS: hnocs baseline       fixed_n_random_flows.ini link-1-hsd-3 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE 0->7"  CVARS: P,V CFG: link-1-hsd-3 DIR: baseline      X: "core.7.*Total-BW"  Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 1->11" CVARS: P,V CFG: link-1-hsd-3 DIR: baseline      X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 2->15" CVARS: P,V CFG: link-1-hsd-3 DIR: baseline      X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+XYCONTOUR: "CENT 0->7"  CVARS: P,V CFG: link-1-hsd-3 DIR: central_sched X: "core.7.*Total-BW"  Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 1->11" CVARS: P,V CFG: link-1-hsd-3 DIR: central_sched X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 2->15" CVARS: P,V CFG: link-1-hsd-3 DIR: central_sched X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+
+ENDPLOT
+
+PLOT: 3 flows Conteding on 1 Link Latency vs Throughput AVG
+SIMS: hnocs central_sched  fixed_n_random_flows.ini link-1-hsd-3 all
+SIMS: hnocs baseline       fixed_n_random_flows.ini link-1-hsd-3 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: link-1-hsd-3 DIR: baseline      X: "core.(7|11|15).*Total-BW"  Y: "core.(7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: link-1-hsd-3 DIR: central_sched X: "core.(7|11|15).*Total-BW"  Y: "core.(7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+################################################################################################################################################################
+
+PLOT: 5 flows Latency vs Throughput per Dst
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE 1->2"  CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.2.*Total-BW"  Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 2->3"  CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.3.*Total-BW"  Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 3->7"  CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.7.*Total-BW"  Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 7->11" CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE 0->15" CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=2,P=16
+
+XYCONTOUR: "CENT 1->2"  CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.2.*Total-BW"  Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 2->3"  CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.3.*Total-BW"  Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 3->7"  CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.7.*Total-BW"  Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 7->11" CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.11.*Total-BW" Y: "core.11..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT 0->15" CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.15.*Total-BW" Y: "core.15..sink:EoP-end-to-end-latency" ORDER: D W:V=1,P=16
+
+ENDPLOT
+
+PLOT: 5 flows Latency vs Throughput AVG
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: flows-5 DIR: baseline      X: "core.(2|3|7|11|15).*Total-BW"  Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: flows-5 DIR: central_sched X: "core.(2|3|7|11|15).*Total-BW"  Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: 5 flows Latency vs Offered Load AVG
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: flows-5 DIR: baseline      X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: flows-5 DIR: central_sched X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D
+
+ENDPLOT
+
+PLOT: 5 flows MAX Latency vs Offered Load 
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: flows-5 DIR: baseline      X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D T:MAX
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: flows-5 DIR: central_sched X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15)..sink:EoP-end-to-end-latency" ORDER: D T:MAX
+
+ENDPLOT
+
+PLOT: 5 flows AVG Throughput vs Offered Load 
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: flows-5 DIR: baseline      X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15).*Total-BW" ORDER: D
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: flows-5 DIR: central_sched X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15).*Total-BW" ORDER: D
+
+ENDPLOT
+
+PLOT: 5 flows MIN Throughput vs Offered Load 
+SIMS: hnocs central_sched fixed_n_random_flows.ini flows-5 all
+SIMS: hnocs baseline      fixed_n_random_flows.ini flows-5 all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE AVG" CVARS: P,V CFG: flows-5 DIR: baseline      X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15).*Total-BW" ORDER: D T:MIN
+XYCONTOUR: "CENT AVG" CVARS: P,V CFG: flows-5 DIR: central_sched X: D XE: '4.0/$x' Y: "core.(2|3|7|11|15).*Total-BW" ORDER: D T:MIN
+
+ENDPLOT
+
+################################################################################################################################################################
+
+PLOT: Static Permutation AVG Latency vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: static-permutation DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: static-permutation DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+
+ENDPLOT
+
+PLOT: Static Permutation MAX Latency vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: static-permutation DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D T:MAX
+XYCONTOUR: "CENT"  CVARS: P,V CFG: static-permutation DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D T:MAX
+
+ENDPLOT
+
+PLOT: Static Permutation AVG Throughput vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: static-permutation DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: static-permutation DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D
+
+ENDPLOT
+
+PLOT: Static Permutation MIN Throughput vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: static-permutation DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D T:MIN
+XYCONTOUR: "CENT"  CVARS: P,V CFG: static-permutation DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D T:MIN
+
+ENDPLOT
+
+PLOT: Static Permutation AVG Latency vs AVG Throughput
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.*sink.*Total-BW"   Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.*sink.*Total-BW"   Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+
+ENDPLOT
+
+PLOT: Static Permutation AVG Latency vs PktLen 
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: Packet Length [flits]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: D,V CFG: static-permutation DIR: baseline      X: ^P Y: "core.*sink:EoP-end-to-end-latency" ORDER: P W: D=0.028 W: D=0.032 
+XYCONTOUR: "CENT"  CVARS: D,V CFG: static-permutation DIR: central_sched X: ^P Y: "core.*sink:EoP-end-to-end-latency" ORDER: P W: D=0.028 W: D=0.032
+
+ENDPLOT
+
+PLOT: Static Permutation Latency vs Throughput per Dst
+SIMS: hnocs central_sched  fixed_n_random_flows.ini static-permutation all
+SIMS: hnocs baseline       fixed_n_random_flows.ini static-permutation all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE CORE:0"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.0..sink.*Total-BW"   Y: "core.0..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:1"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.1..sink.*Total-BW"   Y: "core.1..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:2"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.2..sink.*Total-BW"   Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:3"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.3..sink.*Total-BW"   Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:4"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.4..sink.*Total-BW"   Y: "core.4..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:5"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.5..sink.*Total-BW"   Y: "core.5..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:6"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.6..sink.*Total-BW"   Y: "core.6..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:7"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.7..sink.*Total-BW"   Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:8"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.8..sink.*Total-BW"   Y: "core.8..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:9"  CVARS: P,V CFG: static-permutation DIR: baseline X: "core.9..sink.*Total-BW"   Y: "core.9..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:10" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.10..sink.*Total-BW"  Y: "core.10..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:11" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.11..sink.*Total-BW"  Y: "core.11..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:12" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.12..sink.*Total-BW"  Y: "core.12..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:13" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.13..sink.*Total-BW"  Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:14" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.14..sink.*Total-BW"  Y: "core.14..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:15" CVARS: P,V CFG: static-permutation DIR: baseline X: "core.15..sink.*Total-BW"  Y: "core.15..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+
+XYCONTOUR: "CENT CORE:0"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.0..sink.*Total-BW"   Y: "core.0..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:1"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.1..sink.*Total-BW"   Y: "core.1..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:2"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.2..sink.*Total-BW"   Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:3"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.3..sink.*Total-BW"   Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:4"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.4..sink.*Total-BW"   Y: "core.4..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:5"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.5..sink.*Total-BW"   Y: "core.5..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:6"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.6..sink.*Total-BW"   Y: "core.6..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:7"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.7..sink.*Total-BW"   Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:8"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.8..sink.*Total-BW"   Y: "core.8..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:9"  CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.9..sink.*Total-BW"   Y: "core.9..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:10" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.10..sink.*Total-BW"  Y: "core.10..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:11" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.11..sink.*Total-BW"  Y: "core.11..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:12" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.12..sink.*Total-BW"  Y: "core.12..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:13" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.13..sink.*Total-BW"  Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:14" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.14..sink.*Total-BW"  Y: "core.14..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:15" CVARS: P,V CFG: static-permutation DIR: central_sched X: "core.15..sink.*Total-BW"  Y: "core.15..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+
+ENDPLOT
+
+################################################################################################################################################################
+
+PLOT: Uniform Random Destination Latency vs Throughput per Dst
+SIMS: hnocs central_sched  fixed_n_random_flows.ini uniform-random-dst all
+SIMS: hnocs baseline       fixed_n_random_flows.ini uniform-random-dst all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE CORE:0"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.0..sink.*Total-BW"   Y: "core.0..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:1"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.1..sink.*Total-BW"   Y: "core.1..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:2"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.2..sink.*Total-BW"   Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:3"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.3..sink.*Total-BW"   Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:4"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.4..sink.*Total-BW"   Y: "core.4..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:5"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.5..sink.*Total-BW"   Y: "core.5..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:6"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.6..sink.*Total-BW"   Y: "core.6..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:7"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.7..sink.*Total-BW"   Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:8"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.8..sink.*Total-BW"   Y: "core.8..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:9"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.9..sink.*Total-BW"   Y: "core.9..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:10" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.10..sink.*Total-BW"  Y: "core.10..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:11" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.11..sink.*Total-BW"  Y: "core.11..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:12" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.12..sink.*Total-BW"  Y: "core.12..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:13" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.13..sink.*Total-BW"  Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:14" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.14..sink.*Total-BW"  Y: "core.14..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+XYCONTOUR: "BASE CORE:15" CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.15..sink.*Total-BW"  Y: "core.15..sink:EoP-end-to-end-latency"  ORDER: D W:V=2,P=16
+
+XYCONTOUR: "CENT CORE:0"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.0..sink.*Total-BW"   Y: "core.0..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:1"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.1..sink.*Total-BW"   Y: "core.1..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:2"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.2..sink.*Total-BW"   Y: "core.2..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:3"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.3..sink.*Total-BW"   Y: "core.3..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:4"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.4..sink.*Total-BW"   Y: "core.4..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:5"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.5..sink.*Total-BW"   Y: "core.5..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:6"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.6..sink.*Total-BW"   Y: "core.6..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:7"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.7..sink.*Total-BW"   Y: "core.7..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:8"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.8..sink.*Total-BW"   Y: "core.8..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:9"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.9..sink.*Total-BW"   Y: "core.9..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:10" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.10..sink.*Total-BW"  Y: "core.10..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:11" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.11..sink.*Total-BW"  Y: "core.11..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:12" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.12..sink.*Total-BW"  Y: "core.12..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:13" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.13..sink.*Total-BW"  Y: "core.13..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:14" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.14..sink.*Total-BW"  Y: "core.14..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+XYCONTOUR: "CENT CORE:15" CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.15..sink.*Total-BW"  Y: "core.15..sink:EoP-end-to-end-latency"  ORDER: D W:V=1,P=16
+
+ENDPLOT
+
+PLOT: Uniform Random Destination Latency vs Throughput Average
+SIMS: hnocs central_sched  fixed_n_random_flows.ini uniform-random-dst all
+SIMS: hnocs baseline       fixed_n_random_flows.ini uniform-random-dst all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: uniform-random-dst DIR: baseline X: "core.*sink.*Total-BW"   Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: "core.*sink.*Total-BW"   Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+
+ENDPLOT
+
+PLOT: Uniform Random Destination Latency vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini uniform-random-dst all
+SIMS: hnocs baseline       fixed_n_random_flows.ini uniform-random-dst all
+
+XLABEL: BW [MB/sec]
+YLABEL: Latency [nsec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: uniform-random-dst DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:EoP-end-to-end-latency"  ORDER: D
+
+ENDPLOT
+
+PLOT: Uniform Random Destination Throughput vs Offered Load
+SIMS: hnocs central_sched  fixed_n_random_flows.ini uniform-random-dst all
+SIMS: hnocs baseline       fixed_n_random_flows.ini uniform-random-dst all
+
+XLABEL: BW [MB/sec]
+YLABEL: BW [MB/sec]
+
+XYCONTOUR: "BASE"  CVARS: P,V CFG: uniform-random-dst DIR: baseline      X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D
+XYCONTOUR: "CENT"  CVARS: P,V CFG: uniform-random-dst DIR: central_sched X: D XE: "4.0/$x" Y: "core.*sink:.*Total-BW"  ORDER: D
+
+ENDPLOT
+
+ENDEXPERIMENT

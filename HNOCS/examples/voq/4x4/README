@@ -1,0 +1,17 @@
+This demo show a 4x4 Mesh that is using a synchrounous VoQ 
+router implementing iSLIP protocol (with no iterations). 
+This router is hierarchical and built out of input ports, 
+output ports and VC and XY routing output port selectors.
+The input port have a FIFO for each (input VC, output port, out VC).
+Each FIFO first packet is requesting arbitration on it's output
+port.
+The modules used are:
+**.routerType = "nocs.routers.hier.Router"
+**.coreType = "nocs.cores.NI"
+**.sourceType = "nocs.cores.sources.PktFifoSrc"
+**.sinkType = "nocs.cores.sinks.InfiniteBWMultiVCSink"
+**.portType = "nocs.routers.hier.Port"
+**.inPortType = "nocs.routers.hier.inPort.ISLIPInPort"
+**.OPCalcType = "nocs.routers.hier.opCalc.static.XYOPCalc"
+**.VCCalcType = "nocs.routers.hier.vcCalc.free.FLUVCCalc"
+**.schedType = "nocs.routers.hier.sched.wormhole.ISLIPSched"
