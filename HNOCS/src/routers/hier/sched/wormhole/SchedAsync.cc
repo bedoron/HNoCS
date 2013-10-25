@@ -38,6 +38,10 @@
 
 #include "SchedAsync.h"
 
+#include <iostream>
+
+using std::cout;
+
 Define_Module(SchedAsync)
 ;
 
@@ -118,7 +122,6 @@ void SchedAsync::initialize() {
 // But if the next Req on the same Reqs[ip][oVC] has the same inVC it can be granted.
 // So if there is no other port that has data to send we look inside the next req
 // otherwise - stop for 2 cycles. (this is done if speculativeGntOnCompltedReq)
-
 
 
 void SchedAsync::arbitrate() {
@@ -251,8 +254,14 @@ void SchedAsync::arbitrate() {
 	// after completing a Req start scanning from next VC
 	// for winner takes all arbitration
 	if (arbitration_type==0) {
-		if (req->getNumGranted() == req->getNumFlits())
-		curVC = (curVC + 1) % numVCs;
+		if (req->getNumGranted() == req->getNumFlits()) {
+		    // TODO: arbitraction fix-
+		    // Maybe check if m_highPriorityReqs has a pending request
+		    // and if so, skip to an empty VC in order to force the
+		    // arbitration process to add it to the current jobs
+		    curVC = (curVC + 1) % numVCs;
+		}
+
 	}
 
 	measureNumUsedVC();
@@ -357,6 +366,7 @@ void SchedAsync::handleFlitMsg(NoCFlitMsg *msg) {
 			throw cRuntimeError("-E- txFinishTime<simTIme() !! ");
 		}
 		scheduleAt(txFinishTime, popMsg);
+		cout << "** Scheduling a pop to: " << txFinishTime << "\n";
 		EV<< "-I- " << getFullPath() << " Send flit to outVC:" << outvc << " Next arbitration at: " << txFinishTime << endl;
 	}
 }
@@ -376,7 +386,7 @@ void SchedAsync::handleReqMsg(NoCReqMsg *msg) {
 
     if((msg->getPrediction()) && (0==arbitration_type) && (!Reqs.empty())) {
         // Successful prediction + Winner takes all + we are serving requests
-        Reqs.insertAfter(Reqs.front(), msg);
+        Reqs.insertBefore(Reqs.front(), msg);
     } else {
         Reqs.insert(msg);
     }

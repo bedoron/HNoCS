@@ -63,6 +63,9 @@ private:
 	int numInPorts;
 	int numReqs; // total number of requests
 	cQueue Reqs; // active requests
+
+	cQueue m_highPriorityReqs;
+
 	std::vector<int> credits; // credits per VC
 	cMessage *popMsg; // this is the clock...
 	cGate *g; // outgoing link

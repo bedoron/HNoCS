@@ -4,6 +4,7 @@
 *.o
 *.a
 *.so
+*.pyc
 .tkenvrc
 HNOCS/out/*
 HNOCS/simulations/*/results/*

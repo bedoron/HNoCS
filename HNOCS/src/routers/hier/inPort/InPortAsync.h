@@ -21,7 +21,7 @@
 #include <omnetpp.h>
 #include <NoCs_m.h>
 #include <FlitMsgCtrl.h>
-
+#include "Predictor.h"
 //
 // Input Port of a router
 //
@@ -49,6 +49,7 @@ private:
 	int flitsPerVC; // number of buffers available per VC
 	simtime_t statStartTime; // in sec
 
+    Predictor *m_predictor;
 	// state
 	std::vector<cQueue> QByiVC; // Q[ivc]
 	std::vector<int> curOutVC; // current packet output VC per in VC

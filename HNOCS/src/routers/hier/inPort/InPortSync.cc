@@ -37,6 +37,9 @@
 //
 Define_Module(InPortSync);
 
+#include <iostream>
+using std::cout;
+
 void InPortSync::initialize() {
 	numVCs = par("numVCs");
 	flitsPerVC = par("flitsPerVC");

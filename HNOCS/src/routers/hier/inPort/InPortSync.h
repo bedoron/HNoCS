@@ -42,8 +42,6 @@
 // NOTE: on each in VC there is only 1 packet being received at a given time
 // NOTE: on each out port there is only 1 packet being sent at a given time
 //
-
-//class Predictor; // Forward decleration
 #include "Predictor.h"
 
 class InPortSync: public cSimpleModule {

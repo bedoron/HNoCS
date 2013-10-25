@@ -17,6 +17,9 @@
 
 #include "InPortAsync.h"
 
+#include <iostream>
+using std::cout;
+
 // Behavior:
 //
 // NOTE: on each VC there is only 1 packet being received at a given time
@@ -83,6 +86,13 @@ void InPortAsync::initialize() {
 
 	}
 
+    // Get pointer to local predictor
+    cModule *predictor = getParentModule()->getSubmodule("predictor");
+    if(NULL == predictor) {
+        throw cRuntimeError(getParentModule(), "Can't find prediction module for Port");
+    }
+
+    m_predictor = check_and_cast<Predictor *>(predictor);
 }
 
 // obtain the attached info
@@ -350,8 +360,9 @@ void InPortAsync::handleGntMsg(NoCGntMsg *msg) {
 	delete msg;
 }
 
+/*      This function is never called       */
 void InPortAsync::handlePopMsg(NoCPopMsg *msg) {
-
+    throw cRuntimeError(getParentModule(), "Asynch module got a pop request, wtf ?!");
 	NoCFlitMsg* NextPkt = NULL;
 	int inVC = msg->getVC();
 	NextPkt = (NoCFlitMsg*) QByiVC[inVC].front();
@@ -365,9 +376,9 @@ void InPortAsync::handleMessage(cMessage *msg) {
 	cGate *inGate = msg->getArrivalGate();
 	if (msgType == NOC_FLIT_MSG) {
 		if (inGate == gate("calcOp$i")) {
-			handleCalcOPResp((NoCFlitMsg*) msg);
+			handleCalcOPResp((NoCFlitMsg*) msg); // Arrived from Out port calculation
 		} else {
-			handleInFlitMsg((NoCFlitMsg*) msg);
+			handleInFlitMsg((NoCFlitMsg*) msg); // First arrival into the port
 		}
 	} else if (msgType == NOC_GNT_MSG) {
 		handleGntMsg((NoCGntMsg*) msg);
