@@ -18,7 +18,7 @@
 
 #include "InPortSync.h"
 #include "Predictor.h"
-
+#include "ResponseDB.h"
 // Behavior:
 //
 // NOTE: on each VC there is only 1 packet being received at a given time
@@ -325,7 +325,13 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		// on last FLIT need to zero out the current packet Id
 		if (msg->getType() == NOC_END_FLIT) {
 			curPktId[inVC] = 0;
-			m_predictor->DestroyHit(inVC);
+			SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+
+			if((meta->isResponse(msg->getId()))&& /*  Is response */
+			        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
+			    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
+			    m_predictor->DestroyHit(inVC);
+			}
 		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head

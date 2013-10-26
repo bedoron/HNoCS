@@ -29,7 +29,7 @@ using std::stringstream;
 unsigned int SessionMeta::m_sessionCounter = 0; // Initialize session
 
 
-SessionMeta::SessionMeta(int id): m_state(SESSION_META_REQUEST), m_start(0),
+SessionMeta::SessionMeta(MsgId id): m_state(SESSION_META_REQUEST), m_start(0),
 		m_gen(0), m_end(0), dependant(0), dependantValid(false), m_sessionId(++m_sessionCounter) {
     cerr << "USING DEPRECATED METHOD SessionMeta::SessionMeta(int id)\n";
 
@@ -57,19 +57,19 @@ unsigned int SessionMeta::getSessionId()  {
     return m_sessionId;
 }
 
-void SessionMeta::addRequest(int id) {
+void SessionMeta::addRequest(MsgId id) {
 	m_state = SESSION_META_REQUEST;
 	m_requestIds.push_front(id);
 }
 
-void SessionMeta::addResponse(int id) {
+void SessionMeta::addResponse(MsgId id) {
 	m_state = SESSION_META_RESPONSE;
 	if(m_responseIds.empty())
 		m_gen = cSimulation::getActiveSimulation()->getSimTime();
 	m_responseIds.push_front(id);
 }
 
-void SessionMeta::add(int id) {
+void SessionMeta::add(MsgId id) {
 	switch(m_state) {
 	case SESSION_META_REQUEST:	addRequest(id); 	break;
 	case SESSION_META_RESPONSE: addResponse(id); 	break;
@@ -98,24 +98,24 @@ void SessionMeta::addOutPort(int outp) {
 
 
 
-bool SessionMeta::isRequest(int id) const {
+bool SessionMeta::isRequest(MsgId id) const {
     if(m_requestIds.empty()) return false;
-    deque<int>::const_iterator it = find(m_requestIds.begin(), m_requestIds.end(), id);
+    deque<MsgId>::const_iterator it = find(m_requestIds.begin(), m_requestIds.end(), id);
     if((it)!= m_requestIds.end())
         return true;
     return false;
     //return id==m_requestIds.front();
 }
-bool SessionMeta::isResponse(int id) const {
+bool SessionMeta::isResponse(MsgId id) const {
     if(m_responseIds.empty()) return false;
-    deque<int>::const_iterator it = find(m_responseIds.begin(), m_responseIds.end(), id);
+    deque<MsgId>::const_iterator it = find(m_responseIds.begin(), m_responseIds.end(), id);
     if((it)!= m_responseIds.end())
         return true;
     return false;
     //return id==m_responseIds.front();
 }
 
-bool SessionMeta::isSpecial(int id) const { return (isRequest(id) || isResponse(id)); }
+bool SessionMeta::isSpecial(MsgId id) const { return (isRequest(id) || isResponse(id)); }
 
 void SessionMeta::traverseRouter(int router_id) {
 //	if(m_traversedRouters.front()!=router_id) {  -- Signal system crashes because of odd palyndrom length
@@ -141,7 +141,7 @@ void SessionMeta::start() { m_start = cSimulation::getActiveSimulation()->getSim
 void SessionMeta::gen() { m_gen = cSimulation::getActiveSimulation()->getSimTime(); }
 
 
-bool SessionMeta::operator==(const int id) const { return isSpecial(id); }
+bool SessionMeta::operator==(const MsgId id) const { return isSpecial(id); }
 
 SessionMeta& SessionMeta::operator=(const SessionMeta& rhs) {
 	if(&rhs==this)
@@ -181,8 +181,8 @@ SessionMeta::~SessionMeta() {
 
 std::ostream& SessionMeta::printIDs(std::ostream &os) {
 	os << "Resp: ";
-	deque<int>::const_iterator itReq = m_requestIds.begin();
-	deque<int>::const_iterator itRes = m_responseIds.begin();
+	deque<MsgId>::const_iterator itReq = m_requestIds.begin();
+	deque<MsgId>::const_iterator itRes = m_responseIds.begin();
 	for(;itRes != m_responseIds.end(); ++itRes)
 		os << "[" << (*itRes) << "] " << " ";
 	os << "\nReq:  ";

@@ -40,6 +40,10 @@ void Predictor::initialize()
         m_VCHit[i] = NULL;
     }
 
+    m_portIndex = getParentModule()->getIndex();
+    m_routerIndex = getParentModule()->getParentModule()->getIndex();
+
+
 //    cModule *opCalc = getParentModule()->getSubmodule("inPort");
     cModule *opCalc = getParentModule()->getSubmodule("opCalc");
     cModule *vcCalc = getParentModule()->getSubmodule("vcCalc");
@@ -61,7 +65,7 @@ void Predictor::handleMessage(cMessage *msg)
     // TODO - Generated method body
 }
 
-bool Predictor::CheckIfHit(SessionMeta *meta) {
+bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
     bool isHit = false;
 
     PredictionTable::iterator prediction = m_predictionTable.find(meta);
@@ -70,7 +74,7 @@ bool Predictor::CheckIfHit(SessionMeta *meta) {
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
 
         EV << "[" << now << "] Predicted interval is " << interval.first << "-" << interval.second << "\n";
-
+        cerr << "MOO\n";
         if((now >= interval.first)  && (now <= interval.second)) {
             isHit = true;
         } else {
@@ -78,6 +82,32 @@ bool Predictor::CheckIfHit(SessionMeta *meta) {
         }
 
     } else {
+        cerr << "*********** CheckIfHit FAILURE **************\n";
+        cerr << "Flit " << nocMsg->getId() << " detected on Router "
+                << getParentModule()->getParentModule()->getIndex()
+                << " Port " << getParentModule()->getIndex() << "\n";
+
+        cerr << "it's type is ";
+        switch(nocMsg->getType()) {
+        case NOC_START_FLIT:    cerr << "NOC_START_FLIT";   break;
+        case NOC_END_FLIT:      cerr << "NOC_END_FLIT";     break;
+        case NOC_MID_FLIT:      cerr << "NOC_MID_FLIT";     break;
+        }
+
+        cerr << "-";
+        if(meta->isRequest(nocMsg->getId())) {
+            cerr << "Request";
+        } else { cerr << "Response"; }
+        cerr << "\n";
+        cerr << "Source: " << nocMsg->getSrcId() << " Dest: "
+                        << nocMsg->getDstId() << "\n";
+        cerr << "Session ID: " << meta->getSessionId() << "\n";
+
+        cerr << "Flit doesn't have a prediction object but all\n";
+        cerr << "responses should have one, aborting violently\n";
+
+        cerr << "     THROWING EXCEPTION AND QUITTING\n";
+        cerr << "*********************************************\n";
         throw cRuntimeError("Meta not found");
     }
     return isHit;
@@ -88,28 +118,23 @@ void Predictor::HitFlowStart(NoCFlitMsg* msg, SessionMeta* meta) {
     m_VCHit[inVC] = meta;
 }
 
-bool Predictor::Hit(NoCFlitMsg* msg) {
+bool Predictor::Hit(NoCFlitMsg* nocMsg) {
+    AppFlitMsg* msg = dynamic_cast<AppFlitMsg*>(nocMsg);
     bool isHit = false;
-    int msgId = msg->getId();
+    int msgId = msg->getId(); //msg->getId();
     SessionMeta *meta = ResponseDB::getInstance()->find(msgId);
+    // meta could be null if its a write request
 
-    if(NULL == meta) {
-        throw cRuntimeError("Trying to predict a non registered flit %d", msg->getPktId());
-    }
-
-    if(meta->isResponse(msgId)) {
+    if((NULL != meta) && meta->isResponse(msgId)) {
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
         EV << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
-
-        isHit = CheckIfHit(meta);
-
+        isHit = CheckIfHit(meta, nocMsg);
+\
         if(true == isHit) { // Start Hit flow
             EV << "[" << now << "] HIT!\n";
             HitFlowStart(msg, meta);
-            cerr << "** Hit!\n";
         } else {
             EV << "[" << now << "] MISS :-(\n";
-            cerr << "** Miss\n";
         }
     } else {
         // Requests are always a miss
@@ -136,10 +161,14 @@ bool Predictor::Hit(int inVC) {
 
 
 bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
-
+    AppFlitMsg *msg = (AppFlitMsg*)request;
     if(m_predictionTable.find(meta)!=m_predictionTable.end()) {
-        cRuntimeError("Trying to add a prediction for a session which already exists");
-        return false;
+        if(msg->getPktIdx()==0) {
+            cerr << "Trying to add a prediction for a session which already exists\n";
+            cRuntimeError("Trying to add a prediction for a session which already exists");
+            return false;
+        }
+        return true; // Don't overwrite prediction with different packet sequence
     }
 
     PredictionInterval interval = m_predictor->predict(request);
@@ -147,6 +176,12 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
     EV << "[" <<  PredictorIfc::Now() << "] Predicting that response for request " << request->getPktId()
             << " will arrive between the clocks: " << interval.first << " - " << interval.second;
 
+    int pktId = request->getId() ;
+    if(pktId == 32112)
+    {
+        cerr << "Prediction for packet " << pktId << " inserted into DB for router "
+                << getParentModule()->getParentModule()->getIndex() << "\n";
+    }
     m_predictionTable[meta] = interval;
     return true;
 }
@@ -171,22 +206,39 @@ bool Predictor::Predict(NoCFlitMsg* request) {
 
 bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
     bool isPredicted = false;
+
+
+
+    int pktId = msg->getId() ;
+    if(pktId == 32112)
+    {
+        cerr << "Prediction for packet " << pktId << " started in router "
+                << getParentModule()->getParentModule()->getIndex() << "\n";
+    }
+
+
+
+
+
+
+
     if(msg->getFlitIdx()!=0) {
         cerr << " Trying to Predict for a non head flit, ignoring\n";
         isPredicted = false;
     } else {
-
         SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-        if(meta->isRequest(msg->getId())) {
-            cGate *gate = getParentModule()->gate("sw_in",outPort);
-            if (!gate) cRuntimeError("outport is weird");
-            cGate *remGate = gate->getPathEndGate()->getPreviousGate();
-            if (!remGate) cRuntimeError("remote gate is weird");
-            cModule *neighbour = remGate->getOwnerModule();
-            if(!neighbour) cRuntimeError("remote port is weird");
-            Predictor *adjPred = check_and_cast<Predictor*>(neighbour->getSubmodule("predictor"));
-            adjPred->Predict(msg, meta);
-        }
+        Predict(msg, meta);
+
+//        if((meta!=0) && meta->isRequest(msg->getId())) {
+//            cGate *gate = getParentModule()->gate("sw_in",outPort);
+//            if (!gate) cRuntimeError("outport is weird");
+//            cGate *remGate = gate->getPathEndGate()->getPreviousGate();
+//            if (!remGate) cRuntimeError("remote gate is weird");
+//            cModule *neighbour = remGate->getOwnerModule();
+//            if(!neighbour) cRuntimeError("remote port is weird");
+//            Predictor *adjPred = check_and_cast<Predictor*>(neighbour->getSubmodule("predictor"));
+//            adjPred->Predict(msg, meta);
+//        }
 
     }
 
@@ -208,6 +260,17 @@ void Predictor::DestroyHit(int inVC) {
             throw cRuntimeError("Trying to remove a meta that was marked as a hit but didn't have a prediction");
         }
     }
+}
+
+Predictor::~Predictor() {
+    cerr << "Destroying predictor for router " << m_routerIndex << " on port " << m_portIndex << "\n";
+    cerr << "The contents of its Database is: \n";
+    PredictionTable::iterator it = m_predictionTable.begin();
+    for(;it != m_predictionTable.end(); ++it) {
+
+        cerr << "Session ID - " << (it->first->getSessionId()) << "\n";
+    }
+    cerr << "***************************************\n";
 }
 
 Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {

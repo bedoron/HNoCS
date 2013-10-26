@@ -133,7 +133,7 @@ void ResponseDB::saveSortedByRouter(ofstream& output) {
 
 
 
-bool ResponseDB::isResponse(int id)
+bool ResponseDB::isResponse(MsgId id)
 {
 	SessionMeta* tmp = find(id);
 	if(tmp==0)
@@ -141,7 +141,7 @@ bool ResponseDB::isResponse(int id)
 	return tmp->isResponse(id);
 }
 
-bool ResponseDB::isRequest(int id)
+bool ResponseDB::isRequest(MsgId id)
 {
 	SessionMeta* tmp = find(id);
 	if(tmp==0)
@@ -166,7 +166,7 @@ bool ResponseDB::add(CMPMsg *msg) {
 
 
 
-SessionMeta* ResponseDB::find(int id) const {
+SessionMeta* ResponseDB::find(MsgId id) const {
 	if((lastQuery!=0) && ((*lastQuery)==id)) { // Check cache
 		return lastQuery;
 	}
@@ -187,7 +187,7 @@ bool ResponseDB::exists(CMPMsg *msg) const {
 	return exists(msg->getId());
 }
 
-bool ResponseDB::exists(int id) const {
+bool ResponseDB::exists(MsgId id) const {
 	SessionMeta* tmp = find(id);
 	if(tmp==0)
 		return false;

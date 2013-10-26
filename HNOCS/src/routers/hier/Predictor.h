@@ -44,8 +44,10 @@ class Predictor : public cSimpleModule
     XYOPCalc    *m_opCalc;
 //    Sched       *m_sched;
     FLUVCCalc   *m_vcCalc;
+    int m_routerIndex;
+    int m_portIndex;
 
-    bool CheckIfHit(SessionMeta *meta);
+    bool CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg);
 
     void HitFlowStart(NoCFlitMsg* msg, SessionMeta *meta);
     void HitFlowEnd(NoCFlitMsg* msg, SessionMeta *meta);
@@ -55,6 +57,7 @@ class Predictor : public cSimpleModule
     virtual void handleMessage(cMessage *msg);
 
 public:
+    ~Predictor();
     bool Hit(NoCFlitMsg* msg);
     bool Hit(int inVC);
 

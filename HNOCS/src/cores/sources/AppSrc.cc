@@ -169,17 +169,17 @@ void AppSrc::sendFlit(int vc) {
 	flit->setPktIdx(pktIdx[vc]);
 	flit->setAppMsgLen(vcCurMsg[vc]->getAppMsgLen());
 
-
 	if (flitIdx[vc] == 0) {
 		CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
 
-		EV << "Found head flit to tag";
+//		EV << "Found head flit to tag";
 		if(msg->getRoundtrip()) { // Head flit which is meant to be marked - Notice that we need to deal only with the first head
 		    SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
 		    if(meta == 0) {
 		        cerr << "************************************************************\n";
 		        cerr << "Failure while looking for " << msg->getId() << " in ResponseDB \n";
 		        cerr << msg << "\n";
+		        throw cRuntimeError("No Session for a roundtrip message");
 		    }
 		    assert(meta != 0); //
 		    meta->add(flit);
@@ -205,6 +205,38 @@ void AppSrc::sendFlit(int vc) {
 		flitIdx[vc]++;
 		flit->setType(NOC_MID_FLIT);
 	}
+
+	if(32112 == flit->getId()) {
+	    CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
+
+	    cerr << "***************************************************\n";
+	    cerr << "Core ID: " << getParentModule()->getIndex() << "\n";
+	    cerr << "MSG SRC: " << msg->getSrcId() << " DST: " << msg->getDstId() << "\n";
+	    cerr << "Flit " << flit->getId() << " detected, the type is ";
+	    switch(flit->getType()) {
+	    case NOC_START_FLIT:    cerr << "NOC_START_FLIT";   break;
+	    case NOC_END_FLIT:      cerr << "NOC_END_FLIT";     break;
+	    case NOC_MID_FLIT:      cerr << "NOC_MID_FLIT";     break;
+	    }
+	    cerr << "\n";
+	    cerr << "Which belongs to message " << msg->getId() << " Roundtrip is: "<< msg->getRoundtrip() << "\n";
+
+
+
+	    SessionMeta *meta1 = ResponseDB::getInstance()->find(msg->getId());
+	    SessionMeta *meta2 = ResponseDB::getInstance()->find(flit->getId());
+
+
+
+	    cerr << "MSG SESSION ADDR: " << meta1 << " FLIT SESSION ADDR: " << meta2 << "\n";
+	    cerr << "Session ID is: " << meta1->getSessionId() << "\n";
+	    cerr << "Is request- " << meta1->isRequest(flit->getId()) << " Is response- " <<
+	            meta1->isResponse(flit->getId()) << "\n";
+
+	    cerr << "****************************************************\n";
+	}
+
+
 
 	flit->setInjectTime(simTime());
 	EV<< "-I- " << getFullPath() << " flit injected at time: " << flit->getInjectTime() << endl;

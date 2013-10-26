@@ -161,6 +161,12 @@ void InPortAsync::sendReq(NoCFlitMsg *msg) {
         // and it has a prediction
         req->setPrediction(true);
     } else {
+        AppFlitMsg *appFlit = (AppFlitMsg*)msg;
+        MsgId msgId = appFlit->getId();
+        if(msgId == 158718) {
+            cerr << "Captured flit id 158718 or router "<< getParentModule()->getParentModule()->getIndex();
+            cerr << " Port " << getParentModule()->getIndex() << "\n";
+        }
         m_predictor->PredictIfRequest(msg, outPort);
     }
 

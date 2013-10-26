@@ -26,7 +26,7 @@ using std::ofstream;
 // This is not thread safe.
 class ResponseDB {
 	static ResponseDB *_instance;
-	deque<int> responses;	// Backward compatibility
+//	deque<int> responses;	// Backward compatibility
 	deque<SessionMeta*> metas;
 	mutable SessionMeta* lastQuery;
 
@@ -37,16 +37,16 @@ public:
 	ResponseDB();
 	static ResponseDB* getInstance();
 
-	bool isResponse(int id);			// legacy - to remove
-	bool isRequest(int id);
+	bool isResponse(MsgId id);			// legacy - to remove
+	bool isRequest(MsgId id);
 
 	void add(SessionMeta *meta);	// will be added per NoC request-response pair
 	bool add(CMPMsg *msg);          // will be added per NoC request-response pair, use packet as basis
 
-	SessionMeta* find(int id) const;		// get SessionMeta associated by packet id, null if not
+	SessionMeta* find(MsgId id) const;		// get SessionMeta associated by packet id, null if not
 	SessionMeta* find(CMPMsg *msg) const; // use get id
 
-	bool exists(int id) const;		// check if flit id exists in DB
+	bool exists(MsgId id) const;		// check if flit id exists in DB
 	bool exists(CMPMsg *msg) const; // use getId
 
 	virtual ~ResponseDB();
