@@ -88,28 +88,26 @@ void Predictor::HitFlowStart(NoCFlitMsg* msg, SessionMeta* meta) {
     m_VCHit[inVC] = meta;
 }
 
-bool Predictor::Hit(NoCFlitMsg* msg) {
+bool Predictor::Hit(NoCFlitMsg* nocMsg) {
+    AppFlitMsg* msg = dynamic_cast<AppFlitMsg*>(nocMsg);
     bool isHit = false;
-    int msgId = msg->getId();
+    int msgId = msg->getId(); //msg->getId();
     SessionMeta *meta = ResponseDB::getInstance()->find(msgId);
+    // meta could be null if its a write request
 
-    if(NULL == meta) {
-        throw cRuntimeError("Trying to predict a non registered flit %d", msg->getPktId());
-    }
-
-    if(meta->isResponse(msgId)) {
+    if((NULL != meta) && meta->isResponse(msgId)) {
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
         EV << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
-
+        cerr << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
         isHit = CheckIfHit(meta);
 
         if(true == isHit) { // Start Hit flow
             EV << "[" << now << "] HIT!\n";
             HitFlowStart(msg, meta);
-            cerr << "** Hit!\n";
+//            cerr << "** Hit!\n";
         } else {
             EV << "[" << now << "] MISS :-(\n";
-            cerr << "** Miss\n";
+//            cerr << "** Miss\n";
         }
     } else {
         // Requests are always a miss
@@ -136,10 +134,14 @@ bool Predictor::Hit(int inVC) {
 
 
 bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
-
+    AppFlitMsg *msg = (AppFlitMsg*)request;
     if(m_predictionTable.find(meta)!=m_predictionTable.end()) {
-        cRuntimeError("Trying to add a prediction for a session which already exists");
-        return false;
+        if(msg->getPktIdx()==0) {
+            cerr << "Trying to add a prediction for a session which already exists\n";
+            cRuntimeError("Trying to add a prediction for a session which already exists");
+            return false;
+        }
+        return true; // Don't overwrite prediction with different packet sequence
     }
 
     PredictionInterval interval = m_predictor->predict(request);
@@ -171,13 +173,13 @@ bool Predictor::Predict(NoCFlitMsg* request) {
 
 bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
     bool isPredicted = false;
+
     if(msg->getFlitIdx()!=0) {
         cerr << " Trying to Predict for a non head flit, ignoring\n";
         isPredicted = false;
     } else {
-
         SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-        if(meta->isRequest(msg->getId())) {
+        if((meta!=0) && meta->isRequest(msg->getId())) {
             cGate *gate = getParentModule()->gate("sw_in",outPort);
             if (!gate) cRuntimeError("outport is weird");
             cGate *remGate = gate->getPathEndGate()->getPreviousGate();

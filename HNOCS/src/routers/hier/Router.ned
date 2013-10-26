@@ -21,9 +21,19 @@
 
 package hnocs.routers.hier;
 // Data Channel Internal to Hierarchical Router
+//channel SwLink extends ned.DatarateChannel
+//{
+//    datarate = 16Gbps;
+//}
+//
+//// Control Channel Internal to Hierarchical Router
+//channel SwCtrlLink extends ned.DelayChannel
+//{
+//    delay = 2.0ns; // 500Mhz clock
+//}
 channel SwLink extends ned.DatarateChannel
 {
-    datarate = 16Gbps;
+    datarate = 7.5Gbps;
 }
 
 // Control Channel Internal to Hierarchical Router
@@ -31,6 +41,9 @@ channel SwCtrlLink extends ned.DelayChannel
 {
     delay = 2.0ns; // 500Mhz clock
 }
+
+
+
 
 // Hierarchical Router Structure : Ports connected by data and control channels
 module Router like hnocs.routers.Router_Ifc

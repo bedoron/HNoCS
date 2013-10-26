@@ -40,14 +40,14 @@ enum sessionMetaRoute_t { L1_L2, L2_L3, L3_DRAM };
 enum sessionOrigins_t   { ORIGIN_L1=1, ORIGIN_L2=2, ORIGIN_L3=3 }; // this should correspond to origin types defined in cores
 
 typedef pair<simtime_t, simtime_t> Incidents;
-
+typedef long long int MsgId;
 
 class SessionMeta {
 	sessionMetaState_t m_state; // false for request
 	// store flit's role change (NoC <--> Flit) in both ways
 	// this is usually important when flit hops a source/drain to mesh/death
-	deque<int>          m_requestIds;
-	deque<int>          m_responseIds;
+	deque<MsgId>          m_requestIds;
+	deque<MsgId>          m_responseIds;
 	deque<int> 		    m_traversedRouters;		// Store all the routers this session passed
 	deque<simtime_t>    m_traversedRoutersTime;	// Store the corresponding times of routers passed
 	deque<int>          m_inPort;
@@ -62,7 +62,7 @@ class SessionMeta {
 	bool dependantValid;
 	sessionMetaRoute_t route;
 	void addRouter(int id);
-	SessionMeta(int id);
+	SessionMeta(MsgId id);
 
 	inline string typeToString() {
 	    string ss;
@@ -87,12 +87,12 @@ public:
 
 	SessionMeta(const SessionMeta& src); // C-Ctor
 
-	void add(int id);				// add according to current state context
+	void add(MsgId id);				// add according to current state context
 	void add(CMPMsg *msg);				// add according to current state context
 	void add(NoCFlitMsg* flit); // Router ID will be tagged only for pktIdx==0
 
-	void addRequest(int id);
-	void addResponse(int id);
+	void addRequest(MsgId id);
+	void addResponse(MsgId id);
 	void addRouter(NoCFlitMsg* flit, int routerId); // Router ID will be tagged only for pktIdx==0
 
 	void addRequest(CMPMsg *msg) { addRequest(msg->getId()); };
@@ -101,9 +101,9 @@ public:
 	void addInPort(int inp);
 	void addOutPort(int outp);
 
-	bool isRequest(int id) const;	// check if packet is request
-	bool isResponse(int id) const;  // check if packet is response
-	bool isSpecial(int id) const; 	// check if packet is request OR response
+	bool isRequest(MsgId id) const;	// check if packet is request
+	bool isResponse(MsgId id) const;  // check if packet is response
+	bool isSpecial(MsgId id) const; 	// check if packet is request OR response
 
 	bool isRequest(CMPMsg *msg) const { return isRequest(msg->getId()); };	// check if packet is request
 	bool isResponse(CMPMsg *msg) const { return isResponse(msg->getId());};  // check if packet is response
@@ -118,7 +118,7 @@ public:
 	const simtime_t& getStartTime() const;
 
 	// Check if packet is Request or Response
-	bool operator==(const int id) const; // wrapper to isSpecial
+	bool operator==(const MsgId id) const; // wrapper to isSpecial
 	bool operator==(const CMPMsg *msg) const { return this->operator==(msg->getId()); } // wrapper to isSpecial
 
 	virtual ~SessionMeta();

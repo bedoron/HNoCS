@@ -1,4 +1,2 @@
 # Partial Tkenv config file -- see $HOME/.tkenvrc as well
-inspector "Mesh_blackscholes.router[0]" "Router" "2" "607x337+484+636:normal"
-inspector "Mesh_blackscholes" "Mesh_blackscholes" "2" "607x337+693+391:normal"
 

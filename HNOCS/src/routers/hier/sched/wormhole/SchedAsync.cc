@@ -366,7 +366,7 @@ void SchedAsync::handleFlitMsg(NoCFlitMsg *msg) {
 			throw cRuntimeError("-E- txFinishTime<simTIme() !! ");
 		}
 		scheduleAt(txFinishTime, popMsg);
-		cout << "** Scheduling a pop to: " << txFinishTime << "\n";
+//		cout << "** Scheduling a pop to: " << txFinishTime << "\n";
 		EV<< "-I- " << getFullPath() << " Send flit to outVC:" << outvc << " Next arbitration at: " << txFinishTime << endl;
 	}
 }
