@@ -12,6 +12,7 @@ using std::cerr;
 // ----- Predictors
 #include "Predictors/DefaultPredictor.h"
 #include "Predictors/RandomPredictor.h"
+#include "Predictors/AlwaysHit.h"
 
 PredictorFactory::PredictorFactory() { }
 
@@ -30,7 +31,8 @@ PredictorIfc* PredictorFactory::build(const string &method) {
         return new RandomPredictor();
     if(method == "default")
         return new DefaultPredictor();
-
+    if(method == "always-hit")
+        return new AlwaysHit();
 
 
     cerr << "No " << method << " predictor, using default\n";

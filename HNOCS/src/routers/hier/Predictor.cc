@@ -69,7 +69,7 @@ bool Predictor::CheckIfHit(SessionMeta *meta) {
         PredictionInterval interval = prediction->second;
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
 
-        EV << "[" << now << "] Predicted interval is " << interval.first << "-" << interval.second;
+        EV << "[" << now << "] Predicted interval is " << interval.first << "-" << interval.second << "\n";
 
         if((now >= interval.first)  && (now <= interval.second)) {
             isHit = true;
@@ -144,7 +144,7 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
 
     PredictionInterval interval = m_predictor->predict(request);
 
-    EV << "[" << SimTime() << "] Predicting that response for request " << request->getPktId()
+    EV << "[" <<  PredictorIfc::Now() << "] Predicting that response for request " << request->getPktId()
             << " will arrive between the clocks: " << interval.first << " - " << interval.second;
 
     m_predictionTable[meta] = interval;

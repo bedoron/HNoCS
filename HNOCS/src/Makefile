@@ -69,6 +69,7 @@ OBJS = \
     $O/routers/hier/RouterSWHook.o \
     $O/routers/hier/Predictors/RandomPredictor.o \
     $O/routers/hier/Predictors/DefaultPredictor.o \
+    $O/routers/hier/Predictors/AlwaysHit.o \
     $O/routers/hier/inPort/InPortAsync.o \
     $O/routers/hier/inPort/ISLIPInPort.o \
     $O/routers/hier/inPort/InPortSync.o \
@@ -301,6 +302,7 @@ $O/routers/hier/PredictorFactory.o: routers/hier/PredictorFactory.cc \
 	NoCs_m.h \
 	routers/hier/PredictorFactory.h \
 	routers/hier/PredictorIfc.h \
+	routers/hier/Predictors/AlwaysHit.h \
 	routers/hier/Predictors/DefaultPredictor.h \
 	routers/hier/Predictors/RandomPredictor.h
 $O/routers/hier/RouterSWHook.o: routers/hier/RouterSWHook.cc \
@@ -311,6 +313,12 @@ $O/routers/hier/RouterSWHook.o: routers/hier/RouterSWHook.cc \
 	SessionMeta.h \
 	cResponseHeadArrived.h \
 	routers/hier/RouterSWHook.h
+$O/routers/hier/Predictors/AlwaysHit.o: routers/hier/Predictors/AlwaysHit.cc \
+	App_m.h \
+	CMP_m.h \
+	NoCs_m.h \
+	routers/hier/PredictorIfc.h \
+	routers/hier/Predictors/AlwaysHit.h
 $O/routers/hier/Predictors/DefaultPredictor.o: routers/hier/Predictors/DefaultPredictor.cc \
 	App_m.h \
 	CMP_m.h \

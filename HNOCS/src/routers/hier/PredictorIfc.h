@@ -19,8 +19,6 @@ typedef pair<simtime_t, simtime_t> PredictionInterval;
 class PredictorIfc {
     string m_method;
 
-protected:
-    simtime_t Now() { return cSimulation::getActiveSimulation()->getSimTime(); };
 
 public:
     // Signal name for Schedulers and in ports
@@ -36,6 +34,8 @@ public:
     // Use this function to do some adjustments on the fly
     // when we have a prediction miss
     virtual void miss(NoCFlitMsg *response, simtime_t predicted) { }
+
+    static simtime_t Now() { return cSimulation::getActiveSimulation()->getSimTime(); };
 };
 
 #endif /* PREDICTORIFC_H_ */

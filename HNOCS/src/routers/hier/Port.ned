@@ -23,6 +23,19 @@
 // Sched - out port scheduler
 package hnocs.routers.hier;
 
+
+channel PipelineDelay1 extends ned.DelayChannel
+{
+    delay = 2ns; // 500Mhz clock
+    disabled = false;
+}
+
+channel PipelineDelay2 extends ned.DelayChannel
+{
+    delay = 2ns; // 500Mhz clock
+    disabled = false;
+}
+
 module Port like hnocs.routers.Port_Ifc
 {
     parameters:
@@ -64,8 +77,14 @@ module Port like hnocs.routers.Port_Ifc
             method = default("default");
         }
     connections:
-        inPort.calcOp <--> opCalc.calc;
-        inPort.calcVc <--> vcCalc.calc;
+//        inPort.calcOp <--> PipelineDelay <--> opCalc.calc;
+		inPort.calcOp <--> {datarate=1kbps;}  <--> opCalc.calc;
+//       inPort.calcVc <--> PipelineDelay <-->  vcCalc.calc;
+		inPort.calcVc <--> {datarate=1kbps;}  <--> vcCalc.calc;
+
+//		inPort.calcOp <--> opCalc.calc;
+//		inPort.calcVc <--> vcCalc.calc; 
+
         inPort.in <--> in;
         sched.out[0] <--> out;
         //        sched.out <--> outPort.in;
