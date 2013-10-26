@@ -154,6 +154,17 @@ void InPortAsync::sendReq(NoCFlitMsg *msg) {
 	req->setNumGranted(0);
 	req->setNumAcked(0);
 	req->setSchedulingPriority(0); // In order to prevent artificial priority of req to the sched
+
+
+    if(m_predictor->Hit(inVC)) {
+        // Hit will get us here if this is a response message
+        // and it has a prediction
+        req->setPrediction(true);
+    } else {
+        m_predictor->PredictIfRequest(msg, outPort);
+    }
+
+
 	send(req, "ctrl$o", outPort);
 }
 
@@ -251,8 +262,19 @@ void InPortAsync::handleInFlitMsg(NoCFlitMsg *msg) {
 		EV<< "-I- " << getFullPath() << " Received Packet:"
 		<< (msg->getPktId() >> 16) << "." << (msg->getPktId() % (1<< 16))
 		<< " inVC: " << inVC << endl;
-		// send it to get the out port calc
-		send(msg, "calcOp$o");
+
+		// ********* PREDICTION CODE ***************
+        if(!m_predictor->Hit(msg)) {
+            // send it to get the out port calc
+            send(msg, "calcOp$o");
+        } else {
+            m_predictor->getOpCalc().PredictorSetOutPort(msg);
+            handleCalcOPResp(msg);
+            return; // LAST CALL
+        }
+		// *****************************************
+
+
 	} else {
 		// make sure the packet id is correct
 		if (msg->getPktId() != curPktId[inVC]) {

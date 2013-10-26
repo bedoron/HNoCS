@@ -21,12 +21,14 @@ PredictorFactory& PredictorFactory::instance() {
 }
 
 PredictorIfc* PredictorFactory::build(const string &method) {
-    string predictorName;
-    transform(method.begin(), method.end(),predictorName.begin(), tolower);
+//    string predictorName;
+//
+//    transform(method.begin(), method.end(),predictorName.begin(), tolower);
 
-    if(predictorName == "random")
+
+    if(method == "random")
         return new RandomPredictor();
-    if(predictorName == "default")
+    if(method == "default")
         return new DefaultPredictor();
 
 

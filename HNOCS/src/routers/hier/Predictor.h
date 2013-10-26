@@ -72,6 +72,9 @@ public:
     XYOPCalc& getOpCalc();
 //    SchedSync& getSched();
     FLUVCCalc& getVcCalc();
+
+    // Get the Predictor associated with current hierarchy
+    static Predictor* GetMyPredictor(cSimpleModule *current);
 };
 
 #endif

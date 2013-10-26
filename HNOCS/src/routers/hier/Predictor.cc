@@ -69,11 +69,16 @@ bool Predictor::CheckIfHit(SessionMeta *meta) {
         PredictionInterval interval = prediction->second;
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
 
+        EV << "[" << now << "] Predicted interval is " << interval.first << "-" << interval.second;
+
         if((now >= interval.first)  && (now <= interval.second)) {
             isHit = true;
         } else {
             isHit = false;
         }
+
+    } else {
+        throw cRuntimeError("Meta not found");
     }
     return isHit;
 }
@@ -87,15 +92,28 @@ bool Predictor::Hit(NoCFlitMsg* msg) {
     bool isHit = false;
     int msgId = msg->getId();
     SessionMeta *meta = ResponseDB::getInstance()->find(msgId);
+
+    if(NULL == meta) {
+        throw cRuntimeError("Trying to predict a non registered flit %d", msg->getPktId());
+    }
+
     if(meta->isResponse(msgId)) {
+        simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
+        EV << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
+
         isHit = CheckIfHit(meta);
 
         if(true == isHit) { // Start Hit flow
+            EV << "[" << now << "] HIT!\n";
             HitFlowStart(msg, meta);
+            cerr << "** Hit!\n";
+        } else {
+            EV << "[" << now << "] MISS :-(\n";
+            cerr << "** Miss\n";
         }
-
     } else {
-        cerr << "Trying to match a hit to a non response message :( \n";
+        // Requests are always a miss
+        isHit = false;
     }
     return isHit;
 }
@@ -124,7 +142,12 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
         return false;
     }
 
-    m_predictionTable[meta] = m_predictor->predict(request);
+    PredictionInterval interval = m_predictor->predict(request);
+
+    EV << "[" << SimTime() << "] Predicting that response for request " << request->getPktId()
+            << " will arrive between the clocks: " << interval.first << " - " << interval.second;
+
+    m_predictionTable[meta] = interval;
     return true;
 }
 
@@ -185,4 +208,13 @@ void Predictor::DestroyHit(int inVC) {
             throw cRuntimeError("Trying to remove a meta that was marked as a hit but didn't have a prediction");
         }
     }
+}
+
+Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {
+    cModule *predictor = current->getParentModule()->getSubmodule("predictor");
+    if(NULL == predictor) {
+        throw cRuntimeError(current->getParentModule(), "Can't find prediction module for Port");
+    }
+
+    return check_and_cast<Predictor *>(predictor);
 }

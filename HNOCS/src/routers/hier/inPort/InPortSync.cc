@@ -78,12 +78,13 @@ void InPortSync::initialize() {
 	}
 
 	// Get pointer to local predictor
-	cModule *predictor = getParentModule()->getSubmodule("predictor");
-	if(NULL == predictor) {
-	    throw cRuntimeError(getParentModule(), "Can't find prediction module for Port");
-	}
-
-	m_predictor = check_and_cast<Predictor *>(predictor);
+//	cModule *predictor = getParentModule()->getSubmodule("predictor");
+//	if(NULL == predictor) {
+//	    throw cRuntimeError(getParentModule(), "Can't find prediction module for Port");
+//	}
+//
+//	m_predictor = check_and_cast<Predictor *>(predictor);
+	m_predictor = Predictor::GetMyPredictor(this);
 }
 
 // obtain the attached info
