@@ -6,6 +6,17 @@
  */
 
 #include "Utils.h"
+#include "ResponseDB.h"
+#include <cmodule.h>
+#include <csimulation.h>
+
+#include <streambuf>
+#include <string>
+
+
+using std::stringstream;
+using std::string;
+
 
 Utils::Utils() {
     // TODO Auto-generated constructor stub
@@ -74,4 +85,67 @@ ostream &operator<<(ostream& stream, CMPMsg *msg) {
     stream << "PktLength (how many flits per packet): " << msg->getPktLength() << "\n";
     stream << "VC: " << msg->getVC() ;
     return stream;
+}
+
+ostream& operator <<(ostream& stream, NoCFlitMsg* msg) {
+    long int flitId = msg->getId();
+    stream << "**************** Flit " << flitId << " *******************\n";
+    stream << "it's type is ";
+     switch(msg->getType()) {
+     case NOC_START_FLIT:    stream << "NOC_START_FLIT";   break;
+     case NOC_END_FLIT:      stream << "NOC_END_FLIT";     break;
+     case NOC_MID_FLIT:      stream << "NOC_MID_FLIT";     break;
+     }
+
+     stream << "-";
+     SessionMeta *meta = ResponseDB::getInstance()->find(flitId);
+
+     if(NULL == meta) {
+         stream << "[NOT REGISTERED]";
+     } else {
+         if(meta->isRequest(flitId)) {
+             stream << "[Request]";
+         } else { stream << "[Response]"; }
+     }
+     stream << "\n";
+
+
+     if(NULL != meta) {
+         stream << "Session ID: " << meta->getSessionId();
+     } else {
+         stream << "Pkt Id:    "<< msg->getPktId() << "\n";
+         stream << "Flit Idx:  " << msg->getFlitIdx();
+     }
+
+     stream << "\n";
+
+     int src = msg->getSrcId();
+     int dst = msg->getDstId();
+
+
+     stringstream ss_src, ss_dst;
+
+     ss_src << "core[" << src << "]";
+     ss_dst << "core[" << dst << "]";
+
+
+     cModule *srcCore = cSimulation::getActiveSimulation()->getModuleByPath(ss_src.str().c_str());
+     cModule *dstCore = cSimulation::getActiveSimulation()->getModuleByPath(ss_dst.str().c_str());
+
+     if(srcCore != 0) {
+         ss_src.str(string());
+         ss_src << srcCore->par("appType").stringValue();
+     }
+
+     if(dstCore != 0) {
+         ss_dst.str(string());
+         ss_dst << dstCore->par("appType").stringValue();
+     }
+
+     stream << "Source:    " << src << " " << ss_src.str() << "\n";
+     stream << "Dest:      " << dst << " " << ss_dst.str() << "\n";
+
+     stream << "*********************************************\n";
+
+     return stream;
 }

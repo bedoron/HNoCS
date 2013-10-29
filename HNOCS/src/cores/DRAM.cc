@@ -80,6 +80,13 @@ void DRAM::handlePopMsg()
 		respMeta->gen();	// Force generation time
 	}
 
+
+	if(resp->getId()==40979) {
+	    cerr << "Response id " << resp->getId() << " belongs to request id: " << req->getId() << "\n";
+	}
+
+
+
 	if (credits) {
 		// Resp IS the request
 		send(resp, "out$o");
@@ -124,6 +131,7 @@ void DRAM::handleCreditMsg(NoCCreditMsg *msg)
 			session->addResponse(resp);
 			session->gen();
 		}
+
 		send(resp,"out$o");
 	} else {
 		credits++;

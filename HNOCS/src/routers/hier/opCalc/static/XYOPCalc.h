@@ -59,7 +59,7 @@ private:
 
 	simsignal_t flitSecondIncidence;
 
-
+	int m_meshIndex;
 
 	// methods:
 

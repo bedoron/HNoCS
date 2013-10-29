@@ -32,7 +32,7 @@ channel PipelineVCDelay extends ned.DelayChannel
 
 channel PipelineOPDelay extends ned.DelayChannel
 {
-    delay = 0.8ns; // 500Mhz clock
+    delay = 0.08ns;
     disabled = false;
 }
 
@@ -77,9 +77,10 @@ module Port like hnocs.routers.Port_Ifc
             method = default("default");
         }
     connections:
-        inPort.calcOp <--> PipelineOPDelay <--> opCalc.calc;
+		inPort.calcOp <--> PipelineOPDelay <--> opCalc.calc;
+		inPort.calcVc <--> PipelineVCDelay <-->  vcCalc.calc;
+
 //		inPort.calcOp <--> {datarate=1kbps;}  <--> opCalc.calc;
-       inPort.calcVc <--> PipelineVCDelay <-->  vcCalc.calc;
 //		inPort.calcVc <--> {datarate=1kbps;}  <--> vcCalc.calc;
 
 //		inPort.calcOp <--> opCalc.calc;

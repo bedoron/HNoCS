@@ -141,12 +141,12 @@ void AppSink::handleDataMsg(AppFlitMsg *flit) {
 			<< "." << appMsg->getSrcAppId() << " msgId: " << appMsg->getMsgId()
 			<< " to app: " << dstApp << endl;
 			int id = vcStartId[vc];
-//			ResponseDB *db 			= ResponseDB::getInstance();
-//			SessionMeta *session 	= db->find(id);
+
 			if(ResponseDB::getInstance()->exists(id)) {
 				ResponseDB::getInstance()->find(id)->add(appMsg->getId());
-			//	ResponseDB::getInstance()->find(appMsg->getId())->print(cerr);
 			}
+
+
 
 			send(appMsg, "app$o", dstApp);
 		}

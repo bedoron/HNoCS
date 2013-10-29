@@ -31,6 +31,8 @@ using std::vector;
 
 class Predictor : public cSimpleModule
 {
+    static const bool PRINT_DATA = false;
+
     typedef map<SessionMeta*, PredictionInterval> PredictionTable;
 
 
@@ -46,6 +48,8 @@ class Predictor : public cSimpleModule
     FLUVCCalc   *m_vcCalc;
     int m_routerIndex;
     int m_portIndex;
+
+    bool m_printData;
 
     bool CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg);
 

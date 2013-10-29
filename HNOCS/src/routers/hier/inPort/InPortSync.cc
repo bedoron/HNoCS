@@ -19,6 +19,7 @@
 #include "InPortSync.h"
 #include "Predictor.h"
 #include "ResponseDB.h"
+#include "Utils.h"
 // Behavior:
 //
 // NOTE: on each VC there is only 1 packet being received at a given time
@@ -52,6 +53,8 @@ void InPortSync::initialize() {
 	curOutPort.resize(numVCs);
 	curOutVC.resize(numVCs);
 	curPktId.resize(numVCs, 0);
+	curHeadId.resize(numVCs, 0);
+
 
 	// send the credits to the other size
 	for (int vc = 0; vc < numVCs; vc++)
@@ -154,18 +157,29 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	req->setPrediction(false);
 	EV << "Checking the id of req " << req->getId() << " and pktId is : " << req->getPktId() << "\n";
 	EV << "********************************************************************************************************\n";
-/*	if(heads==3)
-		endSimulation();
-*/
+
 	/**
 	 * Create a prediction object
 	 * Attach it to the request using : getControlInfo()
 	 */
+
+	if(msg->getId()==1020) {
+	    cerr << getFullPath() << " Caught " << msg->getId() << " a stage before registering the predictor\n";
+	    cerr << "Out port is: " << outPort << "\n";
+	}
+
 	if(m_predictor->Hit(inVC)) {
 	    // Hit will get us here if this is a response message
 	    // and it has a prediction
+	    if(msg->getId()==1020) {
+	        cerr << "*** it was a hit!!!\n";
+	    }
 	    req->setPrediction(true);
 	} else {
+	    if(msg->getId()==1020) {
+	        cerr << "*** trying to predict if request!!!\n";
+	    }
+
 
 	    m_predictor->PredictIfRequest(msg, outPort);
 	}
@@ -180,6 +194,10 @@ void InPortSync::sendFlit(NoCFlitMsg *msg) {
 
 	if (gate("out", outPort)->getTransmissionChannel()->isBusy()) {
 		EV << "-E-" << getFullPath() << " out port of InPort is busy! will be available in " << (gate("out", outPort)->getTransmissionChannel()->getTransmissionFinishTime()-simTime()) << endl;
+
+		cerr << msg;
+
+//		cerr << "-E-" << getFullPath() << " out port of InPort is busy! will be available in " << (gate("out", outPort)->getTransmissionChannel()->getTransmissionFinishTime()-simTime()) << endl;
 		throw cRuntimeError(
 				"-E- Out port of InPort is busy!");
 	}
@@ -265,6 +283,7 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	        send(msg,"calcVc$o");
 	    } else {
 	        m_predictor->getVcCalc().PredictorSetOutVC(msg);
+	        take(msg);
 	        handleCalcVCResp(msg);
 	    }
 	} else {
@@ -299,6 +318,7 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 					curPktId[inVC], msg->getPktId());
 		}
 		curPktId[inVC] = msg->getPktId();
+		curHeadId[inVC] = msg->getId();
 
 		// for first flit we need to calc outVC and outPort
 		EV << "-I- " << getFullPath() << " Received Packet:"
@@ -311,6 +331,7 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		    send(msg, "calcOp$o");
 		} else {
 		    m_predictor->getOpCalc().PredictorSetOutPort(msg);
+		    take(msg);
 		    handleCalcOPResp(msg);
 		    return; // LAST CALL
 		}
@@ -324,13 +345,26 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 		// on last FLIT need to zero out the current packet Id
 		if (msg->getType() == NOC_END_FLIT) {
+		    long int headID = curHeadId[inVC];
+			SessionMeta *meta = ResponseDB::getInstance()->find(headID);
 			curPktId[inVC] = 0;
-			SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+			curHeadId[inVC] = 0;
 
-			if((meta->isResponse(msg->getId()))&& /*  Is response */
-			        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
-			    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
-			    m_predictor->DestroyHit(inVC);
+			if(meta) {
+
+                if((meta->isResponse(headID))&& /*  Is response */
+                        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
+                    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
+                    m_predictor->DestroyHit(inVC);
+                }
+			} else {
+			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
+			    int op = cmpMsg->getOperation();
+			    if(op!=CMP_OP_WRITE) {
+			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
+			        cerr << "And it's operation isn't a write operation\n";
+
+			    }
 			}
 		}
 
