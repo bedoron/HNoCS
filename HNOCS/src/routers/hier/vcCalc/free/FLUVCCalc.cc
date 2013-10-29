@@ -96,7 +96,7 @@ void FLUVCCalc::handlePacketMsg(NoCFlitMsg *msg)
 	Sched *sched = getSchedOnPort(op);
     sched->incrVCUsage(oVC);
 	msg->setVC(oVC);
-	send(msg, "calc$o");
+
 }
 
 void FLUVCCalc::handleMessage(cMessage *msg)
@@ -108,9 +108,12 @@ void FLUVCCalc::handleMessage(cMessage *msg)
     	throw cRuntimeError("Does not know how to handle message of type %d", msg->getKind());
     	delete msg;
     }
+    send(msg, "calc$o");
 }
 
 void FLUVCCalc::PredictorSetOutVC(NoCFlitMsg* msg) {
+    Enter_Method_Silent();
+
     int msgType = msg->getKind();
     if ( msgType == NOC_FLIT_MSG ) {
         handlePacketMsg( (NoCFlitMsg*)msg);
@@ -118,4 +121,5 @@ void FLUVCCalc::PredictorSetOutVC(NoCFlitMsg* msg) {
         throw cRuntimeError("Does not know how to handle message of type %d", msg->getKind());
         delete msg;
     }
+
 }

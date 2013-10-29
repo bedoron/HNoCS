@@ -206,20 +206,18 @@ void AppSrc::sendFlit(int vc) {
 		flit->setType(NOC_MID_FLIT);
 	}
 
-	if(32112 == flit->getId()) {
-	    CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
+//	if(40990 == flit->getId()) {
+	static int headz = 0;
 
+	CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
+    if((headz==0) && (msg!=0) && (msg->getId()==1011)) { // Flit is 1020
+        ++headz;
+        cerr << "---\n";
 	    cerr << "***************************************************\n";
 	    cerr << "Core ID: " << getParentModule()->getIndex() << "\n";
 	    cerr << "MSG SRC: " << msg->getSrcId() << " DST: " << msg->getDstId() << "\n";
-	    cerr << "Flit " << flit->getId() << " detected, the type is ";
-	    switch(flit->getType()) {
-	    case NOC_START_FLIT:    cerr << "NOC_START_FLIT";   break;
-	    case NOC_END_FLIT:      cerr << "NOC_END_FLIT";     break;
-	    case NOC_MID_FLIT:      cerr << "NOC_MID_FLIT";     break;
-	    }
-	    cerr << "\n";
-	    cerr << "Which belongs to message " << msg->getId() << " Roundtrip is: "<< msg->getRoundtrip() << "\n";
+	    cerr << "Flit belongs to message " << msg->getId() << " Roundtrip is: "<< msg->getRoundtrip() << "\n";
+	    cerr << flit;
 
 
 
@@ -233,6 +231,8 @@ void AppSrc::sendFlit(int vc) {
 	    cerr << "Is request- " << meta1->isRequest(flit->getId()) << " Is response- " <<
 	            meta1->isResponse(flit->getId()) << "\n";
 
+	    cerr << "****************************************************\n";
+	    cerr << msg << "\n";
 	    cerr << "****************************************************\n";
 	}
 

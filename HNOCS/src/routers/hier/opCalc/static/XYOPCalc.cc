@@ -22,6 +22,11 @@
 #include "ctimestampedvalue.h"
 #include "cResponseHeadArrived.h"
 
+#include <iostream>
+
+
+using std::cerr;
+
 Define_Module(XYOPCalc);
 
 int XYOPCalc::rowColByID(int id, int &x, int &y)
@@ -131,7 +136,14 @@ XYOPCalc::analyzeMeshTopology()
 				EV << "-I- " << getParentModule()->getFullPath()
 					<< " connected through sw_out[" << portIdx
 					<< "] to Core port: " << port->getFullPath() << endl;
+
+
+
 				corePort = portIdx;
+
+
+
+
 			} else {
 				throw cRuntimeError("Port: %s and connected Core %s do not share the same x:%d and y:%d",
 						port->getFullPath().c_str(), remCore->getFullPath().c_str(),
@@ -209,6 +221,10 @@ XYOPCalc::analyzeMeshTopology()
 		EV << "-W- " << getParentModule()->getFullPath()
 			<< " could not find corePort (of coreType:" << coreType << ")" << endl;
 	}
+
+
+//	cerr << getFullPath() << " - Core prot " << corePort << "\n";
+
 	return(0);
 }
 
@@ -232,6 +248,10 @@ void XYOPCalc::initialize()
     EV << "-I- " << getFullPath() << " Found N/W/S/E/C ports:" << northPort
     		<< "/" << westPort << "/" << southPort << "/"
     		<< eastPort << "/" << corePort << endl;
+
+    m_meshIndex = getParentModule()->getParentModule()->getIndex();
+
+
     WATCH(northPort);
     WATCH(westPort);
     WATCH(eastPort);
@@ -240,43 +260,53 @@ void XYOPCalc::initialize()
 }
 
 void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
-    int dx, dy;
-    rowColByID(msg->getDstId(), dx, dy);
-    int swOutPortIdx;
+
+//    int dstPort = msg->getDstId();
     bool tagged = ResponseDB::getInstance()->exists(msg->getId());
     bool response = ResponseDB::getInstance()->isResponse(msg->getId());
-    // Select routing as needed
-    if (response) {
-        if ((dx == rx) && (dy == ry)) {
-            swOutPortIdx = corePort;
-        } else if (dy > ry) {
-            swOutPortIdx = northPort;
-        } else if (dy < ry) {
-            swOutPortIdx = southPort;
-        } else if (dx > rx) {
-            swOutPortIdx = eastPort;
+    int swOutPortIdx;
+
+
+
+//    if(dstPort!=m_meshIndex) {
+
+        int dx, dy;
+        rowColByID(msg->getDstId(), dx, dy);
+        // Select routing as needed
+        if (response) {
+            if ((dx == rx) && (dy == ry)) {
+                swOutPortIdx = corePort;
+            } else if (dy > ry) {
+                swOutPortIdx = northPort;
+            } else if (dy < ry) {
+                swOutPortIdx = southPort;
+            } else if (dx > rx) {
+                swOutPortIdx = eastPort;
+            } else {
+                swOutPortIdx = westPort;
+            }
         } else {
-            swOutPortIdx = westPort;
+            if ((dx == rx) && (dy == ry)) {
+                swOutPortIdx = corePort;
+            } else if (dx > rx) {
+                swOutPortIdx = eastPort;
+            } else if (dx < rx) {
+                swOutPortIdx = westPort;
+            } else if (dy > ry) {
+                swOutPortIdx = northPort;
+            } else {
+                swOutPortIdx = southPort;
+            }
         }
-    } else {
-        if ((dx == rx) && (dy == ry)) {
-            swOutPortIdx = corePort;
-        } else if (dx > rx) {
-            swOutPortIdx = eastPort;
-        } else if (dx < rx) {
-            swOutPortIdx = westPort;
-        } else if (dy > ry) {
-            swOutPortIdx = northPort;
-        } else {
-            swOutPortIdx = southPort;
+        if (swOutPortIdx < 0) {
+            throw cRuntimeError(
+                    "Routing dead end at %s (%d,%d) for destination %d (%d,%d)",
+                    getParentModule()->getFullPath().c_str(), rx, ry,
+                    msg->getDstId(), dx, dy);
         }
-    }
-    if (swOutPortIdx < 0) {
-        throw cRuntimeError(
-                "Routing dead end at %s (%d,%d) for destination %d (%d,%d)",
-                getParentModule()->getFullPath().c_str(), rx, ry,
-                msg->getDstId(), dx, dy);
-    }
+//    } else {
+//        swOutPortIdx = 4;
+//    }
     // TODO - move into a common header for msgs ?
     cObject* obj = msg->getControlInfo();
     if (obj == NULL) {
@@ -325,5 +355,8 @@ void XYOPCalc::handleMessage(cMessage *msg)
 }
 
 void XYOPCalc::PredictorSetOutPort(NoCFlitMsg* msg) {
+    Enter_Method_Silent();
+    take(msg);
     SetOutPort(msg);
+    drop(msg);
 }

@@ -19,6 +19,7 @@
 //#include "InPortSync.h"
 #include <string>
 #include <iostream>
+#include "Utils.h"
 using std::string;
 using std::cerr;
 
@@ -58,6 +59,8 @@ void Predictor::initialize()
     m_opCalc = check_and_cast<XYOPCalc*>(opCalc);
     m_vcCalc = check_and_cast<FLUVCCalc*>(vcCalc);
 //    m_sched = check_and_cast<Sched*>(sched);
+
+    m_printData = PRINT_DATA;
 }
 
 void Predictor::handleMessage(cMessage *msg)
@@ -74,42 +77,26 @@ bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
         simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
 
         EV << "[" << now << "] Predicted interval is " << interval.first << "-" << interval.second << "\n";
-        cerr << "MOO\n";
+
         if((now >= interval.first)  && (now <= interval.second)) {
             isHit = true;
+            cerr << "Hit\n";
         } else {
             isHit = false;
+            cerr << "Miss\n";
         }
 
     } else {
         cerr << "*********** CheckIfHit FAILURE **************\n";
-        cerr << "Flit " << nocMsg->getId() << " detected on Router "
-                << getParentModule()->getParentModule()->getIndex()
-                << " Port " << getParentModule()->getIndex() << "\n";
-
-        cerr << "it's type is ";
-        switch(nocMsg->getType()) {
-        case NOC_START_FLIT:    cerr << "NOC_START_FLIT";   break;
-        case NOC_END_FLIT:      cerr << "NOC_END_FLIT";     break;
-        case NOC_MID_FLIT:      cerr << "NOC_MID_FLIT";     break;
-        }
-
-        cerr << "-";
-        if(meta->isRequest(nocMsg->getId())) {
-            cerr << "Request";
-        } else { cerr << "Response"; }
-        cerr << "\n";
-        cerr << "Source: " << nocMsg->getSrcId() << " Dest: "
-                        << nocMsg->getDstId() << "\n";
-        cerr << "Session ID: " << meta->getSessionId() << "\n";
-
         cerr << "Flit doesn't have a prediction object but all\n";
         cerr << "responses should have one, aborting violently\n";
-
         cerr << "     THROWING EXCEPTION AND QUITTING\n";
         cerr << "*********************************************\n";
-        throw cRuntimeError("Meta not found");
+        cerr << nocMsg;
+
+        throw cRuntimeError("Predictor::CheckIfHit - Meta not found in prediction table");
     }
+
     return isHit;
 }
 
@@ -177,10 +164,12 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
             << " will arrive between the clocks: " << interval.first << " - " << interval.second;
 
     int pktId = request->getId() ;
-    if(pktId == 32112)
+
+    if(pktId == 1020)
     {
-        cerr << "Prediction for packet " << pktId << " inserted into DB for router "
-                << getParentModule()->getParentModule()->getIndex() << "\n";
+        cerr << getFullPath() << ": prediction for packet " << pktId << " inserted into DB\n";
+//        cerr << "Prediction for packet " << pktId << " inserted into DB for router "
+//                << getParentModule()->getParentModule()->getIndex() << "\n";
     }
     m_predictionTable[meta] = interval;
     return true;
@@ -205,20 +194,27 @@ bool Predictor::Predict(NoCFlitMsg* request) {
 //}
 
 bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
+
     bool isPredicted = false;
+    int pktId = msg->getId();
 
-
-
-    int pktId = msg->getId() ;
-    if(pktId == 32112)
+    if(pktId == 1020)
     {
         cerr << "Prediction for packet " << pktId << " started in router "
                 << getParentModule()->getParentModule()->getIndex() << "\n";
+
+        cerr << " -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
+        cerr << "Flit destination port core index is: " << msg->getDstId() << " \n";
+        cerr << "My parent's id is : " << getParentModule()->getParentModule()->getIndex() << "\n";
     }
 
 
+    int destination = msg->getDstId();
+    int currentBlock = getParentModule()->getParentModule()->getIndex();
 
-
+//    if(destination==currentBlock) {
+//        outPort = 4; // F U !!!!!! FFFFF   UUUU !@!!!!!!
+//    }
 
 
 
@@ -227,18 +223,25 @@ bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
         isPredicted = false;
     } else {
         SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-        Predict(msg, meta);
 
 //        if((meta!=0) && meta->isRequest(msg->getId())) {
-//            cGate *gate = getParentModule()->gate("sw_in",outPort);
-//            if (!gate) cRuntimeError("outport is weird");
-//            cGate *remGate = gate->getPathEndGate()->getPreviousGate();
-//            if (!remGate) cRuntimeError("remote gate is weird");
-//            cModule *neighbour = remGate->getOwnerModule();
-//            if(!neighbour) cRuntimeError("remote port is weird");
-//            Predictor *adjPred = check_and_cast<Predictor*>(neighbour->getSubmodule("predictor"));
-//            adjPred->Predict(msg, meta);
+//            cModule *dstPort = getParentModule()->getParentModule()->getSubmodule("port",outPort);
+//
+//
 //        }
+
+//        Predict(msg, meta);
+
+        if((meta!=0) && meta->isRequest(msg->getId())) {
+            cGate *gate = getParentModule()->gate("sw_in",outPort);
+            if (!gate) cRuntimeError("outport is weird");
+            cGate *remGate = gate->getPathEndGate()->getPreviousGate();
+            if (!remGate) cRuntimeError("remote gate is weird");
+            cModule *neighbour = remGate->getOwnerModule();
+            if(!neighbour) cRuntimeError("remote port is weird");
+            Predictor *adjPred = check_and_cast<Predictor*>(neighbour->getSubmodule("predictor"));
+            adjPred->Predict(msg, meta);
+        }
 
     }
 
@@ -263,14 +266,16 @@ void Predictor::DestroyHit(int inVC) {
 }
 
 Predictor::~Predictor() {
-    cerr << "Destroying predictor for router " << m_routerIndex << " on port " << m_portIndex << "\n";
-    cerr << "The contents of its Database is: \n";
-    PredictionTable::iterator it = m_predictionTable.begin();
-    for(;it != m_predictionTable.end(); ++it) {
+    if(m_printData) {
+        cerr << "Destroying predictor for router " << m_routerIndex << " on port " << m_portIndex << "\n";
+        cerr << "The contents of its Database is: \n";
+        PredictionTable::iterator it = m_predictionTable.begin();
+        for(;it != m_predictionTable.end(); ++it) {
 
-        cerr << "Session ID - " << (it->first->getSessionId()) << "\n";
+            cerr << "Session ID - " << (it->first->getSessionId()) << "\n";
+        }
+        cerr << "***************************************\n";
     }
-    cerr << "***************************************\n";
 }
 
 Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {

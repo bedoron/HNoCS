@@ -57,6 +57,7 @@ private:
 	std::vector<int> curOutVC; // current packet output VC per in VC
 	std::vector<int> curOutPort; // current packet output port per in VC
 	std::vector<int> curPktId; // the current packet id on the VC (0 means not inside packet)
+	std::vector<int> curHeadId; // To be able to distinguish between request/response tails
 
 	Predictor *m_predictor;
 
