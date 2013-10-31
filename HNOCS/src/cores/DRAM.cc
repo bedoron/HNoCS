@@ -81,9 +81,9 @@ void DRAM::handlePopMsg()
 	}
 
 
-	if(resp->getId()==40979) {
-	    cerr << "Response id " << resp->getId() << " belongs to request id: " << req->getId() << "\n";
-	}
+//	if(resp->getId()==40979) {
+//	    cerr << "Response id " << resp->getId() << " belongs to request id: " << req->getId() << "\n";
+//	}
 
 
 

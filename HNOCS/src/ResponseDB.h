@@ -44,6 +44,7 @@ public:
 	bool add(CMPMsg *msg);          // will be added per NoC request-response pair, use packet as basis
 
 	SessionMeta* find(MsgId id) const;		// get SessionMeta associated by packet id, null if not
+	SessionMeta* find(NoCFlitMsg *msg) const;      // get SessionMeta associated by packet id, null if not
 	SessionMeta* find(CMPMsg *msg) const; // use get id
 
 	bool exists(MsgId id) const;		// check if flit id exists in DB

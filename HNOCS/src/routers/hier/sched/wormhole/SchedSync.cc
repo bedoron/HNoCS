@@ -33,6 +33,12 @@
 // Clk'ed according to the outgoing link rate, gets clk only when it has something to arbitrate ...
 
 #include "SchedSync.h"
+#include "Utils.h"
+
+
+#include <iostream>
+using std::cerr;
+
 
 Define_Module(SchedSync)
 ;
@@ -153,9 +159,14 @@ void SchedSync::arbitrate() {
 		    // if we have a high priority packet with a successful prediction
 		    // allow it to pass before all else
 		    if(m_predReq.size()>0) {
-		        nextVC = m_predReq.front().vc;
-		        nextInPort = m_predReq.front().ip;
+		        HighPriorityRequests highPrio = m_predReq.front();
+		        m_predReq.pop();
+
+		        nextVC = highPrio.vc;
+		        nextInPort = highPrio.ip;
 		        found = true;
+
+		        ReqsByIPoVC[nextInPort][nextVC].push_front(highPrio.msg); // Inject message
 		    } else {
 		        // go select the first Req (that is starting with current VC and next InPort
 		        // to curPort of the vc
@@ -275,13 +286,13 @@ void SchedSync::handleFlitMsg(NoCFlitMsg *msg) {
 		ReqsByIPoVC[ip][vc].pop_front();
 
 		// Get rid of prediction
-		if((0==arbitration_type) && (m_predReq.size()>0)) {
-		    HighPriorityRequests hpReq = m_predReq.front();
-		    if((hpReq.ip == ip) && (hpReq.vc == vc) && (hpReq.msg->getPktId()==msg->getPktId())) {
-		        EV << "Removing high priority packet " << msg->getPktId();
-		        m_predReq.pop();
-		    }
-		}
+//		if((0==arbitration_type) && (m_predReq.size()>0)) {
+//		    HighPriorityRequests hpReq = m_predReq.front();
+//		    if((hpReq.ip == ip) && (hpReq.vc == vc) && (hpReq.msg->getPktId()==msg->getPktId())) {
+//		        EV << "Removing high priority packet " << msg->getPktId();
+//		        m_predReq.pop();
+//		    }
+//		}
 
 		if (vcCurReq[vc] == req)
 			vcCurReq[vc] = NULL;
@@ -293,6 +304,8 @@ void SchedSync::handleFlitMsg(NoCFlitMsg *msg) {
 	}
 
 	if (credits[vc] < 0) {
+	    cerr << msg;
+	    cerr << "************* THROWING EXCEPTION **************\n";
 		throw cRuntimeError("-E- %s Sending on VC %d has no credits packet:%d",
 				getFullPath().c_str(), vc, msg->getPktId());
 	}
@@ -318,9 +331,9 @@ void SchedSync::handleReqMsg(NoCReqMsg *msg) {
 	    if(m_predReq.size()>10000) { // TODO: Threshold + Drop and Ignore
 	        EV << "OVER 10000 Requests in high priority Queue";
 	    }
+	} else {
+	    ReqsByIPoVC[ip][vc].push_back(msg);
 	}
-
-	ReqsByIPoVC[ip][vc].push_back(msg);
 
 	// Done: in the VC ALLOC
 	// vcUsage[vc]++;

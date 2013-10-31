@@ -397,6 +397,7 @@ $O/routers/hier/sched/wormhole/SchedSync.o: routers/hier/sched/wormhole/SchedSyn
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	Utils.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/sched/wormhole/SchedSync.h

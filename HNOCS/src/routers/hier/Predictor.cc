@@ -80,12 +80,12 @@ bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
 
         if((now >= interval.first)  && (now <= interval.second)) {
             isHit = true;
-            cerr << "Hit\n";
+//            cerr << "Hit\n";
         } else {
             isHit = false;
-            if(m_predictor->getName()!="Default") {
-                cerr << "Miss\n";
-            }
+//            if(m_predictor->getName()!="Default") {
+//                cerr << "Miss\n";
+//            }
         }
 
     } else {
@@ -132,21 +132,16 @@ bool Predictor::Hit(NoCFlitMsg* nocMsg) {
     return isHit;
 }
 
-//InPortSync& Predictor::getInPort() {
-//    return *m_inPort;
-//}
-
  XYOPCalc& Predictor::getOpCalc()  {
     return *m_opCalc;
 }
 
-// SchedSync& Predictor::getSched()  {
-//    return *m_sched;
-//}
+bool Predictor::Hit(SessionMeta* meta) {
+    PredictionTable::const_iterator iter = m_predictionTable.find(meta);
 
-bool Predictor::Hit(int inVC) {
-    return (NULL != m_VCHit[inVC]);
+    return (iter != m_predictionTable.end());
 }
+
 
 
 bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
@@ -166,13 +161,19 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
             << " will arrive between the clocks: " << interval.first << " - " << interval.second;
 
     int pktId = request->getId() ;
+//
+//    if(pktId == 1020)
+//    {
+//        cerr << getFullPath() << ": prediction for packet " << pktId << " inserted into DB\n";
+////        cerr << "Prediction for packet " << pktId << " inserted into DB for router "
+////                << getParentModule()->getParentModule()->getIndex() << "\n";
+//    }
 
-    if(pktId == 1020)
-    {
-        cerr << getFullPath() << ": prediction for packet " << pktId << " inserted into DB\n";
-//        cerr << "Prediction for packet " << pktId << " inserted into DB for router "
-//                << getParentModule()->getParentModule()->getIndex() << "\n";
-    }
+//    if(meta->getSessionId()==22) {
+//        cerr << getFullPath() << ": prediction for packet " << pktId << " inserted into DB\n";
+//    }
+
+
     m_predictionTable[meta] = interval;
     return true;
 }
@@ -190,35 +191,10 @@ bool Predictor::Predict(NoCFlitMsg* request) {
     return retVal;
 }
 
-//void Predictor::RegisterRemoteTable(SessionMeta* meta,
-//        PredictionInterval predInt) {
-//    Predict(request, meta);
-//}
-
 bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
 
     bool isPredicted = false;
     int pktId = msg->getId();
-
-    if(pktId == 1020)
-    {
-        cerr << "Prediction for packet " << pktId << " started in router "
-                << getParentModule()->getParentModule()->getIndex() << "\n";
-
-        cerr << " -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
-        cerr << "Flit destination port core index is: " << msg->getDstId() << " \n";
-        cerr << "My parent's id is : " << getParentModule()->getParentModule()->getIndex() << "\n";
-    }
-
-
-    int destination = msg->getDstId();
-    int currentBlock = getParentModule()->getParentModule()->getIndex();
-
-//    if(destination==currentBlock) {
-//        outPort = 4; // F U !!!!!! FFFFF   UUUU !@!!!!!!
-//    }
-
-
 
     if(msg->getFlitIdx()!=0) {
         cerr << " Trying to Predict for a non head flit, ignoring\n";
@@ -226,14 +202,7 @@ bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
     } else {
         SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
 
-//        if((meta!=0) && meta->isRequest(msg->getId())) {
-//            cModule *dstPort = getParentModule()->getParentModule()->getSubmodule("port",outPort);
-//
-//
-//        }
-
-//        Predict(msg, meta);
-
+        // Send packet for prediction in Outgoing port of this router
         if((meta!=0) && meta->isRequest(msg->getId())) {
             cGate *gate = getParentModule()->gate("sw_in",outPort);
             if (!gate) cRuntimeError("outport is weird");
@@ -243,7 +212,7 @@ bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
             if(!neighbour) cRuntimeError("remote port is weird");
             Predictor *adjPred = check_and_cast<Predictor*>(neighbour->getSubmodule("predictor"));
             adjPred->Predict(msg, meta);
-        }
+        } else { }
 
     }
 
@@ -254,16 +223,13 @@ bool Predictor::PredictIfRequest(NoCFlitMsg* msg, int outPort) {
     return *m_vcCalc;
 }
 
-void Predictor::DestroyHit(int inVC) {
-    if(NULL != m_VCHit[inVC]) {
-        SessionMeta *meta = m_VCHit[inVC];
-        m_VCHit[inVC] = NULL;
-        PredictionTable::iterator prediction = m_predictionTable.find(meta);
-        if(prediction != m_predictionTable.end()) {
-            m_predictionTable.erase(prediction);
-        } else {
-            throw cRuntimeError("Trying to remove a meta that was marked as a hit but didn't have a prediction");
-        }
+void Predictor::DestroyHit(SessionMeta *meta) {
+    PredictionTable::iterator iter = m_predictionTable.find(meta);
+    if(iter != m_predictionTable.end()) {
+        m_predictionTable.erase(iter);
+    } else {
+        cerr << "Trying to destroy session " << meta->getSessionId() << " which isn't registered\n";
+        throw cRuntimeError("Trying to remove a meta that was marked as a hit but didn't have a prediction");
     }
 }
 
@@ -287,4 +253,8 @@ Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {
     }
 
     return check_and_cast<Predictor *>(predictor);
+}
+
+SessionMeta* Predictor::getVCHit(int vc) {
+    return m_VCHit[vc];
 }

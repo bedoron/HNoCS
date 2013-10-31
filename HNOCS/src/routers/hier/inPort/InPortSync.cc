@@ -139,11 +139,6 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	sprintf(reqName, "req-s:%d-d:%d-p:%d-f:%d", (msg->getPktId() >> 16), msg->getDstId(),
 			(msg->getPktId() % (1<< 16)), msg->getFlitIdx());
 
-//	static int heads = 0;
-//	++heads;
-	EV << "inPortSync********************************************************************************************************\n";
-	EV << "Message ID transferred by msg is " << msg->getPktId() << " flit IDX is  " << msg->getFlitIdx() << " ID "  << msg->getId() << \
-			"  fullname  " << msg->getFullName() << "  full path " << msg->getFullPath() << "  "    << "\n";
 	NoCReqMsg *req = new NoCReqMsg(reqName); // Create head flit ?
 	req->setKind(NOC_REQ_MSG);
 	req->setOutPortNum(outPort);
@@ -155,34 +150,54 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	req->setNumAcked(0);
 	req->setSchedulingPriority(0);
 	req->setPrediction(false);
-	EV << "Checking the id of req " << req->getId() << " and pktId is : " << req->getPktId() << "\n";
-	EV << "********************************************************************************************************\n";
 
 	/**
 	 * Create a prediction object
 	 * Attach it to the request using : getControlInfo()
 	 */
 
-	if(msg->getId()==1020) {
-	    cerr << getFullPath() << " Caught " << msg->getId() << " a stage before registering the predictor\n";
-	    cerr << "Out port is: " << outPort << "\n";
-	}
+    const unsigned int sessionId = 22;
 
-	if(m_predictor->Hit(inVC)) {
-	    // Hit will get us here if this is a response message
-	    // and it has a prediction
-	    if(msg->getId()==1020) {
-	        cerr << "*** it was a hit!!!\n";
-	    }
-	    req->setPrediction(true);
-	} else {
-	    if(msg->getId()==1020) {
-	        cerr << "*** trying to predict if request!!!\n";
-	    }
+    AppFlitMsg *flit = (AppFlitMsg*) msg;
+	SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+    if(meta && meta->getSessionId()==sessionId) {
+        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
+            cerr << "******* " << getFullPath() << " ********\n";
+            cerr << flit;
+        }
+    }
 
+//	if(m_predictor->Hit(inVC)) {
+//
+//        if(meta && meta->getSessionId()==sessionId) {
+//            if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
+//                cerr << "packet wasn't sent for prediction because session " << m_predictor->getVCHit(inVC)->getSessionId() << " already occupies vc "<< inVC<<"\n";
+//            }
+//        }
+//
+//	    req->setPrediction(true);
+//	} else {
+//
+//	    if(meta && meta->getSessionId()==sessionId) {
+//	        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
+//	            cerr << "packet sent for prediction\n";
+//	        }
+//	    }
+//	    m_predictor->PredictIfRequest(msg, outPort);
+//
+//	}
+//    AppFlitMsg *flit = (AppFlitMsg*) msg;
+    SessionMeta *session = ResponseDB::getInstance()->find(flit);
 
-	    m_predictor->PredictIfRequest(msg, outPort);
-	}
+    if(session) {
+        if(session->isResponse(flit)) {    /* is response - check prediction*/
+            if(m_predictor->Hit(session)) { // In case of HIT push the request with high priority
+                req->setPrediction(true);
+            }
+        } else { /* is request - create prediction */
+            m_predictor->PredictIfRequest(flit, outPort);
+        }
+    }
 
 	send(req, "ctrl$o", outPort);
 }
@@ -279,13 +294,20 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 
 	// send it to get the out VC
 	if (QByiVC[inVC].empty()) {
-	    if(!m_predictor->Hit(inVC)) {
-	        send(msg,"calcVc$o");
+
+	    SessionMeta *session = ResponseDB::getInstance()->find(msg);
+	    if(session && session->isResponse(msg)) {
+	        if(m_predictor->Hit(session)) {
+	            m_predictor->getVcCalc().PredictorSetOutVC(msg);
+	            take(msg);
+	            handleCalcVCResp(msg);
+	        } else {
+	            send(msg,"calcVc$o");
+	        }
 	    } else {
-	        m_predictor->getVcCalc().PredictorSetOutVC(msg);
-	        take(msg);
-	        handleCalcVCResp(msg);
+	        send(msg,"calcVc$o");
 	    }
+
 	} else {
 		// we queue the flits on their inVC
 		QByiVC[inVC].insert(msg);
@@ -327,15 +349,18 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		//EV << "CHECK THE ABOVE TO SEE IF WE HAVE THE ORIGINAL ID SOMEWHERE HERE\n";
 
 		// send it to get the out port calc
-		if(!m_predictor->Hit(msg)) {
-		    send(msg, "calcOp$o");
-		} else {
-		    m_predictor->getOpCalc().PredictorSetOutPort(msg);
-		    take(msg);
-		    handleCalcOPResp(msg);
-		    return; // LAST CALL
-		}
-
+        SessionMeta *session = ResponseDB::getInstance()->find(msg);
+        if(session && session->isResponse(msg)) {
+            if(m_predictor->Hit(session)) {
+                m_predictor->getOpCalc().PredictorSetOutPort(msg);
+                take(msg);
+                handleCalcOPResp(msg);
+            } else {
+                send(msg, "calcOp$o");
+            }
+        } else {
+            send(msg, "calcOp$o");
+        }
 	} else {
 		// make sure the packet id is correct
 		if (msg->getPktId() != curPktId[inVC]) {
@@ -344,28 +369,57 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		}
 
 		// on last FLIT need to zero out the current packet Id
+
 		if (msg->getType() == NOC_END_FLIT) {
 		    long int headID = curHeadId[inVC];
 			SessionMeta *meta = ResponseDB::getInstance()->find(headID);
 			curPktId[inVC] = 0;
-			curHeadId[inVC] = 0;
+			curHeadId[inVC] = -1;
 
-			if(meta) {
 
-                if((meta->isResponse(headID))&& /*  Is response */
-                        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
-                    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
-                    m_predictor->DestroyHit(inVC);
-                }
-			} else {
-			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-			    int op = cmpMsg->getOperation();
-			    if(op!=CMP_OP_WRITE) {
-			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-			        cerr << "And it's operation isn't a write operation\n";
+            if(meta) {
+                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
+                    AppFlitMsg *afm = (AppFlitMsg*)msg;
+                    if( afm->getAppMsgLen()==afm->getPktId() ) { /* Destroy only on LAST flit burst of the entire CMP Message */
+                        cerr << "Tail flit of last packet in session " << meta->getSessionId() << " detected, destroying prediction entry\n";
+                        m_predictor->DestroyHit(meta);
+                    }
+                } else { /* flit is request, don't cleanup predictor */ }
+            } else {
+              CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
+              int op = cmpMsg->getOperation();
+              if(op!=CMP_OP_WRITE) {
+                  cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
+                  cerr << "We were looking for curHeadId " << headID << " \n";
+                  cerr << "And it's operation isn't a write operation\n";
+                  cerr << "Type is ";
+                  switch(cmpMsg->getOperation()) {
+                  case CMP_OP_READ: cerr << "READ"; break;
+                  default: break;
+                  }
+                  cerr << "\n";
+                  cerr << "FLIT DATA:\n";
+                  cerr << msg;
+                  cerr << "MSG DATA:\n";
+                  cerr << cmpMsg << "\n";
+              }
+            }
 
-			    }
-			}
+//			if(meta) {
+//                if((meta->isResponse(headID))&& /*  Is response */
+//                        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
+//                    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
+//                    m_predictor->DestroyHit(inVC);
+//                }
+//			} else {
+//			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
+//			    int op = cmpMsg->getOperation();
+//			    if(op!=CMP_OP_WRITE) {
+//			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
+//			        cerr << "And it's operation isn't a write operation\n";
+//
+//			    }
+//			}
 		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head

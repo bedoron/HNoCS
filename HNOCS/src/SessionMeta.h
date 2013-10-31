@@ -107,6 +107,7 @@ public:
 
 	bool isRequest(CMPMsg *msg) const { return isRequest(msg->getId()); };	// check if packet is request
 	bool isResponse(CMPMsg *msg) const { return isResponse(msg->getId());};  // check if packet is response
+	bool isResponse(NoCFlitMsg *msg) const { return isResponse(((AppFlitMsg*)msg)->getId()); };
 	bool isSpecial(CMPMsg *msg) const { return isSpecial(msg->getId()); }; 	// check if packet is request OR response
 
 	void traverseRouter(int router_id);

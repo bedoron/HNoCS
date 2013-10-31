@@ -172,7 +172,6 @@ void AppSrc::sendFlit(int vc) {
 	if (flitIdx[vc] == 0) {
 		CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
 
-//		EV << "Found head flit to tag";
 		if(msg->getRoundtrip()) { // Head flit which is meant to be marked - Notice that we need to deal only with the first head
 		    SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
 		    if(meta == 0) {
@@ -206,35 +205,79 @@ void AppSrc::sendFlit(int vc) {
 		flit->setType(NOC_MID_FLIT);
 	}
 
-//	if(40990 == flit->getId()) {
-	static int headz = 0;
+//	const unsigned int sessionId = 22;
+//
+//	SessionMeta *meta = ResponseDB::getInstance()->find(flit->getId());
+//	if(meta && meta->getSessionId()==sessionId) {
+//	    if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
+//	        cerr << "******* " << getFullPath() << " ********\n";
+//	        cerr << flit;
+//	    }
+//	}
+//
+//
+//
+//	if(flit->getId()==315) {
+//	    CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
+//	    CMPMsg *flitMsg = (CMPMsg*) flit->getEncapsulatedPacket();
+//	    cerr << "******************** "<< getFullPath()<< " *******************************\n";
+//	    if(!msg) {
+//	        cerr << "vcCurMsg[" << vc << "] is empty\n";
+//	    } else {
+//	        if(msg->getId() != flitMsg->getId()) {
+//	            cerr << "Flit encapsulated message and vcCurMsg[" << vc << "] Differ";
+//	        }
+//	        cerr << msg << "\n";
+//	    }
+//	    cerr << flit;
+//
+//	    SessionMeta *meta;
+//	    switch(flit->getType()) {
+//	    case NOC_START_FLIT:    meta = ResponseDB::getInstance()->find(msg); break;
+//	    case NOC_END_FLIT:      meta = ResponseDB::getInstance()->find(flitMsg); break;
+//	    default:                if(msg==NULL) {
+//	                                cerr << "Flit isn't end nor start, and vcCurMsg[" << vc << "] is empty\n";
+//	                            } else {
+//	                                meta = ResponseDB::getInstance()->find(msg); break;
+//	                            }
+//	                            break;
+//	    }
+//	    if(meta)
+//	        cerr << "Session ID: " << meta->getSessionId() << "\n";
+//
+//	    if(flit->getType()==NOC_END_FLIT) {
+//	        cerr << "This end flit belongs to CMPMsg " << flitMsg->getId() << "\n";
+//	    }
+//
+//	    cerr << "===========================================================================\n";
+//	}
 
-	CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
-    if((headz==0) && (msg!=0) && (msg->getId()==1011)) { // Flit is 1020
-        ++headz;
-        cerr << "---\n";
-	    cerr << "***************************************************\n";
-	    cerr << "Core ID: " << getParentModule()->getIndex() << "\n";
-	    cerr << "MSG SRC: " << msg->getSrcId() << " DST: " << msg->getDstId() << "\n";
-	    cerr << "Flit belongs to message " << msg->getId() << " Roundtrip is: "<< msg->getRoundtrip() << "\n";
-	    cerr << flit;
-
-
-
-	    SessionMeta *meta1 = ResponseDB::getInstance()->find(msg->getId());
-	    SessionMeta *meta2 = ResponseDB::getInstance()->find(flit->getId());
-
-
-
-	    cerr << "MSG SESSION ADDR: " << meta1 << " FLIT SESSION ADDR: " << meta2 << "\n";
-	    cerr << "Session ID is: " << meta1->getSessionId() << "\n";
-	    cerr << "Is request- " << meta1->isRequest(flit->getId()) << " Is response- " <<
-	            meta1->isResponse(flit->getId()) << "\n";
-
-	    cerr << "****************************************************\n";
-	    cerr << msg << "\n";
-	    cerr << "****************************************************\n";
-	}
+//    if((headz==0) && (msg!=0) && /*(msg->getId()==315)*/ (flit->getId()==315)) { // Flit is 1020
+//        ++headz;
+//        cerr << "---\n";
+//	    cerr << "********************"<< getFullPath()<< "*******************************\n";
+//	    cerr << "Core ID: " << getParentModule()->getIndex() << "\n";
+//	    cerr << "MSG SRC: " << msg->getSrcId() << " DST: " << msg->getDstId() << "\n";
+//	    cerr << "Flit " << flit->getId() << " belongs to message " << msg->getId() <<
+//	            " Roundtrip is: "<< msg->getRoundtrip() << "\n";
+//	    cerr << flit;
+//
+//
+//
+//	    SessionMeta *meta1 = ResponseDB::getInstance()->find(msg->getId());
+//	    SessionMeta *meta2 = ResponseDB::getInstance()->find(flit->getId());
+//
+//
+//
+//	    cerr << "MSG SESSION ADDR: " << meta1 << " FLIT SESSION ADDR: " << meta2 << "\n";
+//	    cerr << "Session ID is: " << meta1->getSessionId() << "\n";
+//	    cerr << "Is request- " << meta1->isRequest(flit->getId()) << " Is response- " <<
+//	            meta1->isResponse(flit->getId()) << "\n";
+//
+//	    cerr << "****************************************************\n";
+//	    cerr << msg << "\n";
+//	    cerr << "****************************************************\n";
+//	}
 
 
 

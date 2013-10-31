@@ -63,9 +63,10 @@ class Predictor : public cSimpleModule
 public:
     ~Predictor();
     bool Hit(NoCFlitMsg* msg);
+    bool Hit(SessionMeta *meta);
     bool Hit(int inVC);
 
-    void DestroyHit(int inVC);
+    void DestroyHit(SessionMeta *meta);
 
     bool Predict(NoCFlitMsg *request);
     bool Predict(NoCFlitMsg *request, SessionMeta *meta);
@@ -82,6 +83,11 @@ public:
 
     // Get the Predictor associated with current hierarchy
     static Predictor* GetMyPredictor(cSimpleModule *current);
+
+    // Test method
+
+    SessionMeta *getVCHit(int vc);
+
 };
 
 #endif

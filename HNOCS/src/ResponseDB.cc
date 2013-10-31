@@ -183,6 +183,13 @@ SessionMeta* ResponseDB::find(MsgId id) const {
 SessionMeta* ResponseDB::find(CMPMsg *msg) const {
 	return find(msg->getId());
 }
+
+SessionMeta* ResponseDB::find(NoCFlitMsg *msg) const {
+    return find(((AppFlitMsg*)msg)->getId());
+}
+
+
+
 bool ResponseDB::exists(CMPMsg *msg) const {
 	return exists(msg->getId());
 }
