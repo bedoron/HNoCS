@@ -83,7 +83,9 @@ bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
             cerr << "Hit\n";
         } else {
             isHit = false;
-            cerr << "Miss\n";
+            if(m_predictor->getName()!="Default") {
+                cerr << "Miss\n";
+            }
         }
 
     } else {

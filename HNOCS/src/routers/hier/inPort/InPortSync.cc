@@ -357,7 +357,15 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
                     cerr << "Tail flit of last packet detected, destroying prediction DB\n";
                     m_predictor->DestroyHit(inVC);
                 }
-			} else { cerr << "***************** " << headID << " *********MOO***\n"; }
+			} else {
+			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
+			    int op = cmpMsg->getOperation();
+			    if(op!=CMP_OP_WRITE) {
+			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
+			        cerr << "And it's operation isn't a write operation\n";
+
+			    }
+			}
 		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head
