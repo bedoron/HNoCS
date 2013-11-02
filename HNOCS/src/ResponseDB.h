@@ -49,7 +49,7 @@ public:
 	SessionMeta* find(NoCFlitMsg *msg) const;      // get SessionMeta associated by packet id, null if not
 	SessionMeta* find(CMPMsg *msg) const; // use get id
 
-	SessionMeta* findBySessionId(int sessionId) const;
+	SessionMeta* findBySessionId(int sessionId);
 
 
 	bool exists(MsgId id) const;		// check if flit id exists in DB

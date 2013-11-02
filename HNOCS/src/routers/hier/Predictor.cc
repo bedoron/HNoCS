@@ -104,37 +104,37 @@ bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
 
 
 bool Predictor::Hit(NoCFlitMsg* nocMsg) {
-    AppFlitMsg* msg = dynamic_cast<AppFlitMsg*>(nocMsg);
-    bool isHit = false;
-    int msgId = msg->getId(); //msg->getId();
-    SessionMeta *meta = ResponseDB::getInstance()->find(msgId);
-    // meta could be null if its a write request
-
-    if((NULL != meta) && meta->isResponse(msgId)) {
-        simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
-        EV << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
-        isHit = CheckIfHit(meta, nocMsg);
-
-        if(true == isHit) { // Start Hit flow
-            EV << "[" << now << "] HIT!\n";
-            HitFlowStart(msg, meta);
-        } else {
-            EV << "[" << now << "] MISS :-(\n";
-        }
-    } else {
-        // Requests are always a miss
-        isHit = false;
-    }
-    return isHit;
+//    AppFlitMsg* msg = dynamic_cast<AppFlitMsg*>(nocMsg);
+//    bool isHit = false;
+//    int msgId = msg->getId(); //msg->getId();
+//    SessionMeta *meta = ResponseDB::getInstance()->find(msgId);
+//    // meta could be null if its a write request
+//
+//    if((NULL != meta) && meta->isResponse(msgId)) {
+//        simtime_t now = cSimulation::getActiveSimulation()->getSimTime();
+//        EV << "[" << now << "] Checking response prediction for pkt " << msg->getPktId() << "\n";
+//        isHit = CheckIfHit(meta, nocMsg);
+//
+//        if(true == isHit) { // Start Hit flow
+//            EV << "[" << now << "] HIT!\n";
+//            HitFlowStart(msg, meta);
+//        } else {
+//            EV << "[" << now << "] MISS :-(\n";
+//        }
+//    } else {
+//        // Requests are always a miss
+//        isHit = false;
+//    }
+//    return isHit;
 }
 
  XYOPCalc& Predictor::getOpCalc()  {
     return *m_opCalc;
 }
 
-bool Predictor::Hit(SessionMeta* meta) {
-
-}
+//bool Predictor::Hit(SessionMeta* meta) {
+//
+//}
 
 
 /**
@@ -142,10 +142,10 @@ bool Predictor::Hit(SessionMeta* meta) {
  */
 bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
 //    AppFlitMsg *msg = (AppFlitMsg*)request;
-
-    PredictionInterval interval = m_predictor->predict(request, meta);
-
-    return true;
+//
+//    PredictionInterval interval = m_predictor->predict(request, meta);
+//
+//    return true;
 }
 
 Predictor* Predictor::getTargetPredictor(NoCFlitMsg *msg) {
@@ -163,31 +163,31 @@ Predictor* Predictor::getTargetPredictor(NoCFlitMsg *msg) {
 
 
 bool Predictor::PredictIfRequest(NoCFlitMsg* msg) {
-    AppFlitMsg *flit = (AppFlitMsg*)msg;
-    bool isPredicted = false;
-
-    int flitIdx = flit->getFlitIdx();
-    int pktIdx = flit->getPktIdx();
-    int flitType = flit->getType();
-
-    if(flitType!=NOC_START_FLIT) { /* Flit isn't a start flit */
-        cerr << msg;
-        throw cRuntimeError("PredictIfRequest received a non start flit, aborting");
-    } else { /* Flit is a start flit */
-        if(pktIdx==0) { /* Flit is first of flow */
-            SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-            if(NULL != meta) { /* Flit is part of a request-response flow*/
-                if(meta->isRequest(msg)) {
-                    Predictor *target = getTargetPredictor(msg);
-                    isPredicted = target->Predict(msg, meta);;
-                }
-            } else {
-                /* NOP */
-            }
-        }
-    }
-
-    return isPredicted;
+//    AppFlitMsg *flit = (AppFlitMsg*)msg;
+//    bool isPredicted = false;
+//
+//    int flitIdx = flit->getFlitIdx();
+//    int pktIdx = flit->getPktIdx();
+//    int flitType = flit->getType();
+//
+//    if(flitType!=NOC_START_FLIT) { /* Flit isn't a start flit */
+//        cerr << msg;
+//        throw cRuntimeError("PredictIfRequest received a non start flit, aborting");
+//    } else { /* Flit is a start flit */
+//        if(pktIdx==0) { /* Flit is first of flow */
+//            SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+//            if(NULL != meta) { /* Flit is part of a request-response flow*/
+//                if(meta->isRequest(msg)) {
+//                    Predictor *target = getTargetPredictor(msg);
+//                    isPredicted = target->Predict(msg, meta);;
+//                }
+//            } else {
+//                /* NOP */
+//            }
+//        }
+//    }
+//
+//    return isPredicted;
 }
 
  FLUVCCalc& Predictor::getVcCalc()  {

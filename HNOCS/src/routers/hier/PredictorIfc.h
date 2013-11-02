@@ -18,20 +18,25 @@ using std::pair;
 using std::map;
 
 typedef pair<simtime_t, simtime_t> PredictionInterval;
-typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CREATE, PREDICTION_DESTROY } Resolution;
+typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CREATE, PREDICTION_DESTROY, PREDICTION_IDLE } Resolution;
 
 class PredictorIfc {
     string m_method;
 
-    // On Miss handler
-    virtual void miss(NoCFlitMsg *msg, SessionMeta *meta) { };
-    // On Hit handler
-    virtual void hit(NoCFlitMsg *msg, SessionMeta *meta) { };
-    // On Destroy session (last tail flit) handler
-    virtual void destroy(NoCFlitMsg *msg, SessionMeta *meta) { };
 
+    void callHandler(NoCFlitMsg *msg, SessionMeta *meta, Resolution resolution);
 protected:
     map<SessionMeta*, PredictionInterval> m_predictionTable;
+
+    virtual Resolution checkPrediction(AppFlitMsg *request, SessionMeta *meta);
+    virtual void addPrediction(AppFlitMsg *request, SessionMeta *meta,
+            const PredictionInterval& interval);
+    /*
+     * True if prediction exists and put it into the interval refrence
+     */
+    virtual bool getPrediction(AppFlitMsg *request, SessionMeta *meta,
+            const PredictionInterval& interval);
+    virtual void removePrediction(AppFlitMsg *request, SessionMeta *meta);
 
     /**
      * A "FLOW" consists of a request-response CMP messages. each and every
@@ -60,15 +65,25 @@ protected:
 
     virtual Resolution onFlit(AppFlitMsg *msg, SessionMeta *meta);
 
+    // On Miss handler
+    virtual void onMiss(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+    // On Hit handler
+    virtual void onHit(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+    // On Destroy session (last tail flit) handler
+    virtual void onDestroy(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+
 public:
+
     // Return prediction delta from t=0, all request pass it, user defined algorithm
-    virtual PredictionInterval predict(NoCFlitMsg *request, SessionMeta *meta)  = 0;
+    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
+
 
     PredictorIfc(const char *method);
     const string &getName() const;
 
     static simtime_t Now();
 
+    // Call this function when passing a flit
     Resolution checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
 };
 

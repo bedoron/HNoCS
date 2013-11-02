@@ -46,38 +46,38 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
 OBJS = \
-    $O/SessionMeta.o \
-    $O/Utils.o \
     $O/ResponseDB.o \
-    $O/cores/L2.o \
+    $O/Utils.o \
+    $O/SessionMeta.o \
+    $O/cores/EchoApp.o \
     $O/cores/DRAM.o \
     $O/cores/CoreL1.o \
-    $O/cores/EchoApp.o \
-    $O/cores/central/ParallelCentralSched.o \
+    $O/cores/L2.o \
     $O/cores/central/CSched.o \
+    $O/cores/central/ParallelCentralSched.o \
     $O/cores/sinks/AppSink.o \
     $O/cores/sinks/InfiniteBWMultiVCSinkperSrc.o \
     $O/cores/sinks/InfiniteBWMultiVCSink.o \
+    $O/cores/sources/CAppSrc.o \
     $O/cores/sources/AppSrc.o \
     $O/cores/sources/PktFifoSrc.o \
-    $O/cores/sources/CAppSrc.o \
     $O/cores/sources/CentSchedPktFifoSrc.o \
     $O/routers/flat/CentSchedRouter.o \
-    $O/routers/hier/PredictorFactory.o \
+    $O/routers/hier/Predictor.o \
     $O/routers/hier/PredictionObject.o \
+    $O/routers/hier/PredictorFactory.o \
     $O/routers/hier/RouterSWHook.o \
     $O/routers/hier/PredictorIfc.o \
-    $O/routers/hier/Predictor.o \
-    $O/routers/hier/Predictors/DefaultPredictor.o \
     $O/routers/hier/Predictors/RandomPredictor.o \
+    $O/routers/hier/Predictors/DefaultPredictor.o \
     $O/routers/hier/Predictors/AlwaysHit.o \
-    $O/routers/hier/inPort/ISLIPInPort.o \
     $O/routers/hier/inPort/InPortAsync.o \
+    $O/routers/hier/inPort/ISLIPInPort.o \
     $O/routers/hier/inPort/InPortSync.o \
     $O/routers/hier/opCalc/static/XYOPCalc.o \
     $O/routers/hier/sched/wormhole/ISLIPSched.o \
-    $O/routers/hier/sched/wormhole/SchedAsync.o \
     $O/routers/hier/sched/wormhole/SchedSync.o \
+    $O/routers/hier/sched/wormhole/SchedAsync.o \
     $O/routers/hier/vcCalc/free/FLUVCCalc.o \
     $O/App_m.o \
     $O/Central_m.o \
