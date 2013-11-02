@@ -82,6 +82,7 @@ class SessionMeta {
 public:
 	// Init with a new request - implicit - will take a timestamp
 	unsigned int getSessionId();
+	sessionMetaState_t getState() { return m_state; }
 
 	SessionMeta(CMPMsg *msg);
 

@@ -21,9 +21,28 @@ AlwaysHit::AlwaysHit(): PredictorIfc("AlwaysHit") {
 AlwaysHit::~AlwaysHit() {
 }
 
-PredictionInterval AlwaysHit::predict(NoCFlitMsg* msg) {
+//PredictionInterval AlwaysHit::predict(NoCFlitMsg* msg) {
+//    simtime_t left      = Now();
+//    simtime_t right  = left +  SimTime(3600, SIMTIME_S); // one hour == inf.
+//
+//    return PredictionInterval(left, right);
+//}
+
+PredictionInterval AlwaysHit::predict(AppFlitMsg* request, SessionMeta* meta) {
     simtime_t left      = Now();
     simtime_t right  = left +  SimTime(3600, SIMTIME_S); // one hour == inf.
 
     return PredictionInterval(left, right);
+}
+
+Resolution AlwaysHit::checkPrediction(AppFlitMsg* request, SessionMeta* meta) {
+}
+
+void AlwaysHit::onMiss(NoCFlitMsg* msg, SessionMeta* meta) {
+}
+
+void AlwaysHit::onHit(NoCFlitMsg* msg, SessionMeta* meta) {
+}
+
+void AlwaysHit::onDestroy(NoCFlitMsg* msg, SessionMeta* meta) {
 }

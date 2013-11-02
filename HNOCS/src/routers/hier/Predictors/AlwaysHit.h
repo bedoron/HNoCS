@@ -23,7 +23,19 @@ public:
     AlwaysHit();
     virtual ~AlwaysHit();
 
-    virtual PredictionInterval predict(NoCFlitMsg *msg);
+    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
+    virtual Resolution checkPrediction(AppFlitMsg *request, SessionMeta *meta);
+
+
+private:
+    // On Miss handler
+    virtual void onMiss(NoCFlitMsg *msg, SessionMeta *meta);
+    // On Hit handler
+    virtual void onHit(NoCFlitMsg *msg, SessionMeta *meta);
+    // On Destroy session (last tail flit) handler
+    virtual void onDestroy(NoCFlitMsg *msg, SessionMeta *meta);
+
+
 };
 
 #endif /* ALWAYSHIT_H_ */

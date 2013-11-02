@@ -165,7 +165,7 @@ SessionMeta* ResponseDB::add(CMPMsg *msg) {
     return meta;
 }
 
-SessionMeta* ResponseDB::findBySessionId(int sessionId) const{
+SessionMeta* ResponseDB::findBySessionId(int sessionId) {
     map<unsigned int, SessionMeta*>::iterator iter = m_sessionsById.find(sessionId);
     if(iter == m_sessionsById.end())
         return NULL;
