@@ -151,19 +151,26 @@ bool ResponseDB::isRequest(MsgId id)
 
 void ResponseDB::add(SessionMeta *meta) {
 	metas.push_front(meta);
+	m_sessionsById[meta->getSessionId()] = meta;
 }
 
 
-bool ResponseDB::add(CMPMsg *msg) {
+SessionMeta* ResponseDB::add(CMPMsg *msg) {
     if(exists(msg->getId())) {
         cerr << "Cannot add msg " << msg->getId() << ", it already exists!! \n";
-        return false; // Check there is no ID Multiplicity
+        return NULL; // Check there is no ID Multiplicity
     }
     SessionMeta *meta = new SessionMeta(msg);
     add(meta);
-    return true;
+    return meta;
 }
 
+SessionMeta* ResponseDB::findBySessionId(int sessionId) const{
+    map<unsigned int, SessionMeta*>::iterator iter = m_sessionsById.find(sessionId);
+    if(iter == m_sessionsById.end())
+        return NULL;
+    return iter->second;
+}
 
 
 SessionMeta* ResponseDB::find(MsgId id) const {

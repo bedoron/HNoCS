@@ -30,6 +30,7 @@ packet AppFlitMsg extends NoCFlitMsg {
     int pktIdx;   // packet index within the message
     int appMsgLen;   // message length in packets
     int msgId;    // the message id (unique for the src/dst and src-app/dst-app pairs)
+    unsigned int sessionId; // The flow ID if applicable
 }
 
 // these kind of messages are exchanged between the application and NI 

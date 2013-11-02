@@ -131,7 +131,6 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 		throw cRuntimeError("SendReq for flit which isn`t SoP");
 	}
 
-
 	EV<< "-I- " << getFullPath() << " sending Req through outPort:" << outPort
 	<< " on VC: " << outVC << endl;
 
@@ -156,49 +155,18 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	 * Attach it to the request using : getControlInfo()
 	 */
 
-    const unsigned int sessionId = 22;
-
-    AppFlitMsg *flit = (AppFlitMsg*) msg;
-	SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-    if(meta && meta->getSessionId()==sessionId) {
-        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
-            cerr << "******* " << getFullPath() << " ********\n";
-            cerr << flit;
-        }
-    }
-
-//	if(m_predictor->Hit(inVC)) {
+//    const unsigned int sessionId = 22;
 //
-//        if(meta && meta->getSessionId()==sessionId) {
-//            if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
-//                cerr << "packet wasn't sent for prediction because session " << m_predictor->getVCHit(inVC)->getSessionId() << " already occupies vc "<< inVC<<"\n";
-//            }
-//        }
-//
-//	    req->setPrediction(true);
-//	} else {
-//
-//	    if(meta && meta->getSessionId()==sessionId) {
-//	        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
-//	            cerr << "packet sent for prediction\n";
-//	        }
-//	    }
-//	    m_predictor->PredictIfRequest(msg, outPort);
-//
-//	}
 //    AppFlitMsg *flit = (AppFlitMsg*) msg;
-    SessionMeta *session = ResponseDB::getInstance()->find(flit);
+//	SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+//    if(meta && meta->getSessionId()==sessionId) {
+//        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
+//            cerr << "******* " << getFullPath() << " ********\n";
+//            cerr << flit;
+//        }
+//    }
 
-    if(session) {
-        if(session->isResponse(flit)) {    /* is response - check prediction*/
-            if(m_predictor->Hit(session)) { // In case of HIT push the request with high priority
-                req->setPrediction(true);
-            }
-        } else { /* is request - create prediction */
-            m_predictor->PredictIfRequest(flit, outPort);
-        }
-    }
-
+    m_predictor->PredictIfRequest(flit);
 	send(req, "ctrl$o", outPort);
 }
 
@@ -333,7 +301,6 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 
 	if (msg->getType() == NOC_START_FLIT) {
-		EV << "\t this is a start flit\n";
 		// make sure current packet is 0
 		if (curPktId[inVC]) {
 			throw cRuntimeError("-E- got new packet 0x%x during packet 0x%x",
@@ -350,7 +317,9 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 		// send it to get the out port calc
         SessionMeta *session = ResponseDB::getInstance()->find(msg);
+
         if(session && session->isResponse(msg)) {
+
             if(m_predictor->Hit(session)) {
                 m_predictor->getOpCalc().PredictorSetOutPort(msg);
                 take(msg);
@@ -358,6 +327,7 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
             } else {
                 send(msg, "calcOp$o");
             }
+
         } else {
             send(msg, "calcOp$o");
         }

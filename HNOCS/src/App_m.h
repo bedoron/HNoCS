@@ -28,6 +28,7 @@
  *     int pktIdx;   
  *     int appMsgLen;   
  *     int msgId;    
+ *     unsigned int sessionId; 
  * }
  * </pre>
  */
@@ -39,6 +40,7 @@ class AppFlitMsg : public ::NoCFlitMsg
     int pktIdx_var;
     int appMsgLen_var;
     int msgId_var;
+    unsigned int sessionId_var;
 
   private:
     void copy(const AppFlitMsg& other);
@@ -67,6 +69,8 @@ class AppFlitMsg : public ::NoCFlitMsg
     virtual void setAppMsgLen(int appMsgLen);
     virtual int getMsgId() const;
     virtual void setMsgId(int msgId);
+    virtual unsigned int getSessionId() const;
+    virtual void setSessionId(unsigned int sessionId);
 };
 
 inline void doPacking(cCommBuffer *b, AppFlitMsg& obj) {obj.parsimPack(b);}

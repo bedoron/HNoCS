@@ -39,6 +39,7 @@ AppFlitMsg::AppFlitMsg(const char *name, int kind) : NoCFlitMsg(name,kind)
     this->pktIdx_var = 0;
     this->appMsgLen_var = 0;
     this->msgId_var = 0;
+    this->sessionId_var = 0;
 }
 
 AppFlitMsg::AppFlitMsg(const AppFlitMsg& other) : NoCFlitMsg(other)
@@ -65,6 +66,7 @@ void AppFlitMsg::copy(const AppFlitMsg& other)
     this->pktIdx_var = other.pktIdx_var;
     this->appMsgLen_var = other.appMsgLen_var;
     this->msgId_var = other.msgId_var;
+    this->sessionId_var = other.sessionId_var;
 }
 
 void AppFlitMsg::parsimPack(cCommBuffer *b)
@@ -75,6 +77,7 @@ void AppFlitMsg::parsimPack(cCommBuffer *b)
     doPacking(b,this->pktIdx_var);
     doPacking(b,this->appMsgLen_var);
     doPacking(b,this->msgId_var);
+    doPacking(b,this->sessionId_var);
 }
 
 void AppFlitMsg::parsimUnpack(cCommBuffer *b)
@@ -85,6 +88,7 @@ void AppFlitMsg::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->pktIdx_var);
     doUnpacking(b,this->appMsgLen_var);
     doUnpacking(b,this->msgId_var);
+    doUnpacking(b,this->sessionId_var);
 }
 
 int AppFlitMsg::getSrcAppId() const
@@ -137,6 +141,16 @@ void AppFlitMsg::setMsgId(int msgId)
     this->msgId_var = msgId;
 }
 
+unsigned int AppFlitMsg::getSessionId() const
+{
+    return sessionId_var;
+}
+
+void AppFlitMsg::setSessionId(unsigned int sessionId)
+{
+    this->sessionId_var = sessionId;
+}
+
 class AppFlitMsgDescriptor : public cClassDescriptor
 {
   public:
@@ -184,7 +198,7 @@ const char *AppFlitMsgDescriptor::getProperty(const char *propertyname) const
 int AppFlitMsgDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
+    return basedesc ? 6+basedesc->getFieldCount(object) : 6;
 }
 
 unsigned int AppFlitMsgDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -201,8 +215,9 @@ unsigned int AppFlitMsgDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<6) ? fieldTypeFlags[field] : 0;
 }
 
 const char *AppFlitMsgDescriptor::getFieldName(void *object, int field) const
@@ -219,8 +234,9 @@ const char *AppFlitMsgDescriptor::getFieldName(void *object, int field) const
         "pktIdx",
         "appMsgLen",
         "msgId",
+        "sessionId",
     };
-    return (field>=0 && field<5) ? fieldNames[field] : NULL;
+    return (field>=0 && field<6) ? fieldNames[field] : NULL;
 }
 
 int AppFlitMsgDescriptor::findField(void *object, const char *fieldName) const
@@ -232,6 +248,7 @@ int AppFlitMsgDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='p' && strcmp(fieldName, "pktIdx")==0) return base+2;
     if (fieldName[0]=='a' && strcmp(fieldName, "appMsgLen")==0) return base+3;
     if (fieldName[0]=='m' && strcmp(fieldName, "msgId")==0) return base+4;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sessionId")==0) return base+5;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -249,8 +266,9 @@ const char *AppFlitMsgDescriptor::getFieldTypeString(void *object, int field) co
         "int",
         "int",
         "int",
+        "unsigned int",
     };
-    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<6) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *AppFlitMsgDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -295,6 +313,7 @@ std::string AppFlitMsgDescriptor::getFieldAsString(void *object, int field, int 
         case 2: return long2string(pp->getPktIdx());
         case 3: return long2string(pp->getAppMsgLen());
         case 4: return long2string(pp->getMsgId());
+        case 5: return ulong2string(pp->getSessionId());
         default: return "";
     }
 }
@@ -314,6 +333,7 @@ bool AppFlitMsgDescriptor::setFieldAsString(void *object, int field, int i, cons
         case 2: pp->setPktIdx(string2long(value)); return true;
         case 3: pp->setAppMsgLen(string2long(value)); return true;
         case 4: pp->setMsgId(string2long(value)); return true;
+        case 5: pp->setSessionId(string2ulong(value)); return true;
         default: return false;
     }
 }
@@ -332,8 +352,9 @@ const char *AppFlitMsgDescriptor::getFieldStructName(void *object, int field) co
         NULL,
         NULL,
         NULL,
+        NULL,
     };
-    return (field>=0 && field<5) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<6) ? fieldStructNames[field] : NULL;
 }
 
 void *AppFlitMsgDescriptor::getFieldStructPointer(void *object, int field, int i) const

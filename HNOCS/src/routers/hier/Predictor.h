@@ -51,10 +51,27 @@ class Predictor : public cSimpleModule
 
     bool m_printData;
 
+    /*
+     * ?!
+     */
     bool CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg);
 
-    void HitFlowStart(NoCFlitMsg* msg, SessionMeta *meta);
-    void HitFlowEnd(NoCFlitMsg* msg, SessionMeta *meta);
+    /**
+     * Gets the predictor which belongs to the outPort of this packet
+     */
+    Predictor* getTargetPredictor(NoCFlitMsg *msg);
+
+    /**
+     * Helper function to extract the flitInfo class for a flit
+     * this function is used to extract the out port from the packet
+     */
+    static class inPortFlitInfo* GetFlitInfo(NoCFlitMsg *msg);
+
+    /**
+     * Call self predictor object to register request with meta
+     */
+    bool Predict(NoCFlitMsg *request, SessionMeta *meta);
+
 
   protected:
     virtual void initialize();
@@ -63,15 +80,25 @@ class Predictor : public cSimpleModule
 public:
     ~Predictor();
     bool Hit(NoCFlitMsg* msg);
-    bool Hit(SessionMeta *meta);
-    bool Hit(int inVC);
+
+
+
+//    bool Hit(SessionMeta *meta);
+//    bool Hit(int inVC);
 
     void DestroyHit(SessionMeta *meta);
 
-    bool Predict(NoCFlitMsg *request);
-    bool Predict(NoCFlitMsg *request, SessionMeta *meta);
+//    bool Predict(NoCFlitMsg *request);
 
-    bool PredictIfRequest(NoCFlitMsg *msg, int outPort);
+
+
+    /**
+     * this function will create a prediction for flit *msg iff
+     * flit is first head flit of it's flow and a request flit
+     *
+     * first of its flow means - PktIdx == 0 && FlitIdx == 0
+     */
+    bool PredictIfRequest(NoCFlitMsg *msg);
 
 
 //    void RegisterRemoteTable(SessionMeta *meta, PredictionInterval predInt);

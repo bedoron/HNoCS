@@ -46,48 +46,49 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
 OBJS = \
-    $O/ResponseDB.o \
-    $O/Utils.o \
     $O/SessionMeta.o \
-    $O/cores/DRAM.o \
-    $O/cores/EchoApp.o \
-    $O/cores/CoreL1.o \
+    $O/Utils.o \
+    $O/ResponseDB.o \
     $O/cores/L2.o \
+    $O/cores/DRAM.o \
+    $O/cores/CoreL1.o \
+    $O/cores/EchoApp.o \
     $O/cores/central/ParallelCentralSched.o \
     $O/cores/central/CSched.o \
-    $O/cores/sinks/InfiniteBWMultiVCSink.o \
-    $O/cores/sinks/InfiniteBWMultiVCSinkperSrc.o \
     $O/cores/sinks/AppSink.o \
-    $O/cores/sources/CentSchedPktFifoSrc.o \
-    $O/cores/sources/CAppSrc.o \
-    $O/cores/sources/PktFifoSrc.o \
+    $O/cores/sinks/InfiniteBWMultiVCSinkperSrc.o \
+    $O/cores/sinks/InfiniteBWMultiVCSink.o \
     $O/cores/sources/AppSrc.o \
+    $O/cores/sources/PktFifoSrc.o \
+    $O/cores/sources/CAppSrc.o \
+    $O/cores/sources/CentSchedPktFifoSrc.o \
     $O/routers/flat/CentSchedRouter.o \
-    $O/routers/hier/Predictor.o \
-    $O/routers/hier/PredictionObject.o \
     $O/routers/hier/PredictorFactory.o \
+    $O/routers/hier/PredictionObject.o \
     $O/routers/hier/RouterSWHook.o \
-    $O/routers/hier/Predictors/RandomPredictor.o \
+    $O/routers/hier/PredictorIfc.o \
+    $O/routers/hier/Predictor.o \
     $O/routers/hier/Predictors/DefaultPredictor.o \
+    $O/routers/hier/Predictors/RandomPredictor.o \
     $O/routers/hier/Predictors/AlwaysHit.o \
-    $O/routers/hier/inPort/InPortSync.o \
-    $O/routers/hier/inPort/InPortAsync.o \
     $O/routers/hier/inPort/ISLIPInPort.o \
+    $O/routers/hier/inPort/InPortAsync.o \
+    $O/routers/hier/inPort/InPortSync.o \
     $O/routers/hier/opCalc/static/XYOPCalc.o \
-    $O/routers/hier/sched/wormhole/SchedSync.o \
-    $O/routers/hier/sched/wormhole/SchedAsync.o \
     $O/routers/hier/sched/wormhole/ISLIPSched.o \
+    $O/routers/hier/sched/wormhole/SchedAsync.o \
+    $O/routers/hier/sched/wormhole/SchedSync.o \
     $O/routers/hier/vcCalc/free/FLUVCCalc.o \
-    $O/CMP_m.o \
     $O/App_m.o \
     $O/Central_m.o \
+    $O/CMP_m.o \
     $O/NoCs_m.o
 
 # Message files
 MSGFILES = \
-    CMP.msg \
     App.msg \
     Central.msg \
+    CMP.msg \
     NoCs.msg
 
 #------------------------------------------------------------------------------
@@ -303,11 +304,20 @@ $O/routers/hier/PredictorFactory.o: routers/hier/PredictorFactory.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/PredictorFactory.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/Predictors/AlwaysHit.h \
 	routers/hier/Predictors/DefaultPredictor.h \
 	routers/hier/Predictors/RandomPredictor.h
+$O/routers/hier/PredictorIfc.o: routers/hier/PredictorIfc.cc \
+	App_m.h \
+	CMP_m.h \
+	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
+	routers/hier/PredictorIfc.h
 $O/routers/hier/RouterSWHook.o: routers/hier/RouterSWHook.cc \
 	App_m.h \
 	CMP_m.h \
@@ -320,24 +330,32 @@ $O/routers/hier/Predictors/AlwaysHit.o: routers/hier/Predictors/AlwaysHit.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/Predictors/AlwaysHit.h
 $O/routers/hier/Predictors/DefaultPredictor.o: routers/hier/Predictors/DefaultPredictor.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/Predictors/DefaultPredictor.h
 $O/routers/hier/Predictors/RandomPredictor.o: routers/hier/Predictors/RandomPredictor.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/Predictors/RandomPredictor.h
 $O/routers/hier/inPort/ISLIPInPort.o: routers/hier/inPort/ISLIPInPort.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/FlitMsgCtrl.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \
@@ -346,6 +364,7 @@ $O/routers/hier/inPort/InPortAsync.o: routers/hier/inPort/InPortAsync.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
 	SessionMeta.h \
 	routers/hier/FlitMsgCtrl.h \
 	routers/hier/HierRouter.h \
@@ -383,6 +402,8 @@ $O/routers/hier/sched/wormhole/ISLIPSched.o: routers/hier/sched/wormhole/ISLIPSc
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/sched/wormhole/ISLIPSched.h
@@ -390,6 +411,8 @@ $O/routers/hier/sched/wormhole/SchedAsync.o: routers/hier/sched/wormhole/SchedAs
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/sched/wormhole/SchedAsync.h
@@ -397,6 +420,8 @@ $O/routers/hier/sched/wormhole/SchedSync.o: routers/hier/sched/wormhole/SchedSyn
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	Utils.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \
@@ -405,6 +430,8 @@ $O/routers/hier/vcCalc/free/FLUVCCalc.o: routers/hier/vcCalc/free/FLUVCCalc.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	routers/hier/FlitMsgCtrl.h \
 	routers/hier/HierRouter.h \
 	routers/hier/PredictorIfc.h \

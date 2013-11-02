@@ -9,33 +9,67 @@
 #define PREDICTORIFC_H_
 
 #include "CMP_m.h"
+#include "ResponseDB.h"
 #include <string.h>
+#include <map>
 
 using std::string;
 using std::pair;
+using std::map;
 
 typedef pair<simtime_t, simtime_t> PredictionInterval;
+typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CREATE, PREDICTION_DESTROY } Resolution;
 
 class PredictorIfc {
     string m_method;
 
+    // On Miss handler
+    virtual void miss(NoCFlitMsg *msg, SessionMeta *meta) { };
+    // On Hit handler
+    virtual void hit(NoCFlitMsg *msg, SessionMeta *meta) { };
+    // On Destroy session (last tail flit) handler
+    virtual void destroy(NoCFlitMsg *msg, SessionMeta *meta) { };
+
+protected:
+    map<SessionMeta*, PredictionInterval> m_predictionTable;
+
+    /**
+     * A "FLOW" consists of a request-response CMP messages. each and every
+     * CMP message can be broken into App packets and App packets are further
+     * broke down into flits.
+     *
+     * The functions below are being called for each head+tail flits which are
+     * part of a Request-Response transaction.
+     *
+     * Start flow will be called for the head+tail flits which belongs
+     * to the FIRST App packet.
+     *
+     * End flow will be called for the head+tail flits which belongs to
+     * the LAST App packet
+     *
+     * Mid flow is called for any other head+tail flits which are in between
+     * the end + start flow
+     *
+     * This means that if a request consists of a single App message then
+     * onStartFlow will be called and immediately afterwards onEndFlow will
+     * be called, without called the onMidFlow event
+     */
+    virtual Resolution onStartFlow(AppFlitMsg *msg, SessionMeta *meta);
+    virtual Resolution onEndFlow(AppFlitMsg *msg, SessionMeta *meta);
+    virtual Resolution onMidFlow(AppFlitMsg *msg, SessionMeta *meta);
+
+    virtual Resolution onFlit(AppFlitMsg *msg, SessionMeta *meta);
 
 public:
-    // Signal name for Schedulers and in ports
-    static const string SignalName() { return "prediction"; }
+    // Return prediction delta from t=0, all request pass it, user defined algorithm
+    virtual PredictionInterval predict(NoCFlitMsg *request, SessionMeta *meta)  = 0;
 
-    // Return prediction delta from t=0, all request pass it
-    virtual PredictionInterval predict(NoCFlitMsg *request)  = 0;
+    PredictorIfc(const char *method);
+    const string &getName() const;
 
-    // Implementation of general functions (Im lazy)
-    PredictorIfc(const char *method): m_method(method) {}
-    const string &getName() const { return m_method; }
+    static simtime_t Now();
 
-    // Use this function to do some adjustments on the fly
-    // when we have a prediction miss
-    virtual void miss(NoCFlitMsg *response, simtime_t predicted) { }
-
-    static simtime_t Now() { return cSimulation::getActiveSimulation()->getSimTime(); };
+    Resolution checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
 };
 
 #endif /* PREDICTORIFC_H_ */

@@ -15,10 +15,12 @@
 #include "SessionMeta.h"
 #include "CMP_m.h"
 #include <fstream>
+#include <map>
 
 using OPP::simtime_t;
 using std::deque;
 using std::pair;
+using std::map;
 
 using std::cerr;
 using std::ofstream;
@@ -29,7 +31,7 @@ class ResponseDB {
 //	deque<int> responses;	// Backward compatibility
 	deque<SessionMeta*> metas;
 	mutable SessionMeta* lastQuery;
-
+	map<unsigned int, SessionMeta*> m_sessionsById;
 
 public:
 	void saveSortedByRouter(ofstream& output);
@@ -41,11 +43,14 @@ public:
 	bool isRequest(MsgId id);
 
 	void add(SessionMeta *meta);	// will be added per NoC request-response pair
-	bool add(CMPMsg *msg);          // will be added per NoC request-response pair, use packet as basis
+	SessionMeta* add(CMPMsg *msg);          // will be added per NoC request-response pair, use packet as basis
 
 	SessionMeta* find(MsgId id) const;		// get SessionMeta associated by packet id, null if not
 	SessionMeta* find(NoCFlitMsg *msg) const;      // get SessionMeta associated by packet id, null if not
 	SessionMeta* find(CMPMsg *msg) const; // use get id
+
+	SessionMeta* findBySessionId(int sessionId) const;
+
 
 	bool exists(MsgId id) const;		// check if flit id exists in DB
 	bool exists(CMPMsg *msg) const; // use getId

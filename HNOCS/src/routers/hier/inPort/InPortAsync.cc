@@ -280,7 +280,6 @@ void InPortAsync::handleInFlitMsg(NoCFlitMsg *msg) {
         }
 		// *****************************************
 
-
 	} else {
 		// make sure the packet id is correct
 		if (msg->getPktId() != curPktId[inVC]) {
