@@ -24,7 +24,7 @@ class PredictorIfc {
     string m_method;
 
 
-    void callHandler(NoCFlitMsg *msg, SessionMeta *meta, Resolution resolution);
+    void callHandler(AppFlitMsg *msg, SessionMeta *meta, Resolution resolution);
 protected:
     map<SessionMeta*, PredictionInterval> m_predictionTable;
 
@@ -35,7 +35,7 @@ protected:
      * True if prediction exists and put it into the interval refrence
      */
     virtual bool getPrediction(AppFlitMsg *request, SessionMeta *meta,
-            const PredictionInterval& interval);
+            PredictionInterval& interval);
     virtual void removePrediction(AppFlitMsg *request, SessionMeta *meta);
 
     /**
@@ -66,11 +66,11 @@ protected:
     virtual Resolution onFlit(AppFlitMsg *msg, SessionMeta *meta);
 
     // On Miss handler
-    virtual void onMiss(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta) = 0;
     // On Hit handler
-    virtual void onHit(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta) = 0;
     // On Destroy session (last tail flit) handler
-    virtual void onDestroy(NoCFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta) = 0;
 
 public:
 

@@ -48,6 +48,7 @@ Resolution PredictorIfc::onEndFlow(AppFlitMsg* msg, SessionMeta* meta) {
         }
         break;
     }
+    return res;
 }
 
 Resolution PredictorIfc::onMidFlow(AppFlitMsg* msg, SessionMeta* meta) {
@@ -67,7 +68,7 @@ Resolution PredictorIfc::onFlit(AppFlitMsg* msg, SessionMeta* meta) {
     return PREDICTION_IDLE;
 }
 
-void PredictorIfc::callHandler(NoCFlitMsg* msg, SessionMeta* meta,
+void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
         Resolution resolution) {
     switch(resolution) {
     case PREDICTION_HIT:    onHit(msg, meta); break;
@@ -107,7 +108,7 @@ void PredictorIfc::addPrediction(AppFlitMsg* request, SessionMeta* meta,
 }
 
 bool PredictorIfc::getPrediction(AppFlitMsg* request, SessionMeta* meta,
-        const PredictionInterval& interval) {
+        PredictionInterval& interval) {
     bool isValueValid = false;
     try {
         interval = m_predictionTable.at(meta);
@@ -128,7 +129,7 @@ void PredictorIfc::removePrediction(AppFlitMsg* request, SessionMeta* meta) {
     m_predictionTable.erase(iter);
 }
 
-Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0) {
+Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
     Resolution res = PREDICTION_IGNORE;
     AppFlitMsg *flit = (AppFlitMsg*)msg;
 
@@ -153,15 +154,15 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0) {
             if(PREDICTION_IGNORE != onFlit(flit, meta)) {
                 if(firstPacket) {
                     res = onStartFlow(flit, meta);
-                    callHandler(msg, meta, res);
+                    callHandler(flit, meta, res);
                 }
                 if(lastPacket) {
                     res = onEndFlow(flit, meta);
-                    callHandler(msg, meta, res);
+                    callHandler(flit, meta, res);
                 }
                 if(!(firstPacket || lastPacket)) {
                     res = onMidFlow(flit, meta);
-                    callHandler(msg, meta, res);
+                    callHandler(flit, meta, res);
                 }
             }
         } else { /* Maybe its a write request ? */ }

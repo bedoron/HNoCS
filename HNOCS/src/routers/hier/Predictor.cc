@@ -100,6 +100,8 @@ bool Predictor::CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg) {
 //    }
 //
 //    return isHit;
+    throw cRuntimeError("CheckIfHit");
+    return 0;
 }
 
 
@@ -126,6 +128,8 @@ bool Predictor::Hit(NoCFlitMsg* nocMsg) {
 //        isHit = false;
 //    }
 //    return isHit;
+    throw cRuntimeError("CheckIfHit");
+    return 0;
 }
 
  XYOPCalc& Predictor::getOpCalc()  {
@@ -229,8 +233,7 @@ Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {
 class inPortFlitInfo* Predictor::GetFlitInfo(NoCFlitMsg* msg) {
     cObject *obj = msg->getControlInfo();
     if (obj == NULL) {
-        throw cRuntimeError("-E- %s BUG - No Control Info for FLIT: %s",
-                getFullPath().c_str(), msg->getFullName());
+        throw cRuntimeError("Moo");
     }
 
     inPortFlitInfo *info = dynamic_cast<inPortFlitInfo*> (obj);

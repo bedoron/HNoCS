@@ -31,7 +31,7 @@ public:
 	virtual const std::vector<int> *getVCUsage() const = 0;
 	virtual void  incrVCUsage(int vc) = 0;
 
-	Sched(): cSimpleModule(), m_prediction(registerSignal(PredictorIfc::SignalName().c_str())) { };
+	Sched(): cSimpleModule() { };
 };
 
 #endif /* __HNOCS_HIER_ROUTER_H_ */
