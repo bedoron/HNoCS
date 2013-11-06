@@ -160,7 +160,7 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
                     res = onEndFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
-                if(!(firstPacket || lastPacket)) {
+                if(!(firstPacket || lastPacket)) { /* Middle packets */
                     res = onMidFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }

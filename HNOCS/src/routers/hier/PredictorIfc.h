@@ -28,11 +28,21 @@ class PredictorIfc {
 protected:
     map<SessionMeta*, PredictionInterval> m_predictionTable;
 
+    /**
+     * Checks for HIT/MISS for request, if request doesn't have a prediction function
+     * will return PREDICTION_IGNORE.
+     */
     virtual Resolution checkPrediction(AppFlitMsg *request, SessionMeta *meta);
+
+    /**
+     * Add prediction to the Database. function will throw an exception if we are
+     * adding a prediction for a request which already exists
+     */
     virtual void addPrediction(AppFlitMsg *request, SessionMeta *meta,
             const PredictionInterval& interval);
     /*
-     * True if prediction exists and put it into the interval refrence
+     * True if prediction exists. function output is the interval reference
+     * parameter
      */
     virtual bool getPrediction(AppFlitMsg *request, SessionMeta *meta,
             PredictionInterval& interval);
@@ -71,13 +81,9 @@ protected:
     virtual void onHit(AppFlitMsg *msg, SessionMeta *meta) = 0;
     // On Destroy session (last tail flit) handler
     virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta) = 0;
-
-public:
-
     // Return prediction delta from t=0, all request pass it, user defined algorithm
     virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
-
-
+public:
     PredictorIfc(const char *method);
     const string &getName() const;
 

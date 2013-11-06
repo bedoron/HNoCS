@@ -166,7 +166,9 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 //        }
 //    }
 
-    m_predictor->PredictIfRequest(flit);
+//    m_predictor->PredictIfRequest(flit);
+
+	// TODO: put prediction here
 	send(req, "ctrl$o", outPort);
 }
 

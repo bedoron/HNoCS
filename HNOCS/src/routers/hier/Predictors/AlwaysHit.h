@@ -19,23 +19,20 @@
 #include "PredictorIfc.h"
 
 class AlwaysHit: public PredictorIfc {
+protected:
+    // On Miss handler
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta);
+    // On Hit handler
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta);
+    // On Destroy session (last tail flit) handler
+    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta);
+    // Return prediction delta from t=0, all request pass it, user defined algorithm
+    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
+
+
 public:
     AlwaysHit();
     virtual ~AlwaysHit();
-
-    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
-    virtual Resolution checkPrediction(AppFlitMsg *request, SessionMeta *meta);
-
-
-private:
-    // On Miss handler
-    virtual void onMiss(NoCFlitMsg *msg, SessionMeta *meta);
-    // On Hit handler
-    virtual void onHit(NoCFlitMsg *msg, SessionMeta *meta);
-    // On Destroy session (last tail flit) handler
-    virtual void onDestroy(NoCFlitMsg *msg, SessionMeta *meta);
-
-
 };
 
 #endif /* ALWAYSHIT_H_ */

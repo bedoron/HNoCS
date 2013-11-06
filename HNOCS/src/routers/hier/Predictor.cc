@@ -150,6 +150,8 @@ bool Predictor::Predict(NoCFlitMsg* request, SessionMeta* meta) {
 //    PredictionInterval interval = m_predictor->predict(request, meta);
 //
 //    return true;
+    throw cRuntimeError("Predict was caleld");
+    return false;
 }
 
 Predictor* Predictor::getTargetPredictor(NoCFlitMsg *msg) {
@@ -192,6 +194,8 @@ bool Predictor::PredictIfRequest(NoCFlitMsg* msg) {
 //    }
 //
 //    return isPredicted;
+    throw cRuntimeError("PredixctIfRequest called");
+    return false;
 }
 
  FLUVCCalc& Predictor::getVcCalc()  {
@@ -206,6 +210,7 @@ void Predictor::DestroyHit(SessionMeta *meta) {
 //        cerr << "Trying to destroy session " << meta->getSessionId() << " which isn't registered\n";
 //        throw cRuntimeError("Trying to remove a meta that was marked as a hit but didn't have a prediction");
 //    }
+
 }
 
 Predictor::~Predictor() {

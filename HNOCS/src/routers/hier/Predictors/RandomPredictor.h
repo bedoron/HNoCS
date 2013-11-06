@@ -12,6 +12,17 @@
 
 class RandomPredictor: public PredictorIfc {
     string m_method;
+
+protected:
+    // On Miss handler
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta);
+    // On Hit handler
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta);
+    // On Destroy session (last tail flit) handler
+    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta);
+    // Return prediction delta from t=0, all request pass it, user defined algorithm
+    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
+
 public:
     RandomPredictor();
     virtual ~RandomPredictor();

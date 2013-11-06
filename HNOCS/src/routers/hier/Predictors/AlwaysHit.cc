@@ -18,31 +18,25 @@
 AlwaysHit::AlwaysHit(): PredictorIfc("AlwaysHit") {
 }
 
+void AlwaysHit::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
+    cerr << "Miss " << meta->getSessionId() << "\n";
+}
+
+void AlwaysHit::onHit(AppFlitMsg* msg, SessionMeta* meta) {
+    cerr << "Hit " << meta->getSessionId() << "\n";
+}
+
+void AlwaysHit::onDestroy(AppFlitMsg* msg, SessionMeta* meta) {
+    cerr << "Destroy " << meta->getSessionId() << "\n";
+}
+
 AlwaysHit::~AlwaysHit() {
 }
 
-//PredictionInterval AlwaysHit::predict(NoCFlitMsg* msg) {
-//    simtime_t left      = Now();
-//    simtime_t right  = left +  SimTime(3600, SIMTIME_S); // one hour == inf.
-//
-//    return PredictionInterval(left, right);
-//}
 
 PredictionInterval AlwaysHit::predict(AppFlitMsg* request, SessionMeta* meta) {
     simtime_t left      = Now();
     simtime_t right  = left +  SimTime(3600, SIMTIME_S); // one hour == inf.
 
     return PredictionInterval(left, right);
-}
-
-Resolution AlwaysHit::checkPrediction(AppFlitMsg* request, SessionMeta* meta) {
-}
-
-void AlwaysHit::onMiss(NoCFlitMsg* msg, SessionMeta* meta) {
-}
-
-void AlwaysHit::onHit(NoCFlitMsg* msg, SessionMeta* meta) {
-}
-
-void AlwaysHit::onDestroy(NoCFlitMsg* msg, SessionMeta* meta) {
 }
