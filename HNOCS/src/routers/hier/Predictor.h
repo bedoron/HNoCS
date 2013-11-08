@@ -33,28 +33,17 @@ class Predictor : public cSimpleModule
 {
     static const bool PRINT_DATA = false;
 
-    typedef map<SessionMeta*, PredictionInterval> PredictionTable;
-
-
-    PredictionTable      m_predictionTable;
     PredictorIfc         *m_predictor;
-    vector<SessionMeta*> m_VCHit; // if NULL there is not hit for this current VC
-
     int m_numVCs;
 
-//    InPortSync  *m_inPort;
     XYOPCalc    *m_opCalc;
-//    Sched       *m_sched;
     FLUVCCalc   *m_vcCalc;
+
     int m_routerIndex;
     int m_portIndex;
 
     bool m_printData;
 
-    /*
-     * ?!
-     */
-    bool CheckIfHit(SessionMeta *meta, NoCFlitMsg* nocMsg);
 
     /**
      * Gets the predictor which belongs to the outPort of this packet
@@ -81,39 +70,16 @@ public:
     ~Predictor();
     bool Hit(NoCFlitMsg* msg);
 
-
-
-//    bool Hit(SessionMeta *meta);
-//    bool Hit(int inVC);
-
     void DestroyHit(SessionMeta *meta);
 
-//    bool Predict(NoCFlitMsg *request);
 
-
-
-    /**
-     * this function will create a prediction for flit *msg iff
-     * flit is first head flit of it's flow and a request flit
-     *
-     * first of its flow means - PktIdx == 0 && FlitIdx == 0
-     */
     bool PredictIfRequest(NoCFlitMsg *msg);
 
-
-//    void RegisterRemoteTable(SessionMeta *meta, PredictionInterval predInt);
-
-//    InPortSync& getInPort();
     XYOPCalc& getOpCalc();
-//    SchedSync& getSched();
     FLUVCCalc& getVcCalc();
 
     // Get the Predictor associated with current hierarchy
     static Predictor* GetMyPredictor(cSimpleModule *current);
-
-    // Test method
-
-    SessionMeta *getVCHit(int vc);
 
 };
 

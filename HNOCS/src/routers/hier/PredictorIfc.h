@@ -20,6 +20,35 @@ using std::map;
 typedef pair<simtime_t, simtime_t> PredictionInterval;
 typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CREATE, PREDICTION_DESTROY, PREDICTION_IDLE } Resolution;
 
+/**
+ * Prediction Abstract class to handle prediction and identification of
+ * packet types passing through it by associating them to FLOWs.
+ *
+ * A "FLOW" consists of a request-response CMP messages. each and every
+ * CMP message can be broken into App packets and App packets are further
+ * broke down into flits.
+ *
+ * The functions below are being called for each head+tail flits which are
+ * part of a Request-Response transaction.
+ *
+ * Start flow will be called for the head+tail flits which belongs
+ * to the FIRST App packet.
+ *
+ * End flow will be called for the head+tail flits which belongs to
+ * the LAST App packet
+ *
+ * Mid flow is called for any other head+tail flits which are in between
+ * the end + start flow
+ *
+ * This means that if a request consists of a single App message then
+ * onStartFlow will be called and immediately afterwards onEndFlow will
+ * be called, without called the onMidFlow event
+ *
+ * **   In order to make it possible to associate tail flits with a session
+ *      a new field was added to all flits - sessionId. session id corresponds
+ *      to the session the original first NOC Message created on its first
+ *      packet
+ */
 class PredictorIfc {
     string m_method;
 
@@ -48,27 +77,6 @@ protected:
             PredictionInterval& interval);
     virtual void removePrediction(AppFlitMsg *request, SessionMeta *meta);
 
-    /**
-     * A "FLOW" consists of a request-response CMP messages. each and every
-     * CMP message can be broken into App packets and App packets are further
-     * broke down into flits.
-     *
-     * The functions below are being called for each head+tail flits which are
-     * part of a Request-Response transaction.
-     *
-     * Start flow will be called for the head+tail flits which belongs
-     * to the FIRST App packet.
-     *
-     * End flow will be called for the head+tail flits which belongs to
-     * the LAST App packet
-     *
-     * Mid flow is called for any other head+tail flits which are in between
-     * the end + start flow
-     *
-     * This means that if a request consists of a single App message then
-     * onStartFlow will be called and immediately afterwards onEndFlow will
-     * be called, without called the onMidFlow event
-     */
     virtual Resolution onStartFlow(AppFlitMsg *msg, SessionMeta *meta);
     virtual Resolution onEndFlow(AppFlitMsg *msg, SessionMeta *meta);
     virtual Resolution onMidFlow(AppFlitMsg *msg, SessionMeta *meta);

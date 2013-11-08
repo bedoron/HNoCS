@@ -156,19 +156,19 @@ void InPortAsync::sendReq(NoCFlitMsg *msg) {
 	req->setSchedulingPriority(0); // In order to prevent artificial priority of req to the sched
 
 
-    if(m_predictor->Hit(inVC)) {
-        // Hit will get us here if this is a response message
-        // and it has a prediction
-        req->setPrediction(true);
-    } else {
-        AppFlitMsg *appFlit = (AppFlitMsg*)msg;
-        MsgId msgId = appFlit->getId();
-        if(msgId == 158718) {
-            cerr << "Captured flit id 158718 or router "<< getParentModule()->getParentModule()->getIndex();
-            cerr << " Port " << getParentModule()->getIndex() << "\n";
-        }
-        m_predictor->PredictIfRequest(msg, outPort);
-    }
+//    if(m_predictor->Hit(inVC)) {
+//        // Hit will get us here if this is a response message
+//        // and it has a prediction
+//        req->setPrediction(true);
+//    } else {
+//        AppFlitMsg *appFlit = (AppFlitMsg*)msg;
+//        MsgId msgId = appFlit->getId();
+//        if(msgId == 158718) {
+//            cerr << "Captured flit id 158718 or router "<< getParentModule()->getParentModule()->getIndex();
+//            cerr << " Port " << getParentModule()->getIndex() << "\n";
+//        }
+//        m_predictor->PredictIfRequest(msg, outPort);
+//    }
 
 
 	send(req, "ctrl$o", outPort);
