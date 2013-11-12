@@ -1,2 +1,3 @@
 # Partial Tkenv config file -- see $HOME/.tkenvrc as well
+inspector "Mesh_blackscholes" "Mesh_blackscholes" "2" "1012x846+0+60:normal"
 

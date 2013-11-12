@@ -16,6 +16,7 @@
 #include "Predictor.h"
 #include "PredictorFactory.h"
 #include "ResponseDB.h"
+#include "SessionMeta.h"
 //#include "InPortSync.h"
 #include <string>
 #include <iostream>
@@ -24,6 +25,8 @@ using std::string;
 using std::cerr;
 
 Define_Module(Predictor);
+
+bool Predictor::debug = true;
 
 void Predictor::initialize()
 {
@@ -36,10 +39,10 @@ void Predictor::initialize()
 
     m_numVCs = getParentModule()->getSubmodule("inPort")->par("numVCs");
 
-    m_VCHit.resize(m_numVCs);
-    for(int i=0; i < m_numVCs; ++i) {
-        m_VCHit[i] = NULL;
-    }
+//    m_VCHit.resize(m_numVCs);
+//    for(int i=0; i < m_numVCs; ++i) {
+//        m_VCHit[i] = NULL;
+//    }
 
     m_portIndex = getParentModule()->getIndex();
     m_routerIndex = getParentModule()->getParentModule()->getIndex();
@@ -47,7 +50,7 @@ void Predictor::initialize()
     cModule *opCalc = getParentModule()->getSubmodule("opCalc");
     cModule *vcCalc = getParentModule()->getSubmodule("vcCalc");
 
-    if(NULL == opCalc || NULL == vcCalc || NULL == sched) {
+    if(NULL == opCalc || NULL == vcCalc ) {
         throw cRuntimeError(getParentModule(), "Can't find one of the main modules for the port");
     }
 
@@ -104,8 +107,8 @@ void Predictor::DestroyHit(SessionMeta *meta) {
 }
 
 Predictor::~Predictor() {
-    if(m_printData) {
-    }
+/*    if(m_printData) {
+    } */
 }
 
 Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {
@@ -125,4 +128,58 @@ class inPortFlitInfo* Predictor::GetFlitInfo(NoCFlitMsg* msg) {
 
     inPortFlitInfo *info = dynamic_cast<inPortFlitInfo*> (obj);
     return info;
+}
+
+Resolution Predictor::checkFlit(NoCFlitMsg* msg, SessionMeta* meta) {
+
+    Resolution res = PREDICTION_IGNORE;
+
+    if(debug) {
+        AppFlitMsg *flit = (AppFlitMsg*)msg;
+        cerr << "checkFlit: checking flit " << flit->getId();
+        if(meta) {
+            cerr << " which belongs to meta " << meta->getSessionId();
+        }
+        cerr << "\n";
+    }
+
+    if((NULL != meta) && (NOC_START_FLIT==msg->getType())) {
+
+        if(SESSION_META_RESPONSE==meta->getState()) {
+            /* results already have a prediction object which belongs to THIS object */
+            res = m_predictor->checkFlit(msg, meta);
+        } else {
+            /* requests have a designated function which needs to be called *after* the OP result arrives.
+             * the reason the need a designated function is because they need to register the message in
+             * a remote predictor object and not */
+        }
+
+    } else {
+        if(debug) {
+            cerr << "checkFlit: Flit was not delegated to predictor\n";
+            cerr << msg;
+        }
+    }
+    return res;
+}
+
+bool Predictor::hasPrediction(NoCFlitMsg* msg) {
+    return m_predictor->hasPrediction(msg);
+}
+
+bool Predictor::hasPrediction(SessionMeta* meta) {
+    return m_predictor->hasPrediction(meta);
+}
+
+Resolution Predictor::registerFlit(NoCFlitMsg* msg, SessionMeta* meta) {
+    Resolution res = PREDICTION_IGNORE;
+    if((meta) && (NOC_START_FLIT==msg->getType())) {
+        if(SESSION_META_REQUEST==meta->getState()){
+            Predictor *predictor = getTargetPredictor(msg);
+            res = predictor->m_predictor->checkFlit(msg, meta);
+        } else {
+
+        }
+    }
+    return res;
 }

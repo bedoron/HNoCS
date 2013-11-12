@@ -12,6 +12,7 @@ simtime_t PredictorIfc::Now() {
 
 
 PredictorIfc::PredictorIfc(const char *method): m_method(method) {}
+
 const string &PredictorIfc::getName() const { return m_method; }
 
 Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
@@ -19,9 +20,16 @@ Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
     switch(meta->getState()) {
     case SESSION_META_REQUEST:
         if(NOC_START_FLIT == msg->getType()) {
-            PredictionInterval interval = predict(msg, meta);
-            addPrediction(msg, meta, interval);
-            res = PREDICTION_CREATE;
+
+            if(hasPrediction(meta)) {
+                cerr << "Meta ID " << meta->getSessionId() << "Already have a prediction\n";
+                res = PREDICTION_IGNORE;
+            } else {
+                PredictionInterval interval = predict(msg, meta);
+                addPrediction(msg, meta, interval);
+                res = PREDICTION_CREATE;
+            }
+
         }
         break;
     case SESSION_META_RESPONSE:
@@ -85,13 +93,21 @@ void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
 Resolution PredictorIfc::checkPrediction(AppFlitMsg* request,
         SessionMeta* meta) {
     Resolution res = PREDICTION_IGNORE;
-    PredictionInterval interval;
-    if(getPrediction(request, meta, interval)) {
-        simtime_t now = Now();
-        if(now >= interval.first && now <= interval.second) {
-            res = PREDICTION_HIT;
+
+    PredictionObject prediction;
+    if(getPrediction(request, meta, prediction)) {
+        if(PREDICTION_IDLE==prediction.resolution) {
+            simtime_t now = Now();
+            PredictionInterval &interval = prediction.interval;
+
+            if(now >= interval.first && now <= interval.second) {
+                res = PREDICTION_HIT;
+            } else {
+                res = PREDICTION_MISS;
+            }
+            prediction.resolution = res;
         } else {
-            res = PREDICTION_MISS;
+            res = prediction.resolution;
         }
     }
     return res;
@@ -99,16 +115,15 @@ Resolution PredictorIfc::checkPrediction(AppFlitMsg* request,
 
 void PredictorIfc::addPrediction(AppFlitMsg* request, SessionMeta* meta,
         const PredictionInterval& interval) {
-    map<SessionMeta*, PredictionInterval>::iterator iter = m_predictionTable.find(meta);
-    if(iter != m_predictionTable.end()) {
+    if(hasPrediction(meta)) {
         cerr << request;
         throw cRuntimeError("Trying to add prediction which already exists");
     }
-    m_predictionTable[meta] = interval;
+    m_predictionTable[meta] = PredictionObject(interval);
 }
 
 bool PredictorIfc::getPrediction(AppFlitMsg* request, SessionMeta* meta,
-        PredictionInterval& interval) {
+        PredictionObject& interval) {
     bool isValueValid = false;
     try {
         interval = m_predictionTable.at(meta);
@@ -121,7 +136,7 @@ bool PredictorIfc::getPrediction(AppFlitMsg* request, SessionMeta* meta,
 }
 
 void PredictorIfc::removePrediction(AppFlitMsg* request, SessionMeta* meta) {
-    map<SessionMeta*, PredictionInterval>::iterator iter = m_predictionTable.find(meta);
+    PredictionTable::iterator iter = m_predictionTable.find(meta);
     if(iter == m_predictionTable.end()) {
         cerr << request;
         throw cRuntimeError("Trying to remove a prediction which dosn't exists");
@@ -171,4 +186,35 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
     }
 
     return res;
+}
+
+bool PredictorIfc::hasPrediction(NoCFlitMsg* msg) {
+    if(NULL==msg) {
+        throw cRuntimeError("hasPrediction: null msg parameter");
+    }
+    SessionMeta *meta = NULL;
+    AppFlitMsg *flit = (AppFlitMsg*)msg;
+    int flitType = flit->getType();
+
+    if(NOC_START_FLIT == flitType) {
+        meta = ResponseDB::getInstance()->find(msg);
+    } else {
+        meta = ResponseDB::getInstance()->findBySessionId(flit->getSessionId());
+    }
+
+    return hasPrediction(meta);
+}
+
+bool PredictorIfc::hasPrediction(SessionMeta* meta) {
+    if(NULL == meta) {
+        throw cRuntimeError("hasPrediction: null session parameter");
+    }
+
+    bool predictionExists = true;
+    try {
+        m_predictionTable.at(meta);
+    } catch(std::out_of_range &e) {
+        predictionExists = false;
+    }
+    return predictionExists;
 }

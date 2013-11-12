@@ -26,8 +26,6 @@ protected:
 public:
     RandomPredictor();
     virtual ~RandomPredictor();
-
-    virtual PredictionInterval predict(NoCFlitMsg *msg);
 };
 
 #endif /* RANDOMPREDICTOR_H_ */

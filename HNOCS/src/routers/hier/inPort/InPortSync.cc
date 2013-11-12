@@ -81,12 +81,6 @@ void InPortSync::initialize() {
 	}
 
 	// Get pointer to local predictor
-//	cModule *predictor = getParentModule()->getSubmodule("predictor");
-//	if(NULL == predictor) {
-//	    throw cRuntimeError(getParentModule(), "Can't find prediction module for Port");
-//	}
-//
-//	m_predictor = check_and_cast<Predictor *>(predictor);
 	m_predictor = Predictor::GetMyPredictor(this);
 }
 
@@ -150,25 +144,11 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	req->setSchedulingPriority(0);
 	req->setPrediction(false);
 
-	/**
-	 * Create a prediction object
-	 * Attach it to the request using : getControlInfo()
-	 */
+	SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
+	if(PREDICTION_HIT == m_predictor->checkFlit(msg, meta)) {
+	    req->setPrediction(true);
+	}
 
-//    const unsigned int sessionId = 22;
-//
-//    AppFlitMsg *flit = (AppFlitMsg*) msg;
-//	SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
-//    if(meta && meta->getSessionId()==sessionId) {
-//        if(flit->getType()==NOC_START_FLIT && flit->getPktIdx()==0) { // Print only for first head
-//            cerr << "******* " << getFullPath() << " ********\n";
-//            cerr << flit;
-//        }
-//    }
-
-//    m_predictor->PredictIfRequest(flit);
-
-	// TODO: put prediction here
 	send(req, "ctrl$o", outPort);
 }
 
@@ -262,26 +242,33 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 				inVC, msg->getPktId());
 	}
 
+	SessionMeta *session = ResponseDB::getInstance()->find(msg);
+	if(Resolution res = m_predictor->registerFlit(msg, session)) {
+	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+	}
+
+	cerr << "handleCalcOPResp\n";
+
 	// send it to get the out VC
 	if (QByiVC[inVC].empty()) {
 
-	    SessionMeta *session = ResponseDB::getInstance()->find(msg);
-	    if(session && session->isResponse(msg)) {
-	        if(m_predictor->Hit(session)) {
-	            m_predictor->getVcCalc().PredictorSetOutVC(msg);
-	            take(msg);
-	            handleCalcVCResp(msg);
-	        } else {
-	            send(msg,"calcVc$o");
-	        }
+	    Resolution res = m_predictor->checkFlit(msg, session);
+
+	    cerr << "Packet with resolution " << PredictorApiIfc::ResolutionToString(res) << " Entered handle Calc OPResp\n";
+
+	    if(PREDICTION_HIT==res) {
+            m_predictor->getVcCalc().PredictorSetOutVC(msg);
+            take(msg);
+            handleCalcVCResp(msg);
 	    } else {
 	        send(msg,"calcVc$o");
 	    }
 
 	} else {
+	    cerr << "Adding packet to Q\n";
+
 		// we queue the flits on their inVC
 		QByiVC[inVC].insert(msg);
-
 		// Total queue size
 		measureQlength();
 	}
@@ -294,13 +281,14 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 	msg->setControlInfo(info);
 	int inVC = msg->getVC();
 	info->inVC = inVC;
+
 	EV << "InPortSync::handleInFlitMsg msg id is " << msg->getId() << " pkt id is " << msg->getPktId() << " ** \n";
+
 	// record the first time the flit is transmitted by sched, in order to mask source-router latency effects
 	if (msg->getFirstNet()) {
 		msg->setFirstNetTime(simTime());
 		msg->setFirstNet(false);
 	}
-
 
 	if (msg->getType() == NOC_START_FLIT) {
 		// make sure current packet is 0
@@ -319,18 +307,12 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 		// send it to get the out port calc
         SessionMeta *session = ResponseDB::getInstance()->find(msg);
-
-        if(session && session->isResponse(msg)) {
-
-            if(m_predictor->Hit(session)) {
-                m_predictor->getOpCalc().PredictorSetOutPort(msg);
-                take(msg);
-                handleCalcOPResp(msg);
-            } else {
-                send(msg, "calcOp$o");
-            }
-
+        if(PREDICTION_HIT == m_predictor->checkFlit(msg, session)) {
+            m_predictor->getOpCalc().PredictorSetOutPort(msg);
+            take(msg);
+            handleCalcOPResp(msg);
         } else {
+            cerr << "Packet is sent to regular CALCOP\n";
             send(msg, "calcOp$o");
         }
 	} else {
@@ -469,10 +451,13 @@ void InPortSync::handleMessage(cMessage *msg) {
 	cGate *inGate = msg->getArrivalGate();
 	if (msgType == NOC_FLIT_MSG) {
 		if (inGate == gate("calcVc$i")) {
+//		    cerr << "Returned from VCCalc\n";
 			handleCalcVCResp((NoCFlitMsg*) msg);
 		} else if (inGate == gate("calcOp$i")) {
+//		    cerr << "Returned from OPCalc\n";
 			handleCalcOPResp((NoCFlitMsg*) msg);
 		} else {
+//		    cerr << "Brand new Flit to deal with\n";
 			handleInFlitMsg((NoCFlitMsg*) msg);
 		}
 	} else if (msgType == NOC_GNT_MSG) {

@@ -28,7 +28,6 @@ public:
     DefaultPredictor();
     virtual ~DefaultPredictor();
 
-    virtual PredictionInterval predict(NoCFlitMsg *msg);
 };
 
 #endif /* DEFAULTPREDICTOR_H_ */

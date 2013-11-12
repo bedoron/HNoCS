@@ -10,15 +10,14 @@
 
 #include "CMP_m.h"
 #include "ResponseDB.h"
+#include "PredictorApiIfc.h"
+#include "PredictionObject.h"
 #include <string.h>
 #include <map>
 
 using std::string;
 using std::pair;
 using std::map;
-
-typedef pair<simtime_t, simtime_t> PredictionInterval;
-typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CREATE, PREDICTION_DESTROY, PREDICTION_IDLE } Resolution;
 
 /**
  * Prediction Abstract class to handle prediction and identification of
@@ -49,13 +48,16 @@ typedef enum { PREDICTION_MISS, PREDICTION_HIT, PREDICTION_IGNORE, PREDICTION_CR
  *      to the session the original first NOC Message created on its first
  *      packet
  */
-class PredictorIfc {
+
+typedef map<SessionMeta*, PredictionObject> PredictionTable;
+
+class PredictorIfc: public PredictorApiIfc {
     string m_method;
 
 
     void callHandler(AppFlitMsg *msg, SessionMeta *meta, Resolution resolution);
 protected:
-    map<SessionMeta*, PredictionInterval> m_predictionTable;
+    PredictionTable m_predictionTable;
 
     /**
      * Checks for HIT/MISS for request, if request doesn't have a prediction function
@@ -74,7 +76,7 @@ protected:
      * parameter
      */
     virtual bool getPrediction(AppFlitMsg *request, SessionMeta *meta,
-            PredictionInterval& interval);
+            PredictionObject& interval);
     virtual void removePrediction(AppFlitMsg *request, SessionMeta *meta);
 
     virtual Resolution onStartFlow(AppFlitMsg *msg, SessionMeta *meta);
@@ -92,6 +94,7 @@ protected:
     // Return prediction delta from t=0, all request pass it, user defined algorithm
     virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
 public:
+
     PredictorIfc(const char *method);
     const string &getName() const;
 
@@ -99,6 +102,10 @@ public:
 
     // Call this function when passing a flit
     Resolution checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
+
+    // Check if an object has prediction
+    virtual bool hasPrediction(NoCFlitMsg *msg);
+    virtual bool hasPrediction(SessionMeta *meta);
 };
 
 #endif /* PREDICTORIFC_H_ */

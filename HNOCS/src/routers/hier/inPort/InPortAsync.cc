@@ -269,15 +269,18 @@ void InPortAsync::handleInFlitMsg(NoCFlitMsg *msg) {
 		<< (msg->getPktId() >> 16) << "." << (msg->getPktId() % (1<< 16))
 		<< " inVC: " << inVC << endl;
 
+
+		send(msg, "calcOp$o");
 		// ********* PREDICTION CODE ***************
-        if(!m_predictor->Hit(msg)) {
-            // send it to get the out port calc
-            send(msg, "calcOp$o");
-        } else {
-            m_predictor->getOpCalc().PredictorSetOutPort(msg);
-            handleCalcOPResp(msg);
-            return; // LAST CALL
-        }
+//
+//        if(!m_predictor->Hit(msg)) {
+//            // send it to get the out port calc
+//            send(msg, "calcOp$o");
+//        } else {
+//            m_predictor->getOpCalc().PredictorSetOutPort(msg);
+//            handleCalcOPResp(msg);
+//            return; // LAST CALL
+//        }
 		// *****************************************
 
 	} else {

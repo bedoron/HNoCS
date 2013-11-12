@@ -26,13 +26,13 @@ package hnocs.routers.hier;
 
 channel PipelineVCDelay extends ned.DelayChannel
 {
-    delay = 1ns; // 500Mhz clock
+    delay = 0;//1ns; // 500Mhz clock
     disabled = false;
 }
 
 channel PipelineOPDelay extends ned.DelayChannel
 {
-    delay = 1ns;
+    delay = 0;//1ns;
     disabled = false;
 }
 

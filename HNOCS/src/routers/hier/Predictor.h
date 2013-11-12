@@ -25,16 +25,17 @@
 #include "XYOPCalc.h"
 #include "SchedSync.h"
 #include "FLUVCCalc.h"
+#include "PredictorApiIfc.h"
 
-using std::map;
 using std::vector;
 
-class Predictor : public cSimpleModule
+class Predictor : public cSimpleModule, public PredictorApiIfc
 {
     static const bool PRINT_DATA = false;
+    static bool debug;
 
-    PredictorIfc         *m_predictor;
-    int m_numVCs;
+    PredictorIfc    *m_predictor;
+    int             m_numVCs;
 
     XYOPCalc    *m_opCalc;
     FLUVCCalc   *m_vcCalc;
@@ -61,6 +62,10 @@ class Predictor : public cSimpleModule
      */
     bool Predict(NoCFlitMsg *request, SessionMeta *meta);
 
+    /* Registers flit in local  - THIS FUNCTION MUST BE
+     * called **AFTER** we have OP Calc result
+     */
+    //Resolution registerFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
 
   protected:
     virtual void initialize();
@@ -80,6 +85,16 @@ public:
 
     // Get the Predictor associated with current hierarchy
     static Predictor* GetMyPredictor(cSimpleModule *current);
+
+    virtual Resolution checkFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
+    // Check if an object has prediction
+    virtual bool hasPrediction(NoCFlitMsg *msg);
+    virtual bool hasPrediction(SessionMeta *meta);
+
+    /* Registers flit in its appropriate predictor - THIS FUNCTION MUST BE
+     * called **AFTER** we have OP Calc result
+     */
+    Resolution registerFlit(NoCFlitMsg *msg, SessionMeta *meta = 0);
 
 };
 

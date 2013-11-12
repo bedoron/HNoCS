@@ -173,8 +173,9 @@ void AppSrc::sendFlit(int vc) {
 
 	CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
 	SessionMeta *meta = NULL;
+
+	meta = ResponseDB::getInstance()->find(msg->getId());
 	if(msg->getRoundtrip()) {
-	    SessionMeta *meta = ResponseDB::getInstance()->find(msg->getId());
 	    if(NULL != meta) {
 	        flit->setSessionId(meta->getSessionId());
 	    } else {
@@ -182,6 +183,11 @@ void AppSrc::sendFlit(int vc) {
             cerr << "Failure while looking for " << msg->getId() << " in ResponseDB \n";
             cerr << msg << "\n";
             throw cRuntimeError("No Session for a roundtrip message");
+	    }
+	} else {
+	    if(NULL != meta) {
+	        cerr << "Packet isn't marked as roundtrip but it has a ResponseDB Entry\n";
+	        throw cRuntimeError("No Session for a roundtrip message");
 	    }
 	}
 
