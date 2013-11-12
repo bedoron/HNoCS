@@ -19,11 +19,11 @@ AlwaysHit::AlwaysHit(): PredictorIfc("AlwaysHit") {
 }
 
 void AlwaysHit::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
-    cerr << "Miss " << meta->getSessionId() << "\n";
+//    cerr << "Miss " << meta->getSessionId() << "\n";
 }
 
 void AlwaysHit::onHit(AppFlitMsg* msg, SessionMeta* meta) {
-    cerr << "Hit " << meta->getSessionId() << "\n";
+//    cerr << "Hit " << meta->getSessionId() << "\n";
 }
 
 void AlwaysHit::onDestroy(AppFlitMsg* msg, SessionMeta* meta) {

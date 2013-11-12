@@ -206,7 +206,7 @@ void CoreL1::handlePopMsg() {
 	// Tag everything except HIT WRITE (It doesn't return a response)
 	if((curOp != CMP_OP_WRITE) && (curL2Hit!=1)) { // TODO: check logics
 		req->setRoundtrip(true);
-		cerr << "Request:" << req << "\nIs a miss transaction\n";
+//		cerr << "Request:" << req << "\nIs a miss transaction\n";
 	}
 
 	if ((curOp == CMP_OP_READ) && req->getRoundtrip()) {
@@ -214,9 +214,9 @@ void CoreL1::handlePopMsg() {
 //		assert(ResponseDB::getInstance()->exists(req->getId())==false); // Check there is no ID Multiplicity
 //		SessionMeta *meta = new SessionMeta(req);
 //		ResponseDB::getInstance()->add(meta);
-		cerr << "Adding CMPMsg to response db\n";
+//		cerr << "Adding CMPMsg to response db\n";
 		ResponseDB::getInstance()->add(req);
-		cerr << "Testing that it was actually added...\n";
+//		cerr << "Testing that it was actually added...\n";
 
 		if(!ResponseDB::getInstance()->exists(req)) {
 		    cerr << "It wasn't added :(\n";
