@@ -58,6 +58,7 @@ class PredictorIfc: public PredictorApiIfc {
     void callHandler(AppFlitMsg *msg, SessionMeta *meta, Resolution resolution);
 protected:
     PredictionTable m_predictionTable;
+    cModule *port;
 
     /**
      * Checks for HIT/MISS for request, if request doesn't have a prediction function
@@ -71,12 +72,10 @@ protected:
      */
     virtual void addPrediction(AppFlitMsg *request, SessionMeta *meta,
             const PredictionInterval& interval);
-    /*
-     * True if prediction exists. function output is the interval reference
-     * parameter
-     */
-    virtual bool getPrediction(AppFlitMsg *request, SessionMeta *meta,
-            PredictionObject& interval);
+
+    /* If prediction doesn't exist, throw an exception */
+    virtual PredictionObject& getPrediction(AppFlitMsg *request, SessionMeta *meta);
+
     virtual void removePrediction(AppFlitMsg *request, SessionMeta *meta);
 
     virtual Resolution onStartFlow(AppFlitMsg *msg, SessionMeta *meta);
@@ -106,6 +105,10 @@ public:
     // Check if an object has prediction
     virtual bool hasPrediction(NoCFlitMsg *msg);
     virtual bool hasPrediction(SessionMeta *meta);
+
+    void setPort(cModule* port) {
+        this->port = port;
+    }
 };
 
 #endif /* PREDICTORIFC_H_ */

@@ -58,6 +58,8 @@ void Predictor::initialize()
     m_vcCalc = check_and_cast<FLUVCCalc*>(vcCalc);
 
     m_printData = PRINT_DATA;
+
+    m_predictor->setPort(getParentModule());
 }
 
 void Predictor::handleMessage(cMessage *msg)

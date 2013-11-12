@@ -20,7 +20,6 @@ Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
     switch(meta->getState()) {
     case SESSION_META_REQUEST:
         if(NOC_START_FLIT == msg->getType()) {
-
             if(hasPrediction(meta)) {
                 cerr << "Meta ID " << meta->getSessionId() << "Already have a prediction\n";
                 res = PREDICTION_IGNORE;
@@ -29,7 +28,6 @@ Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
                 addPrediction(msg, meta, interval);
                 res = PREDICTION_CREATE;
             }
-
         }
         break;
     case SESSION_META_RESPONSE:
@@ -78,15 +76,30 @@ Resolution PredictorIfc::onFlit(AppFlitMsg* msg, SessionMeta* meta) {
 
 void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
         Resolution resolution) {
-    switch(resolution) {
-    case PREDICTION_HIT:    onHit(msg, meta); break;
-    case PREDICTION_MISS:   onMiss(msg, meta); break;
-    case PREDICTION_DESTROY:onDestroy(msg, meta); removePrediction(msg, meta); break;
-    case PREDICTION_CREATE:
-    case PREDICTION_IGNORE:
-    case PREDICTION_IDLE:   break;
-    default:
-        cerr << "Unknown handler: " << resolution << "\n";
+
+    if(hasPrediction(meta)) {
+        // This will make sure that the events are called only for the
+        // First traversal
+        if(PREDICTION_IDLE == getPrediction(msg, meta).resolution) {
+            switch(resolution) {
+            case PREDICTION_HIT:
+                onHit(msg, meta); break;
+            case PREDICTION_MISS:
+                onMiss(msg, meta); break;
+            case PREDICTION_DESTROY:
+                onDestroy(msg, meta);
+                removePrediction(msg, meta); break;
+            case PREDICTION_CREATE: // Change to idle so Response will work
+            case PREDICTION_IGNORE:
+            case PREDICTION_IDLE:
+                resolution = PREDICTION_IDLE;
+                break;
+            default:
+                cerr << "Unknown handler: " << resolution << "\n";
+            }
+
+            getPrediction(msg, meta).resolution = resolution;
+        }
     }
 }
 
@@ -94,8 +107,8 @@ Resolution PredictorIfc::checkPrediction(AppFlitMsg* request,
         SessionMeta* meta) {
     Resolution res = PREDICTION_IGNORE;
 
-    PredictionObject prediction;
-    if(getPrediction(request, meta, prediction)) {
+    if(hasPrediction(meta)) {
+        PredictionObject &prediction = getPrediction(request, meta);
         if(PREDICTION_IDLE==prediction.resolution) {
             simtime_t now = Now();
             PredictionInterval &interval = prediction.interval;
@@ -105,10 +118,11 @@ Resolution PredictorIfc::checkPrediction(AppFlitMsg* request,
             } else {
                 res = PREDICTION_MISS;
             }
-            prediction.resolution = res;
+            //prediction.resolution = res; /* resolution is updated only AFTER */
         } else {
             res = prediction.resolution;
         }
+
     }
     return res;
 }
@@ -122,17 +136,13 @@ void PredictorIfc::addPrediction(AppFlitMsg* request, SessionMeta* meta,
     m_predictionTable[meta] = PredictionObject(interval);
 }
 
-bool PredictorIfc::getPrediction(AppFlitMsg* request, SessionMeta* meta,
-        PredictionObject& interval) {
-    bool isValueValid = false;
-    try {
-        interval = m_predictionTable.at(meta);
-        isValueValid = true;
-    } catch(std::out_of_range &e) {
-        cerr << "Trying to get a prediction which doesn't exist for\n";
-        cerr << request;
+PredictionObject& PredictorIfc::getPrediction(AppFlitMsg* request,
+        SessionMeta* meta) {
+    if(hasPrediction(meta)) {
+        return m_predictionTable[meta];
+    } else {
+        throw cRuntimeError("Trying to get a non existing prediction");
     }
-    return isValueValid;
 }
 
 void PredictorIfc::removePrediction(AppFlitMsg* request, SessionMeta* meta) {
@@ -168,14 +178,17 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
 
             if(PREDICTION_IGNORE != onFlit(flit, meta)) {
                 if(firstPacket) {
+                    cerr << "onStartFlow\n";
                     res = onStartFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(lastPacket) {
+                    cerr << "onEndFlow\n";
                     res = onEndFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(!(firstPacket || lastPacket)) { /* Middle packets */
+                    cerr << "onMidFlow\n";
                     res = onMidFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }

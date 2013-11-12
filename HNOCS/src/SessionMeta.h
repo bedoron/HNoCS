@@ -133,6 +133,8 @@ public:
 	pair<int, int> getRouterRoundtripLocation(int router_id) const;
 	Incidents getRouterIncidents(int router_id) const; // Get router incident times
 
+	int getLastRouter() { return m_traversedRouters.front(); }
+
 	int getRouterOccurances(int router_id) const;
 
 	void setParent(SessionMeta* meta);
