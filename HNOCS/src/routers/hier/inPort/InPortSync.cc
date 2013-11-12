@@ -160,7 +160,7 @@ void InPortSync::sendFlit(NoCFlitMsg *msg) {
 	if (gate("out", outPort)->getTransmissionChannel()->isBusy()) {
 		EV << "-E-" << getFullPath() << " out port of InPort is busy! will be available in " << (gate("out", outPort)->getTransmissionChannel()->getTransmissionFinishTime()-simTime()) << endl;
 
-		cerr << msg;
+//		cerr << msg;
 
 //		cerr << "-E-" << getFullPath() << " out port of InPort is busy! will be available in " << (gate("out", outPort)->getTransmissionChannel()->getTransmissionFinishTime()-simTime()) << endl;
 		throw cRuntimeError(
@@ -244,17 +244,17 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 
 	SessionMeta *session = ResponseDB::getInstance()->find(msg);
 	if(Resolution res = m_predictor->registerFlit(msg, session)) {
-	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+//	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
 	}
 
-	cerr << "handleCalcOPResp\n";
+//	cerr << "handleCalcOPResp\n";
 
 	// send it to get the out VC
 	if (QByiVC[inVC].empty()) {
 
 	    Resolution res = m_predictor->checkFlit(msg, session);
 
-	    cerr << "Packet with resolution " << PredictorApiIfc::ResolutionToString(res) << " Entered handle Calc OPResp\n";
+//	    cerr << "Packet with resolution " << PredictorApiIfc::ResolutionToString(res) << " Entered handle Calc OPResp\n";
 
 	    if(PREDICTION_HIT==res) {
             m_predictor->getVcCalc().PredictorSetOutVC(msg);
@@ -265,7 +265,7 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	    }
 
 	} else {
-	    cerr << "Adding packet to Q\n";
+//	    cerr << "Adding packet to Q\n";
 
 		// we queue the flits on their inVC
 		QByiVC[inVC].insert(msg);
@@ -312,7 +312,10 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
             take(msg);
             handleCalcOPResp(msg);
         } else {
-            cerr << "Packet is sent to regular CALCOP\n";
+            if(session->getState()==SESSION_META_RESPONSE) {
+//                cerr << "************Packet is sent to regular CALCOP\n";
+//                cerr << msg;
+            }
             send(msg, "calcOp$o");
         }
 	} else {
@@ -331,33 +334,33 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 			curHeadId[inVC] = -1;
 
 
-            if(meta) {
-                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
-                    AppFlitMsg *afm = (AppFlitMsg*)msg;
-                    if( afm->getAppMsgLen()==afm->getPktId() ) { /* Destroy only on LAST flit burst of the entire CMP Message */
-                        cerr << "Tail flit of last packet in session " << meta->getSessionId() << " detected, destroying prediction entry\n";
-                        m_predictor->DestroyHit(meta);
-                    }
-                } else { /* flit is request, don't cleanup predictor */ }
-            } else {
-              CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-              int op = cmpMsg->getOperation();
-              if(op!=CMP_OP_WRITE) {
-                  cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-                  cerr << "We were looking for curHeadId " << headID << " \n";
-                  cerr << "And it's operation isn't a write operation\n";
-                  cerr << "Type is ";
-                  switch(cmpMsg->getOperation()) {
-                  case CMP_OP_READ: cerr << "READ"; break;
-                  default: break;
-                  }
-                  cerr << "\n";
-                  cerr << "FLIT DATA:\n";
-                  cerr << msg;
-                  cerr << "MSG DATA:\n";
-                  cerr << cmpMsg << "\n";
-              }
-            }
+//            if(meta) {
+////                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
+////                    AppFlitMsg *afm = (AppFlitMsg*)msg;
+////                    if( afm->getAppMsgLen()==afm->getPktId() ) { /* Destroy only on LAST flit burst of the entire CMP Message */
+////                        //cerr << "Tail flit of last packet in session " << meta->getSessionId() << " detected, destroying prediction entry\n";
+////                        //m_predictor->DestroyHit(meta);
+////                    }
+////                } else { /* flit is request, don't cleanup predictor */ }
+//            } else {
+//              CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
+//              int op = cmpMsg->getOperation();
+//              if(op!=CMP_OP_WRITE) {
+//                  cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
+//                  cerr << "We were looking for curHeadId " << headID << " \n";
+//                  cerr << "And it's operation isn't a write operation\n";
+//                  cerr << "Type is ";
+//                  switch(cmpMsg->getOperation()) {
+//                  case CMP_OP_READ: cerr << "READ"; break;
+//                  default: break;
+//                  }
+//                  cerr << "\n";
+//                  cerr << "FLIT DATA:\n";
+//                  cerr << msg;
+//                  cerr << "MSG DATA:\n";
+//                  cerr << cmpMsg << "\n";
+//              }
+//            }
 
 //			if(meta) {
 //                if((meta->isResponse(headID))&& /*  Is response */

@@ -32,7 +32,7 @@ channel PipelineVCDelay extends ned.DelayChannel
 
 channel PipelineOPDelay extends ned.DelayChannel
 {
-    delay = 0;//1ns;
+    delay = 0.5ns;//1ns;
     disabled = false;
 }
 

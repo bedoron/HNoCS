@@ -26,7 +26,7 @@ using std::cerr;
 
 Define_Module(Predictor);
 
-bool Predictor::debug = true;
+bool Predictor::debug = false;
 
 void Predictor::initialize()
 {
