@@ -312,7 +312,7 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
             take(msg);
             handleCalcOPResp(msg);
         } else {
-            if(session->getState()==SESSION_META_RESPONSE) {
+            if(session && session->getState()==SESSION_META_RESPONSE) {
 //                cerr << "************Packet is sent to regular CALCOP\n";
 //                cerr << msg;
             }
