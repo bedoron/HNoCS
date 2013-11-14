@@ -145,23 +145,29 @@ Resolution Predictor::checkFlit(NoCFlitMsg* msg, SessionMeta* meta) {
         cerr << "\n";
     }
 
-    if((NULL != meta) && (NOC_START_FLIT==msg->getType())) {
+    res = m_predictor->checkFlit(msg, meta);
 
-        if(SESSION_META_RESPONSE==meta->getState()) {
-            /* results already have a prediction object which belongs to THIS object */
-            res = m_predictor->checkFlit(msg, meta);
-        } else {
-            /* requests have a designated function which needs to be called *after* the OP result arrives.
-             * the reason the need a designated function is because they need to register the message in
-             * a remote predictor object and not */
-        }
+//    if(NOC_MID_FLIT != msg->getType()) {
+//
+//    }
 
-    } else {
-        if(debug) {
-            cerr << "checkFlit: Flit was not delegated to predictor\n";
-            cerr << msg;
-        }
-    }
+//    if((NULL != meta) && (NOC_START_FLIT==msg->getType())) {
+//
+//        if(SESSION_META_RESPONSE==meta->getState()) {
+//            /* results already have a prediction object which belongs to THIS object */
+//            res = m_predictor->checkFlit(msg, meta);
+//        } else {
+//            /* requests have a designated function which needs to be called *after* the OP result arrives.
+//             * the reason the need a designated function is because they need to register the message in
+//             * a remote predictor object and not */
+//        }
+//
+//    } else {
+//        if(debug) {
+//            cerr << "checkFlit: Flit was not delegated to predictor\n";
+//            cerr << msg;
+//        }
+//    }
     return res;
 }
 

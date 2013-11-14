@@ -243,11 +243,12 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	}
 
 	SessionMeta *session = ResponseDB::getInstance()->find(msg);
+	m_predictor->registerFlit(msg, session);
+/*
 	if(Resolution res = m_predictor->registerFlit(msg, session)) {
-//	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
 	}
-
-//	cerr << "handleCalcOPResp\n";
+*/
 
 	// send it to get the out VC
 	if (QByiVC[inVC].empty()) {
@@ -329,11 +330,12 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 		if (msg->getType() == NOC_END_FLIT) {
 		    long int headID = curHeadId[inVC];
-			SessionMeta *meta = ResponseDB::getInstance()->find(headID);
+
 			curPktId[inVC] = 0;
 			curHeadId[inVC] = -1;
 
-
+          SessionMeta *meta = ResponseDB::getInstance()->find(headID);
+          m_predictor->checkFlit(msg, meta); // Destroy this request
 //            if(meta) {
 ////                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
 ////                    AppFlitMsg *afm = (AppFlitMsg*)msg;

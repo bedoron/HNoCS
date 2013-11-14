@@ -27,7 +27,7 @@ void AlwaysHit::onHit(AppFlitMsg* msg, SessionMeta* meta) {
 }
 
 void AlwaysHit::onDestroy(AppFlitMsg* msg, SessionMeta* meta) {
-    cerr << "Destroy " << meta->getSessionId() << "\n";
+//    cerr << "Destroy " << meta->getSessionId() << "\n";
 }
 
 AlwaysHit::~AlwaysHit() {

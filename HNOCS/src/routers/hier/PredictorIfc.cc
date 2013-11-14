@@ -21,12 +21,14 @@ Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
     case SESSION_META_REQUEST:
         if(NOC_START_FLIT == msg->getType()) {
             if(hasPrediction(meta)) {
-                cerr << "Meta ID " << meta->getSessionId() << "Already have a prediction\n";
+//                cerr << "Meta ID " << meta->getSessionId() << " Already have a prediction\n";
                 res = PREDICTION_IGNORE;
             } else {
                 PredictionInterval interval = predict(msg, meta);
                 addPrediction(msg, meta, interval);
                 res = PREDICTION_CREATE;
+                cerr << "[" << port->getParentModule()->getIndex() << "::";
+                cerr << port->getIndex() << "] Creating prediction for session " << meta->getSessionId() << "\n";
             }
         }
         break;
@@ -50,7 +52,13 @@ Resolution PredictorIfc::onEndFlow(AppFlitMsg* msg, SessionMeta* meta) {
             res = checkPrediction(msg, meta);
         } else if(NOC_END_FLIT == msg->getType()) {
             /* Actual removal occurs in the event handler */
+            getPrediction(msg, meta).resolution = PREDICTION_IDLE; // Make event handler call the destroy event
             res = PREDICTION_DESTROY;
+            cerr << "[" << port->getParentModule()->getIndex() << "::";
+            cerr << port->getIndex() << "] Destroying prediction for session " << meta->getSessionId() << "\n";
+        } else {
+            cerr << "Weird flit";
+            cerr << (NoCFlitMsg*)msg;
         }
         break;
     }
@@ -87,8 +95,11 @@ void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
             case PREDICTION_MISS:
                 onMiss(msg, meta); break;
             case PREDICTION_DESTROY:
-                onDestroy(msg, meta);
-                removePrediction(msg, meta); break;
+                if(hasPrediction(msg)) {
+                    onDestroy(msg, meta);
+                    removePrediction(msg, meta);
+                }
+                break;
             case PREDICTION_CREATE: // Change to idle so Response will work
             case PREDICTION_IGNORE:
             case PREDICTION_IDLE:
@@ -98,7 +109,9 @@ void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
                 cerr << "Unknown handler: " << resolution << "\n";
             }
 
-            getPrediction(msg, meta).resolution = resolution;
+            if(hasPrediction(meta)) { /* Destroy might have removed it */
+                getPrediction(msg, meta).resolution = resolution;
+            }
         }
     }
 }
@@ -178,26 +191,23 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
 
             if(PREDICTION_IGNORE != onFlit(flit, meta)) {
                 if(firstPacket) {
-                    cerr << "onStartFlow\n";
+                    //cerr << "onStartFlow\n";
                     res = onStartFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(lastPacket) {
-                    cerr << "onEndFlow\n";
+                    //cerr << "onEndFlow\n";
                     res = onEndFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(!(firstPacket || lastPacket)) { /* Middle packets */
-                    cerr << "onMidFlow\n";
+                    //cerr << "onMidFlow\n";
                     res = onMidFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
             }
         } else { /* Maybe its a write request ? */ }
-    } else {
-        cerr << "MID FLIT in PREDICTOR OBJECT\n";
     }
-
     return res;
 }
 
