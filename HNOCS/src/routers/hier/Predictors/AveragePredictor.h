@@ -1,34 +1,32 @@
 /*
- * AveratePredictor.h
+ * AveragePredictor.h
  *
- *  Created on: Nov 14, 2013
+ *  Created on: Nov 16, 2013
  *      Author: hnocs
  */
 
-#ifndef AVERATEPREDICTOR_H_
-#define AVERATEPREDICTOR_H_
+#ifndef AVERAGEPREDICTOR_H_
+#define AVERAGEPREDICTOR_H_
+#include "StatisticalPredictor.h"
 
-#include "PredictorIfc.h"
-#include <cstddev.h>
+class AveragePredictor: public StatisticalPredictor {
+    string m_name;
+protected:
+    virtual simtime_t getStatisticalParameter() {
+        long int count = m_deltas.getCount();
 
-class AveragePredictor: public PredictorIfc {
-    cStdDev m_deltas;
-    static const long int WARMUP;
-    static const double RADIUS; // Radious around STD DEV in Nanos
-
-    protected:
-    // On Miss handler
-    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta);
-    // On Hit handler
-    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta);
-    // On Destroy session (last tail flit) handler
-    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta);
-    // Return prediction delta from t=0, all request pass it, user defined algorithm
-    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
+        if(count!=0) {
+            return simtime_t((m_deltas.getSum()/count));
+        }
+        return Now();
+    }
 
 public:
-    AveragePredictor();
-    virtual ~AveragePredictor();
+    AveragePredictor(): StatisticalPredictor(), m_name("Average predictor") { }
+
+    virtual const string &getName() const {
+        return m_name;
+    }
 };
 
-#endif /* AVERATEPREDICTOR_H_ */
+#endif /* AVERAGEPREDICTOR_H_ */

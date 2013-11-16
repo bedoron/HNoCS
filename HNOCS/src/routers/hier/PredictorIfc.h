@@ -92,10 +92,10 @@ protected:
     virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta) = 0;
     // Return prediction delta from t=0, all request pass it, user defined algorithm
     virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
-public:
 
+public:
     PredictorIfc(const char *method);
-    const string &getName() const;
+    virtual const string &getName() const;
 
     static simtime_t Now();
 

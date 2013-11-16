@@ -14,6 +14,8 @@ using std::cerr;
 #include "Predictors/RandomPredictor.h"
 #include "Predictors/AlwaysHit.h"
 #include "Predictors/AveragePredictor.h"
+#include "Predictors/MeanPredictor.h"
+//#include "Predictors/SPMeanRadiusDecorator.h"
 
 PredictorFactory::PredictorFactory() { }
 
@@ -34,10 +36,16 @@ PredictorIfc* PredictorFactory::build(const string &method) {
         return new DefaultPredictor();
     if(method == "always-hit")
         return new AlwaysHit();
-    if(method == "std-dev")
+    if(method == "mean")
+        return new MeanPredictor();
+    if(method == "avg")
         return new AveragePredictor();
-
-
+/*
+    if(method == "mean-rad")
+        return new SPMeanRadiusDecorator(new MeanPredictor());
+    if(method == "mean-avg")
+        return new SPMeanRadiusDecorator(new AveragePredictor());
+*/
     cerr << "No " << method << " predictor, using default\n";
     //ev << "No " << method << " predictor, using default";
     return new DefaultPredictor();
