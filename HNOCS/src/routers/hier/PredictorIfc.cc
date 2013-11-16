@@ -27,8 +27,8 @@ Resolution PredictorIfc::onStartFlow(AppFlitMsg* msg, SessionMeta* meta) {
                 PredictionInterval interval = predict(msg, meta);
                 addPrediction(msg, meta, interval);
                 res = PREDICTION_CREATE;
-                cerr << "[" << port->getParentModule()->getIndex() << "::";
-                cerr << port->getIndex() << "] Creating prediction for session " << meta->getSessionId() << "\n";
+//                cerr << "[" << port->getParentModule()->getIndex() << "::";
+//                cerr << port->getIndex() << "] Creating prediction for session " << meta->getSessionId() << "\n";
             }
         }
         break;
@@ -54,8 +54,8 @@ Resolution PredictorIfc::onEndFlow(AppFlitMsg* msg, SessionMeta* meta) {
             /* Actual removal occurs in the event handler */
             getPrediction(msg, meta).resolution = PREDICTION_IDLE; // Make event handler call the destroy event
             res = PREDICTION_DESTROY;
-            cerr << "[" << port->getParentModule()->getIndex() << "::";
-            cerr << port->getIndex() << "] Destroying prediction for session " << meta->getSessionId() << "\n";
+//            cerr << "[" << port->getParentModule()->getIndex() << "::";
+//            cerr << port->getIndex() << "] Destroying prediction for session " << meta->getSessionId() << "\n";
         } else {
             cerr << "Weird flit";
             cerr << (NoCFlitMsg*)msg;

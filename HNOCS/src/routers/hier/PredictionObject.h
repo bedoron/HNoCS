@@ -16,15 +16,20 @@
 #ifndef PREDICTIONOBJECT_H_
 #define PREDICTIONOBJECT_H_
 
-#include "PredictorIfc.h"
+#include <cmodule.h>
 typedef pair<simtime_t, simtime_t> PredictionInterval;
 
 class PredictionObject {
 public:
     PredictionInterval  interval;
     Resolution          resolution;
+    simtime_t           timestamp;
 
-    PredictionObject(PredictionInterval interval): interval(interval), resolution(PREDICTION_IDLE)  {}
+    PredictionObject(PredictionInterval interval):
+        interval(interval), resolution(PREDICTION_IDLE) {
+        timestamp = cSimulation::getActiveSimulation()->getSimTime();
+
+    }
 
     PredictionObject(): resolution(PREDICTION_IDLE) {}
 };
