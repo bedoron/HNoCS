@@ -9,7 +9,7 @@
 #include <iostream>
 using std::cerr;
 
-const long int StatisticalPredictor::WARMUP = 50; // How many measurments to make until starting to predict
+const long int StatisticalPredictor::WARMUP = 50; // How many measurements to make until starting to predict
 const double StatisticalPredictor::RADIUS = 10; // This should be in Nano seconds
 
 StatisticalPredictor::StatisticalPredictor(): PredictorIfc("StatisticalPredictor"),
@@ -33,7 +33,7 @@ void StatisticalPredictor::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
         cerr << "Flow arrived after " << delta << " ns, ";
         cerr << "prediction was: [" << prediction.interval.first << "," << prediction.interval.second<< "]";
         cerr << "[Hits: " << m_hits << ", Misses: " << m_misses << "] - " << m_deltas.getCount() << " samples,";
-        cerr << "StdDev: " << stats << " (err: " <<  (delta-stats) << ") \n";
+        cerr << "StdDev: " << stats << " (err: " <<  (delta-stats) << ") rad: "<< m_radius<< "\n";
     }
 }
 
@@ -51,6 +51,7 @@ PredictionInterval StatisticalPredictor::predict(AppFlitMsg* request,
     if(m_deltas.getCount()>=m_warmup) {
         simtime_t delta = getStatisticalParameter();
         simtime_t radius = simtime_t(m_radius, SIMTIME_NS);
+//        cerr << "RADIUS USED FOR PREDICTION IS " << radius.dbl() << "Actual: " << m_radius << "\n";
         if(delta > radius) {
             interval.first += delta - radius;
         } else {
