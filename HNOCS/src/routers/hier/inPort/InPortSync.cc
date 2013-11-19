@@ -201,13 +201,29 @@ void InPortSync::handleCalcVCResp(NoCFlitMsg *msg) {
 
 	curOutVC[inVC] = outVC;
 
-	// we queue the flits on their inVC
-	if (QByiVC[inVC].isEmpty()) {
-		QByiVC[inVC].insert(msg);
-	} else {
-		QByiVC[inVC].insertBefore(QByiVC[inVC].front(), msg);
-	}
+    // Bug for when middle flits arrive while processing OP Calc W/A
+    // Bug for when middle flits arrive while processing OP Calc W/A
+    bool bodyQueuedBeforeHead = false;
+    if(!QByiVC[inVC].empty()) {
+        NoCFlitMsg *qFirstFlit = (NoCFlitMsg*)(cObject*)QByiVC[inVC].front();
+        int qMsgId = ((AppFlitMsg*)qFirstFlit)->getMsgId();
+        int qPktIdx = ((AppFlitMsg*)qFirstFlit)->getPktIdx();
+        int msgId = ((AppFlitMsg*)msg)->getMsgId();
+        int pktIdx = ((AppFlitMsg*)msg)->getPktIdx();
 
+        bodyQueuedBeforeHead = (qMsgId==msgId)&&(pktIdx<=qPktIdx);
+    }
+
+	// we queue the flits on their inVC
+    if(bodyQueuedBeforeHead) {
+        QByiVC[inVC].insertBefore(QByiVC[inVC].front(), msg);
+    } else { /* Original code*/
+        if (QByiVC[inVC].isEmpty()) {
+            QByiVC[inVC].insert(msg);
+        } else {
+            QByiVC[inVC].insertBefore(QByiVC[inVC].front(), msg);
+        }
+    }
 	// Total queue size
 	measureQlength();
 
@@ -243,18 +259,28 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	}
 
 	SessionMeta *session = ResponseDB::getInstance()->find(msg);
-	if(Resolution res = m_predictor->registerFlit(msg, session)) {
-//	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+	m_predictor->registerFlit(msg, session);
+//	if(Resolution res = m_predictor->registerFlit(msg, session)) {
+////	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+//	}
+
+	// Bug for when middle flits arrive while processing OP Calc W/A
+	bool bodyQueuedBeforeHead = false;
+	if(!QByiVC[inVC].empty()) {
+	    NoCFlitMsg *qFirstFlit = (NoCFlitMsg*)(cObject*)QByiVC[inVC].front();
+	    int qMsgId = ((AppFlitMsg*)qFirstFlit)->getMsgId();
+	    int qPktIdx = ((AppFlitMsg*)qFirstFlit)->getPktIdx();
+	    int msgId = ((AppFlitMsg*)msg)->getMsgId();
+	    int pktIdx = ((AppFlitMsg*)msg)->getPktIdx();
+
+	    bodyQueuedBeforeHead = (qMsgId==msgId)&&(pktIdx<=qPktIdx);
 	}
 
-//	cerr << "handleCalcOPResp\n";
-
 	// send it to get the out VC
-	if (QByiVC[inVC].empty()) {
+	if (QByiVC[inVC].empty() || bodyQueuedBeforeHead) {
 
 	    Resolution res = m_predictor->checkFlit(msg, session);
 
-//	    cerr << "Packet with resolution " << PredictorApiIfc::ResolutionToString(res) << " Entered handle Calc OPResp\n";
 
 	    if(PREDICTION_HIT==res) {
             m_predictor->getVcCalc().PredictorSetOutVC(msg);
@@ -265,8 +291,6 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	    }
 
 	} else {
-//	    cerr << "Adding packet to Q\n";
-
 		// we queue the flits on their inVC
 		QByiVC[inVC].insert(msg);
 		// Total queue size
@@ -330,53 +354,9 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		if (msg->getType() == NOC_END_FLIT) {
 		    long int headID = curHeadId[inVC];
 			SessionMeta *meta = ResponseDB::getInstance()->find(headID);
+			// First check that head returned, and only then collapse the VC
 			curPktId[inVC] = 0;
 			curHeadId[inVC] = -1;
-
-
-//            if(meta) {
-////                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
-////                    AppFlitMsg *afm = (AppFlitMsg*)msg;
-////                    if( afm->getAppMsgLen()==afm->getPktId() ) { /* Destroy only on LAST flit burst of the entire CMP Message */
-////                        //cerr << "Tail flit of last packet in session " << meta->getSessionId() << " detected, destroying prediction entry\n";
-////                        //m_predictor->DestroyHit(meta);
-////                    }
-////                } else { /* flit is request, don't cleanup predictor */ }
-//            } else {
-//              CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-//              int op = cmpMsg->getOperation();
-//              if(op!=CMP_OP_WRITE) {
-//                  cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-//                  cerr << "We were looking for curHeadId " << headID << " \n";
-//                  cerr << "And it's operation isn't a write operation\n";
-//                  cerr << "Type is ";
-//                  switch(cmpMsg->getOperation()) {
-//                  case CMP_OP_READ: cerr << "READ"; break;
-//                  default: break;
-//                  }
-//                  cerr << "\n";
-//                  cerr << "FLIT DATA:\n";
-//                  cerr << msg;
-//                  cerr << "MSG DATA:\n";
-//                  cerr << cmpMsg << "\n";
-//              }
-//            }
-
-//			if(meta) {
-//                if((meta->isResponse(headID))&& /*  Is response */
-//                        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
-//                    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
-//                    m_predictor->DestroyHit(inVC);
-//                }
-//			} else {
-//			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-//			    int op = cmpMsg->getOperation();
-//			    if(op!=CMP_OP_WRITE) {
-//			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-//			        cerr << "And it's operation isn't a write operation\n";
-//
-//			    }
-//			}
 		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head
@@ -454,13 +434,10 @@ void InPortSync::handleMessage(cMessage *msg) {
 	cGate *inGate = msg->getArrivalGate();
 	if (msgType == NOC_FLIT_MSG) {
 		if (inGate == gate("calcVc$i")) {
-//		    cerr << "Returned from VCCalc\n";
 			handleCalcVCResp((NoCFlitMsg*) msg);
 		} else if (inGate == gate("calcOp$i")) {
-//		    cerr << "Returned from OPCalc\n";
 			handleCalcOPResp((NoCFlitMsg*) msg);
 		} else {
-//		    cerr << "Brand new Flit to deal with\n";
 			handleInFlitMsg((NoCFlitMsg*) msg);
 		}
 	} else if (msgType == NOC_GNT_MSG) {
