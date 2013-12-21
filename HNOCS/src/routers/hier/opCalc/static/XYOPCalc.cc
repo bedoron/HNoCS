@@ -23,7 +23,7 @@
 #include "cResponseHeadArrived.h"
 
 #include <iostream>
-
+#include "Utils.h"
 
 using std::cerr;
 
@@ -338,7 +338,9 @@ void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
 
 void XYOPCalc::handlePacketMsg(NoCFlitMsg* msg)
 {
-    SetOutPort(msg);
+    if(msg->getType()==NOC_START_FLIT) {
+        SetOutPort(msg);
+    }
     send(msg, "calc$o");
 }
 

@@ -103,8 +103,11 @@ void FLUVCCalc::handleMessage(cMessage *msg)
 {
     int msgType = msg->getKind();
     if ( msgType == NOC_FLIT_MSG ) {
-    	handlePacketMsg( (NoCFlitMsg*)msg);
+        if(((NoCFlitMsg*)msg)->getType()==NOC_START_FLIT) {
+            handlePacketMsg( (NoCFlitMsg*)msg);
+        }
     } else {
+        // Echo packet back
     	throw cRuntimeError("Does not know how to handle message of type %d", msg->getKind());
     	delete msg;
     }

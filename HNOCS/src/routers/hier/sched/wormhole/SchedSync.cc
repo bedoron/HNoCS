@@ -38,6 +38,7 @@
 
 #include <iostream>
 using std::cerr;
+using std::stringstream;
 
 
 Define_Module(SchedSync)
@@ -256,9 +257,35 @@ void SchedSync::handleFlitMsg(NoCFlitMsg *msg) {
 	int vc = msg->getVC();
 	int ip = msg->getArrivalGate()->getIndex();
 
+	if(vc < 0 ) {
+	    stringstream ss;
+
+	    ss << "Sending p: " << msg->getSenderModule()->getParentModule()->getFullName() << "\n";
+	    ss << "Sending r: " << msg->getSenderModule()->getParentModule()->getParentModule()->getFullName() << "\n";
+	    ss << "Sched on Router " << getParentModule()->getParentModule()->getIndex() << " port " << getParentModule()->getIndex() << "\n";
+	    ss << "VC wasn't set, it had a default value of -1.\n";
+	    ss << msg;
+
+	    cerr << ss.str() << "\n";
+	    throw new cRuntimeError(ss.str().c_str());
+	}
+
 	// the head of the ReqsByIPoVC MUST match
 	NoCReqMsg *req = ReqsByIPoVC[ip][vc].front();
 
+	int routerId = getParentModule()->getParentModule()->getIndex();
+	int portId = getParentModule()->getIndex();
+	if(ReqsByIPoVC[ip][vc].empty()) {
+	    stringstream ss;
+	    ss << "Scheduler on router " << routerId << " port " << portId << " failed!\n";
+	    ss << "got flit when request was empty. error\n";
+	    ss << msg->getName() << "\n";
+	    ss << "Message statistics: \n";
+	    cerr << ss;
+
+	    throw new cRuntimeError(ss.str().c_str());
+	}
+//	cerr << "Requests on " << ip << "-" << "vc: " << ReqsByIPoVC[ip][vc].size() << "\n";
 	// this info is only available on debug...
 	if (req->getPktId() != msg->getPktId()) {
 		throw cRuntimeError(
@@ -284,15 +311,6 @@ void SchedSync::handleFlitMsg(NoCFlitMsg *msg) {
 
 		vcUsage[vc]--;
 		ReqsByIPoVC[ip][vc].pop_front();
-
-		// Get rid of prediction
-//		if((0==arbitration_type) && (m_predReq.size()>0)) {
-//		    HighPriorityRequests hpReq = m_predReq.front();
-//		    if((hpReq.ip == ip) && (hpReq.vc == vc) && (hpReq.msg->getPktId()==msg->getPktId())) {
-//		        EV << "Removing high priority packet " << msg->getPktId();
-//		        m_predReq.pop();
-//		    }
-//		}
 
 		if (vcCurReq[vc] == req)
 			vcCurReq[vc] = NULL;
@@ -383,6 +401,9 @@ void SchedSync::handlePopMsg(cMessage *msg) {
 void SchedSync::handleMessage(cMessage *msg) {
 	int msgType = msg->getKind();
 	if (msgType == NOC_FLIT_MSG) {
+        int routerId = getParentModule()->getParentModule()->getIndex();
+        int portId = getParentModule()->getIndex();
+
 		handleFlitMsg((NoCFlitMsg*) msg);
 	} else if (msgType == NOC_REQ_MSG) {
 		handleReqMsg((NoCReqMsg*) msg);

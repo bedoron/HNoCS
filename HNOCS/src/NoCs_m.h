@@ -76,6 +76,8 @@ enum NOC_FLIT_TYPES {
  *   bool firstNet; 
  *   simtime_t InjectTime; 
  *   simtime_t FirstNetTime; 
+ *   
+ *   bool replicated = false; 
  *    
  * }
  * </pre>
@@ -94,6 +96,7 @@ class NoCFlitMsg : public ::cPacket
     bool firstNet_var;
     simtime_t InjectTime_var;
     simtime_t FirstNetTime_var;
+    bool replicated_var;
 
   private:
     void copy(const NoCFlitMsg& other);
@@ -134,6 +137,8 @@ class NoCFlitMsg : public ::cPacket
     virtual void setInjectTime(simtime_t InjectTime);
     virtual simtime_t getFirstNetTime() const;
     virtual void setFirstNetTime(simtime_t FirstNetTime);
+    virtual bool getReplicated() const;
+    virtual void setReplicated(bool replicated);
 };
 
 inline void doPacking(cCommBuffer *b, NoCFlitMsg& obj) {obj.parsimPack(b);}

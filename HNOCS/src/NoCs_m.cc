@@ -66,6 +66,7 @@ NoCFlitMsg::NoCFlitMsg(const char *name, int kind) : cPacket(name,kind)
     this->firstNet_var = 0;
     this->InjectTime_var = 0;
     this->FirstNetTime_var = 0;
+    this->replicated_var = false;
 }
 
 NoCFlitMsg::NoCFlitMsg(const NoCFlitMsg& other) : cPacket(other)
@@ -98,6 +99,7 @@ void NoCFlitMsg::copy(const NoCFlitMsg& other)
     this->firstNet_var = other.firstNet_var;
     this->InjectTime_var = other.InjectTime_var;
     this->FirstNetTime_var = other.FirstNetTime_var;
+    this->replicated_var = other.replicated_var;
 }
 
 void NoCFlitMsg::parsimPack(cCommBuffer *b)
@@ -114,6 +116,7 @@ void NoCFlitMsg::parsimPack(cCommBuffer *b)
     doPacking(b,this->firstNet_var);
     doPacking(b,this->InjectTime_var);
     doPacking(b,this->FirstNetTime_var);
+    doPacking(b,this->replicated_var);
 }
 
 void NoCFlitMsg::parsimUnpack(cCommBuffer *b)
@@ -130,6 +133,7 @@ void NoCFlitMsg::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->firstNet_var);
     doUnpacking(b,this->InjectTime_var);
     doUnpacking(b,this->FirstNetTime_var);
+    doUnpacking(b,this->replicated_var);
 }
 
 int NoCFlitMsg::getType() const
@@ -242,6 +246,16 @@ void NoCFlitMsg::setFirstNetTime(simtime_t FirstNetTime)
     this->FirstNetTime_var = FirstNetTime;
 }
 
+bool NoCFlitMsg::getReplicated() const
+{
+    return replicated_var;
+}
+
+void NoCFlitMsg::setReplicated(bool replicated)
+{
+    this->replicated_var = replicated;
+}
+
 class NoCFlitMsgDescriptor : public cClassDescriptor
 {
   public:
@@ -289,7 +303,7 @@ const char *NoCFlitMsgDescriptor::getProperty(const char *propertyname) const
 int NoCFlitMsgDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 11+basedesc->getFieldCount(object) : 11;
+    return basedesc ? 12+basedesc->getFieldCount(object) : 12;
 }
 
 unsigned int NoCFlitMsgDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -312,8 +326,9 @@ unsigned int NoCFlitMsgDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<11) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<12) ? fieldTypeFlags[field] : 0;
 }
 
 const char *NoCFlitMsgDescriptor::getFieldName(void *object, int field) const
@@ -336,8 +351,9 @@ const char *NoCFlitMsgDescriptor::getFieldName(void *object, int field) const
         "firstNet",
         "InjectTime",
         "FirstNetTime",
+        "replicated",
     };
-    return (field>=0 && field<11) ? fieldNames[field] : NULL;
+    return (field>=0 && field<12) ? fieldNames[field] : NULL;
 }
 
 int NoCFlitMsgDescriptor::findField(void *object, const char *fieldName) const
@@ -355,6 +371,7 @@ int NoCFlitMsgDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='f' && strcmp(fieldName, "firstNet")==0) return base+8;
     if (fieldName[0]=='I' && strcmp(fieldName, "InjectTime")==0) return base+9;
     if (fieldName[0]=='F' && strcmp(fieldName, "FirstNetTime")==0) return base+10;
+    if (fieldName[0]=='r' && strcmp(fieldName, "replicated")==0) return base+11;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -378,8 +395,9 @@ const char *NoCFlitMsgDescriptor::getFieldTypeString(void *object, int field) co
         "bool",
         "simtime_t",
         "simtime_t",
+        "bool",
     };
-    return (field>=0 && field<11) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<12) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *NoCFlitMsgDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -430,6 +448,7 @@ std::string NoCFlitMsgDescriptor::getFieldAsString(void *object, int field, int 
         case 8: return bool2string(pp->getFirstNet());
         case 9: return double2string(pp->getInjectTime());
         case 10: return double2string(pp->getFirstNetTime());
+        case 11: return bool2string(pp->getReplicated());
         default: return "";
     }
 }
@@ -455,6 +474,7 @@ bool NoCFlitMsgDescriptor::setFieldAsString(void *object, int field, int i, cons
         case 8: pp->setFirstNet(string2bool(value)); return true;
         case 9: pp->setInjectTime(string2double(value)); return true;
         case 10: pp->setFirstNetTime(string2double(value)); return true;
+        case 11: pp->setReplicated(string2bool(value)); return true;
         default: return false;
     }
 }
@@ -479,8 +499,9 @@ const char *NoCFlitMsgDescriptor::getFieldStructName(void *object, int field) co
         NULL,
         NULL,
         NULL,
+        NULL,
     };
-    return (field>=0 && field<11) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<12) ? fieldStructNames[field] : NULL;
 }
 
 void *NoCFlitMsgDescriptor::getFieldStructPointer(void *object, int field, int i) const

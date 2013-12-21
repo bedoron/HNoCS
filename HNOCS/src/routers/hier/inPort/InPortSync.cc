@@ -40,6 +40,7 @@ Define_Module(InPortSync);
 
 #include <iostream>
 using std::cout;
+using std::stringstream;
 
 void InPortSync::initialize() {
 	numVCs = par("numVCs");
@@ -54,6 +55,7 @@ void InPortSync::initialize() {
 	curOutVC.resize(numVCs);
 	curPktId.resize(numVCs, 0);
 	curHeadId.resize(numVCs, 0);
+	headResolution.resize(numVCs, PREDICTION_IGNORE);
 
 
 	// send the credits to the other size
@@ -121,6 +123,15 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	int inVC = info->inVC;
 	int outVC = msg->getVC();
 
+	if(outVC < 0) {
+	    stringstream ss;
+	    ss << "InPort on router " << getParentModule()->getParentModule()->getIndex();
+	    ss << " on port " << getParentModule()->getIndex() << " has negative out VC !!!\n";
+	    cerr << ss;
+	    throw new cRuntimeError(ss.str().c_str());
+	}
+
+
 	if (msg->getType() != NOC_START_FLIT) {
 		throw cRuntimeError("SendReq for flit which isn`t SoP");
 	}
@@ -152,10 +163,49 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	send(req, "ctrl$o", outPort);
 }
 
-	// when we get here it is assumed there is NO messages on the out port
+
 void InPortSync::sendFlit(NoCFlitMsg *msg) {
 	int inVC = getFlitInfo(msg)->inVC;
-	int outPort = getFlitInfo(msg)->outPort;
+	int outPort = -1; //getFlitInfo(msg)->outPort;
+//    int portToSendOn = -1;
+
+    if(msg->getType()==NOC_START_FLIT) {
+        inPortFlitInfo *info = (inPortFlitInfo*) msg->removeControlInfo();
+        curOutPort[inVC] = info->outPort;
+        curPktId[inVC] = msg->getPktId();
+        curHeadId[inVC] = msg->getId();
+
+        if(msg->getVC()<0) {
+            stringstream ss;
+            ss << "Flit arrived with negative VC\n";
+            ss << "PktId: " << msg->getId() << "\n";
+            ss << msg;
+            throw new cRuntimeError(ss.str().c_str());
+        }
+
+        curOutVC[inVC] = msg->getVC();
+
+        outPort = curOutPort[inVC];
+    } else {
+        msg->setVC(curOutVC[inVC]);
+
+        // make sure the packet id is correct
+        if (msg->getPktId() != curPktId[inVC]) {
+            throw cRuntimeError("-E- got FLIT %d with packet 0x%x during packet 0x%x",
+                    msg->getFlitIdx(), msg->getPktId(), curPktId[inVC]);
+        }
+
+        outPort = curOutPort[inVC];
+        // on last FLIT need to zero out the current packet Id
+        if (msg->getType() == NOC_END_FLIT) {
+            long int headID = curHeadId[inVC];
+//            SessionMeta *meta = ResponseDB::getInstance()->find(headID);
+            curPktId[inVC] = 0;
+            curHeadId[inVC] = -1;
+            curOutVC[inVC] = -1;
+            curOutPort[inVC] = -1;
+        }
+    }
 
 	if (gate("out", outPort)->getTransmissionChannel()->isBusy()) {
 		EV << "-E-" << getFullPath() << " out port of InPort is busy! will be available in " << (gate("out", outPort)->getTransmissionChannel()->getTransmissionFinishTime()-simTime()) << endl;
@@ -185,6 +235,20 @@ void InPortSync::sendFlit(NoCFlitMsg *msg) {
 		}
 	}
 	// send to Sched
+//	send(msg, "out", out);
+
+	if(outPort<0 || outPort>4) {
+	    stringstream ss;
+	    ss << "Port is out of range: " << outPort << "\n";
+	    cerr << ss;
+	    throw new cRuntimeError(ss.str().c_str());
+	}
+
+	if((curOutVC[inVC] < 0) && (msg->getType() != NOC_END_FLIT)) {
+	    cerr << "Sending a flit with VC < 0\n";
+	    throw new cRuntimeError("VC Collapsed (<0) while sending a non end flit");
+	}
+
 	send(msg, "out", outPort);
 
 	// send the credit back on the inVC of that FLIT
@@ -199,7 +263,21 @@ void InPortSync::handleCalcVCResp(NoCFlitMsg *msg) {
 	int inVC = info->inVC;
 	int outVC = msg->getVC();
 
-	curOutVC[inVC] = outVC;
+    if(msg->getType() != NOC_START_FLIT) { // Incur delay
+        if(QByiVC[inVC].isEmpty()) { // we really don't care
+//            throw new cRuntimeError("Non head flit which traveled with delay arrived to an empty Q :-(");
+//            cerr << "Non head flit which traveled with delay arrived to an empty Q :-(";
+        }
+        QByiVC[inVC].insert(msg);
+        return;
+    }
+
+    if(outVC<0) {
+        stringstream ss;
+        ss << "flit arrived with negative VC: \n" << msg;
+        cerr << ss;
+        throw new cRuntimeError(ss.str().c_str());
+    }
 
 	// we queue the flits on their inVC
 	if (QByiVC[inVC].isEmpty()) {
@@ -211,9 +289,9 @@ void InPortSync::handleCalcVCResp(NoCFlitMsg *msg) {
 	// Total queue size
 	measureQlength();
 
-	EV << "-I- " << getFullPath() << " Packet:" << (msg->getPktId() >> 16)
-	   << "." << (msg->getPktId() % (1<< 16))
-	   << " will be sent on VC:" << outVC << endl;
+//	EV << "-I- " << getFullPath() << " Packet:" << (msg->getPktId() >> 16)
+//	   << "." << (msg->getPktId() % (1<< 16))
+//	   << " will be sent on VC:" << outVC << endl;
 
 
 	/**
@@ -229,9 +307,16 @@ void InPortSync::handleCalcVCResp(NoCFlitMsg *msg) {
 // Keep track of current out port per inVC
 // if the Q is empty send to calc out VC or else Q it
 void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
+
+    if(msg->getType() != NOC_START_FLIT) { // Incur delay
+        send(msg,"calcVc$o");
+        return;
+    }
+
+
 	int inVC = getFlitInfo(msg)->inVC;
 
-	curOutPort[inVC] = getFlitInfo(msg)->outPort;
+	//curOutPort[inVC] = getFlitInfo(msg)->outPort;
 	EV << "-I- " << getFullPath() << " Packet:" << (msg->getPktId() >> 16)
 	   << "." << (msg->getPktId() % (1<< 16))
 	   << " will be sent to port:" << curOutPort[inVC] << endl;
@@ -292,12 +377,12 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 	if (msg->getType() == NOC_START_FLIT) {
 		// make sure current packet is 0
-		if (curPktId[inVC]) {
-			throw cRuntimeError("-E- got new packet 0x%x during packet 0x%x",
-					curPktId[inVC], msg->getPktId());
-		}
-		curPktId[inVC] = msg->getPktId();
-		curHeadId[inVC] = msg->getId();
+//		if (curPktId[inVC]) {
+//			throw cRuntimeError("-E- got new packet 0x%x during packet 0x%x",
+//					curPktId[inVC], msg->getPktId());
+//		}
+//		curPktId[inVC] = msg->getPktId();
+//		curHeadId[inVC] = msg->getId();
 
 		// for first flit we need to calc outVC and outPort
 		EV << "-I- " << getFullPath() << " Received Packet:"
@@ -307,7 +392,8 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 
 		// send it to get the out port calc
         SessionMeta *session = ResponseDB::getInstance()->find(msg);
-        if(PREDICTION_HIT == m_predictor->checkFlit(msg, session)) {
+        headResolution[inVC] = m_predictor->checkFlit(msg, session);
+        if(PREDICTION_HIT == headResolution[inVC]) {
             m_predictor->getOpCalc().PredictorSetOutPort(msg);
             take(msg);
             handleCalcOPResp(msg);
@@ -319,76 +405,19 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
             send(msg, "calcOp$o");
         }
 	} else {
-		// make sure the packet id is correct
-		if (msg->getPktId() != curPktId[inVC]) {
-			throw cRuntimeError("-E- got FLIT %d with packet 0x%x during packet 0x%x",
-					msg->getFlitIdx(), msg->getPktId(), curPktId[inVC]);
-		}
-
-		// on last FLIT need to zero out the current packet Id
-
-		if (msg->getType() == NOC_END_FLIT) {
-		    long int headID = curHeadId[inVC];
-			SessionMeta *meta = ResponseDB::getInstance()->find(headID);
-			curPktId[inVC] = 0;
-			curHeadId[inVC] = -1;
-
-
-//            if(meta) {
-////                if(meta->isResponse(headID)) {  /* Prediction disposal segment*/
-////                    AppFlitMsg *afm = (AppFlitMsg*)msg;
-////                    if( afm->getAppMsgLen()==afm->getPktId() ) { /* Destroy only on LAST flit burst of the entire CMP Message */
-////                        //cerr << "Tail flit of last packet in session " << meta->getSessionId() << " detected, destroying prediction entry\n";
-////                        //m_predictor->DestroyHit(meta);
-////                    }
-////                } else { /* flit is request, don't cleanup predictor */ }
-//            } else {
-//              CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-//              int op = cmpMsg->getOperation();
-//              if(op!=CMP_OP_WRITE) {
-//                  cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-//                  cerr << "We were looking for curHeadId " << headID << " \n";
-//                  cerr << "And it's operation isn't a write operation\n";
-//                  cerr << "Type is ";
-//                  switch(cmpMsg->getOperation()) {
-//                  case CMP_OP_READ: cerr << "READ"; break;
-//                  default: break;
-//                  }
-//                  cerr << "\n";
-//                  cerr << "FLIT DATA:\n";
-//                  cerr << msg;
-//                  cerr << "MSG DATA:\n";
-//                  cerr << cmpMsg << "\n";
-//              }
-//            }
-
-//			if(meta) {
-//                if((meta->isResponse(headID))&& /*  Is response */
-//                        (((AppFlitMsg*)msg)->getAppMsgLen()==((AppFlitMsg*)msg)->getPktIdx())) { /* is last part of response */
-//                    cerr << "Tail flit of last packet detected, destroying prediction DB\n";
-//                    m_predictor->DestroyHit(inVC);
-//                }
-//			} else {
-//			    CMPMsg *cmpMsg = (CMPMsg*)msg->getEncapsulatedPacket();
-//			    int op = cmpMsg->getOperation();
-//			    if(op!=CMP_OP_WRITE) {
-//			        cerr << "End flit " << msg->getId() << " is not registered in responseDB\n";
-//			        cerr << "And it's operation isn't a write operation\n";
-//
-//			    }
-//			}
-		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head
 		// of packet info (stored by inVC)
-		int outPort = curOutPort[inVC];
-		info->outPort = outPort;
+		//int outPort = curOutPort[inVC];
+		//info->outPort = outPort;
+
+		//cerr << "\t**** Regular OutPort: " << outPort << "\n";
 
 		// queue
 		EV << "-I- " << getFullPath() << " FLIT:" << (msg->getPktId() >> 16)
 		   << "." << (msg->getPktId() % (1<< 16))
-	       << "." << msg->getFlitIdx() << " Queued to be sent on OP:"
-		   << outPort << endl;
+	       << "." << msg->getFlitIdx() << " Queued to be sent on OP:" << endl;
+//		   << outPort << endl;
 
 		// buffering is by inVC
 		if (QByiVC[inVC].length() >= flitsPerVC) {
@@ -399,7 +428,12 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		// we always queue continue flits on their out Port and VC -
 		// May cause BW issue if the arrival is a little "slower" then Sched GNT
 		// since it realy depends on the order of events in same tick!
-		QByiVC[inVC].insert(msg);
+
+		if(PREDICTION_HIT == headResolution[inVC]) {
+		    QByiVC[inVC].insert(msg);
+		} else { // Incur delay on packet to overcome synchronization bug
+		    send(msg, "calcOp$o");
+		}
 
 		// Total queue size
 		measureQlength();
@@ -418,7 +452,7 @@ void InPortSync::handleGntMsg(NoCGntMsg *msg) {
 	NoCFlitMsg* foundFlit = NULL;
 	if (!QByiVC[inVC].empty()) {
 		foundFlit = (NoCFlitMsg*)QByiVC[inVC].pop();
-		foundFlit->setVC(curOutVC[inVC]);
+		//foundFlit->setVC(curOutVC[inVC]);
 
 		// Total queue size
 		measureQlength();
@@ -449,18 +483,14 @@ void InPortSync::handleGntMsg(NoCGntMsg *msg) {
 }
 
 void InPortSync::handleMessage(cMessage *msg) {
-//	EV << "In port message handler caught a message with ID " << msg->getId() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 	int msgType = msg->getKind();
 	cGate *inGate = msg->getArrivalGate();
 	if (msgType == NOC_FLIT_MSG) {
 		if (inGate == gate("calcVc$i")) {
-//		    cerr << "Returned from VCCalc\n";
 			handleCalcVCResp((NoCFlitMsg*) msg);
 		} else if (inGate == gate("calcOp$i")) {
-//		    cerr << "Returned from OPCalc\n";
 			handleCalcOPResp((NoCFlitMsg*) msg);
 		} else {
-//		    cerr << "Brand new Flit to deal with\n";
 			handleInFlitMsg((NoCFlitMsg*) msg);
 		}
 	} else if (msgType == NOC_GNT_MSG) {

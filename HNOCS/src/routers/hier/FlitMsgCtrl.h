@@ -23,6 +23,17 @@ class inPortFlitInfo : public cObject {
 public:
 	int inVC; // the input VC the FLIT arrived on
 	int outPort; // the out port assigned to the FLIT
+
+	inPortFlitInfo(): inVC(-1), outPort(-1) {}
+
+	inPortFlitInfo(const inPortFlitInfo* src) {
+	    if(src==NULL) {
+	        throw new cRuntimeError("Trying to replicate a null inPortFlitInfo");
+	    }
+	    inVC = src->inVC;
+	    outPort = src->outPort;
+
+	}
 };
 
 #endif /* __HNOCS_FLIT_MSG_CTRL_H_ */

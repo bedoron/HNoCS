@@ -413,6 +413,7 @@ $O/routers/hier/opCalc/static/XYOPCalc.o: routers/hier/opCalc/static/XYOPCalc.cc
 	NoCs_m.h \
 	ResponseDB.h \
 	SessionMeta.h \
+	Utils.h \
 	cResponseHeadArrived.h \
 	routers/hier/FlitMsgCtrl.h \
 	routers/hier/opCalc/static/XYOPCalc.h
