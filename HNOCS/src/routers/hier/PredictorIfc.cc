@@ -178,17 +178,17 @@ Resolution PredictorIfc::checkFlit(NoCFlitMsg *msg, SessionMeta *meta) {
 
             if(PREDICTION_IGNORE != onFlit(flit, meta)) {
                 if(firstPacket) {
-                    cerr << "onStartFlow\n";
+//                    cerr << "onStartFlow\n";
                     res = onStartFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(lastPacket) {
-                    cerr << "onEndFlow\n";
+//                    cerr << "onEndFlow\n";
                     res = onEndFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
                 if(!(firstPacket || lastPacket)) { /* Middle packets */
-                    cerr << "onMidFlow\n";
+//                    cerr << "onMidFlow\n";
                     res = onMidFlow(flit, meta);
                     callHandler(flit, meta, res);
                 }
@@ -218,6 +218,14 @@ bool PredictorIfc::hasPrediction(NoCFlitMsg* msg) {
     return hasPrediction(meta);
 }
 
+double PredictorIfc::getThreshold() {
+    return m_threashold;
+}
+
+void PredictorIfc::setThreshold(double threshold) {
+    m_threashold = threshold;
+}
+
 bool PredictorIfc::hasPrediction(SessionMeta* meta) {
     if(NULL == meta) {
         throw cRuntimeError("hasPrediction: null session parameter");
@@ -230,4 +238,14 @@ bool PredictorIfc::hasPrediction(SessionMeta* meta) {
         predictionExists = false;
     }
     return predictionExists;
+}
+
+void PredictorIfc::log(const string fmt, ...) {
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buffer, fmt.c_str(),args);
+    va_end(args);
+
+    std::cerr << "Predictor["<< getRouterIndex()<<"][" << getPortIndex() <<"] " << buffer << "\n";
 }

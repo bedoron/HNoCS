@@ -22,4 +22,5 @@ simple Predictor
 {
     parameters:
         string method = default("default");
+        double threshold = default(0.5);
 }

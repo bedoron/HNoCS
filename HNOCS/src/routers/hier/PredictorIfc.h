@@ -53,7 +53,9 @@ typedef map<SessionMeta*, PredictionObject> PredictionTable;
 
 class PredictorIfc: public PredictorApiIfc {
     string m_method;
-
+    double m_threashold;
+    int m_routerIndex;
+    int m_portIndex;
 
     void callHandler(AppFlitMsg *msg, SessionMeta *meta, Resolution resolution);
 protected:
@@ -93,6 +95,10 @@ protected:
     // Return prediction delta from t=0, all request pass it, user defined algorithm
     virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
 public:
+    double getThreshold();
+    void setThreshold(double threshold);
+
+
 
     PredictorIfc(const char *method);
     const string &getName() const;
@@ -105,10 +111,29 @@ public:
     // Check if an object has prediction
     virtual bool hasPrediction(NoCFlitMsg *msg);
     virtual bool hasPrediction(SessionMeta *meta);
+    virtual ~PredictorIfc() {}
 
     void setPort(cModule* port) {
         this->port = port;
     }
+
+    int getPortIndex() const {
+        return m_portIndex;
+    }
+
+    void setPortIndex(int portIndex) {
+        m_portIndex = portIndex;
+    }
+
+    int getRouterIndex() const {
+        return m_routerIndex;
+    }
+
+    void setRouterIndex(int routerIndex) {
+        m_routerIndex = routerIndex;
+    }
+
+    void log(const string fmt,...);
 };
 
 #endif /* PREDICTORIFC_H_ */

@@ -401,8 +401,8 @@ void SchedSync::handlePopMsg(cMessage *msg) {
 void SchedSync::handleMessage(cMessage *msg) {
 	int msgType = msg->getKind();
 	if (msgType == NOC_FLIT_MSG) {
-        int routerId = getParentModule()->getParentModule()->getIndex();
-        int portId = getParentModule()->getIndex();
+//        int routerId = getParentModule()->getParentModule()->getIndex();
+//        int portId = getParentModule()->getIndex();
 
 		handleFlitMsg((NoCFlitMsg*) msg);
 	} else if (msgType == NOC_REQ_MSG) {

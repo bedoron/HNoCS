@@ -22,13 +22,11 @@
 using std::deque;
 
 class MovingAveragePredictor: public PredictorIfc {
-    static const unsigned TABLE_SIZE = 100;
+    static const unsigned TABLE_SIZE = 5;
     int predictions; // Predictions so far, should be >= responses
     int hits; // Hits so far (hits are part of responses)
     int responses; // Responses which arrived so fat
     int negatives;
-
-    double errorThreshold;
 
     struct PredictionTable {
         simtime_t request_arrival;
@@ -40,17 +38,20 @@ class MovingAveragePredictor: public PredictorIfc {
     deque<PredictionTable> table;
 
     void handleResponse(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval);
+    void printAccumulationStatus();
+
 public:
     MovingAveragePredictor();
     virtual ~MovingAveragePredictor();
     // On Miss handler
-    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval) = 0;
+protected:
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval);
     // On Hit handler
-    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval) = 0;
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval);
     // On Destroy session (last tail flit) handler
-    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta);
     // Return prediction delta from t=0, all request pass it, user defined algorithm
-    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta)  = 0;
+    virtual PredictionInterval predict(AppFlitMsg *request, SessionMeta *meta);
 };
 
 #endif /* MOVINGAVERAGEPREDICTOR_H_ */

@@ -198,7 +198,7 @@ void InPortSync::sendFlit(NoCFlitMsg *msg) {
         outPort = curOutPort[inVC];
         // on last FLIT need to zero out the current packet Id
         if (msg->getType() == NOC_END_FLIT) {
-            long int headID = curHeadId[inVC];
+//            long int headID = curHeadId[inVC];
 //            SessionMeta *meta = ResponseDB::getInstance()->find(headID);
             curPktId[inVC] = 0;
             curHeadId[inVC] = -1;
@@ -328,9 +328,10 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 	}
 
 	SessionMeta *session = ResponseDB::getInstance()->find(msg);
-	if(Resolution res = m_predictor->registerFlit(msg, session)) {
-//	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
-	}
+	m_predictor->registerFlit(msg, session);
+//	if(Resolution res = m_predictor->registerFlit(msg, session)) {
+////	    cerr << "Resolution of register flit is " << PredictorApiIfc::ResolutionToString(res) << "\n";
+//	}
 
 //	cerr << "handleCalcOPResp\n";
 

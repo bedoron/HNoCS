@@ -19,8 +19,6 @@
 using std::cerr;
 
 MovingAveragePredictor::MovingAveragePredictor(): PredictorIfc("MovingAverage"), predictions(0), hits(0), negatives(0) {
-    errorThreshold = 0; // TODO: get it from somewhere....
-    simulation.getActiveEnvir()->
 }
 
 MovingAveragePredictor::~MovingAveragePredictor() {
@@ -33,6 +31,7 @@ void MovingAveragePredictor::onMiss(AppFlitMsg *msg, SessionMeta *meta, Predicti
 
 // On Hit handler
 void MovingAveragePredictor::onHit(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval) {
+    log("** hit **");
     handleResponse(msg, meta, predictedInterval);
 }
 // On Destroy session (last tail flit) handler
@@ -40,21 +39,33 @@ void MovingAveragePredictor::onDestroy(AppFlitMsg *msg, SessionMeta *meta) {
 
 }
 
+void MovingAveragePredictor::printAccumulationStatus() {
+//    if (table.size() < TABLE_SIZE) {
+//        cerr << "Predictor[" << getRouterIndex() << "][" << getPortIndex() << "] "
+//                << " WARMUP - waiting for "
+//                << (TABLE_SIZE - table.size()) << " more misses\n";
+//    }
+}
+
 void MovingAveragePredictor::handleResponse(AppFlitMsg* msg, SessionMeta* meta,
         PredictionInterval predictedInterval) {
     ++responses;
     PredictionTable entry;
-    // entry.request_arrival = Now();
-    // TODO: put a variable in the PredictorIfc which tells which router this is and add a query method
-    // to session which allows to get the time of the request passing this router.
+
+    simtime_t requestTime = meta->getRouterRequestTime(getRouterIndex());
+
+    double actualPrediction = (predictedInterval.first.dbl() + predictedInterval.second.dbl())/2.0;
     entry.response_prediction = SimTime(actualPrediction);
     entry.response_arrival = Now();
+    entry.request_arrival = requestTime;
 
     table.push_back(entry);
 
-    if(table.size()>=TABLE_SIZE) {
+    if(table.size()>TABLE_SIZE) {
        table.pop_front();
     }
+
+    printAccumulationStatus();
 }
 
 // Return prediction delta from t=0, all request pass it, user defined algorithm
@@ -75,16 +86,24 @@ PredictionInterval MovingAveragePredictor::predict(AppFlitMsg *request, SessionM
         totalDelta /= (double)table.size();
         totalError /= (double)table.size();
 
-        if(totalError < errorThreshold) {
+        if(totalError < getThreshold()) {
             double halfError = totalError/2.0;
+            if(halfError<0) halfError *= -1.0;
             if( ((totalDelta - halfError)>0) && ((totalDelta + halfError)>0) ) {
                 interval.first += SimTime(totalDelta - halfError);
                 interval.second+= SimTime(totalDelta + halfError);
+
+                log("totalDelta %f totalError %f", totalDelta, totalError);
+                log("current time %f, predictions: [%f, %f]", Now().dbl(), interval.first.dbl(), interval.second.dbl());
             } else {
                 ++negatives;
                 cerr << negatives << " negative deltas so far\n";
             }
+        } else {
+            log("threshold is %f which is lower than %f", totalError, getThreshold());
         }
+    } else {
+        printAccumulationStatus();
     }
     return interval;
 }

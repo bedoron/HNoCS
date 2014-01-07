@@ -338,10 +338,19 @@ void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
 
 void XYOPCalc::handlePacketMsg(NoCFlitMsg* msg)
 {
+//    if(getParentModule()->getParentModule()->getIndex()==9) {
+//        cerr << "Router 9 handlePacketMsg start for \n";
+//        cerr << msg;
+//        cerr << "\n";
+//    }
     if(msg->getType()==NOC_START_FLIT) {
         SetOutPort(msg);
     }
     send(msg, "calc$o");
+
+//    if(getParentModule()->getParentModule()->getIndex()==9) {
+//        cerr << "Router 9 handlePacketMsg end\n";
+//    }
 }
 
 void XYOPCalc::handleMessage(cMessage *msg)

@@ -217,6 +217,23 @@ int SessionMeta::getRouterOccurances(int router_id) const {
 	return -1; // To be continued
 }
 
+simtime_t SessionMeta::getRouterRequestTime(int router_id) const {
+    // NOTE: t1 > t2 !!!!!
+    deque<int>::const_reverse_iterator it = m_traversedRouters.rbegin();
+    for(;it != m_traversedRouters.rend(); ++it) {
+        if((*it)==router_id)
+            break;
+    }
+    if(it==m_traversedRouters.rend()) {
+        stringstream ss;
+        ss << "Router " << router_id << " wasn't found in session " << m_sessionId;
+        throw new string(ss.str());
+    }
+
+    int index = it-m_traversedRouters.rbegin();
+    return m_traversedRouters.at(index);
+}
+
 pair<int, int> SessionMeta::getRouterRoundtripLocation(int router_id) const {
     // NOTE: t1 > t2 !!!!!
     deque<int>::const_iterator it1 = find(m_traversedRouters.begin(), m_traversedRouters.end(), router_id);

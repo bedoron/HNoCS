@@ -13,6 +13,7 @@ using std::cerr;
 #include "Predictors/DefaultPredictor.h"
 #include "Predictors/RandomPredictor.h"
 #include "Predictors/AlwaysHit.h"
+#include "Predictors/MovingAveragePredictor.h"
 
 PredictorFactory::PredictorFactory() { }
 
@@ -33,6 +34,8 @@ PredictorIfc* PredictorFactory::build(const string &method) {
         return new DefaultPredictor();
     if(method == "always-hit")
         return new AlwaysHit();
+    if(method == "moving-average")
+        return new MovingAveragePredictor();
 
 
     cerr << "No " << method << " predictor, using default\n";

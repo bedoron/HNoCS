@@ -129,6 +129,7 @@ public:
 	std::ostream& print(std::ostream &os);
 	std::ostream& printIDs(std::ostream &os);
 
+	simtime_t getRouterRequestTime(int router_id) const;
 	simtime_t getRouterDelta(int router_id) const; // Get the router delta
 	pair<int, int> getRouterRoundtripLocation(int router_id) const;
 	Incidents getRouterIncidents(int router_id) const; // Get router incident times

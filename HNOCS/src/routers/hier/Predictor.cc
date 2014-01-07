@@ -31,21 +31,19 @@ bool Predictor::debug = false;
 void Predictor::initialize()
 {
     string method(par("method").stringValue());
+    m_threshold = par("threshold").doubleValue();
+    m_numVCs = getParentModule()->getSubmodule("inPort")->par("numVCs");
+    m_portIndex = getParentModule()->getIndex();
+    m_routerIndex = getParentModule()->getParentModule()->getIndex();
 
     EV << "Loading " << method << " predictor\n";
 
+
     // Build predictor
     m_predictor = PredictorFactory::instance().build(method);
-
-    m_numVCs = getParentModule()->getSubmodule("inPort")->par("numVCs");
-
-//    m_VCHit.resize(m_numVCs);
-//    for(int i=0; i < m_numVCs; ++i) {
-//        m_VCHit[i] = NULL;
-//    }
-
-    m_portIndex = getParentModule()->getIndex();
-    m_routerIndex = getParentModule()->getParentModule()->getIndex();
+    m_predictor->setThreshold(m_threshold);
+    m_predictor->setRouterIndex(m_routerIndex);
+    m_predictor->setPortIndex(m_portIndex);
 
     cModule *opCalc = getParentModule()->getSubmodule("opCalc");
     cModule *vcCalc = getParentModule()->getSubmodule("vcCalc");
@@ -109,8 +107,7 @@ void Predictor::DestroyHit(SessionMeta *meta) {
 }
 
 Predictor::~Predictor() {
-/*    if(m_printData) {
-    } */
+    delete m_predictor;
 }
 
 Predictor* Predictor::GetMyPredictor(cSimpleModule* current) {

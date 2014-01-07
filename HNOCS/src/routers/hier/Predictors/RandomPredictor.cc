@@ -12,7 +12,6 @@ using std::cerr;
 
 RandomPredictor::RandomPredictor():
     PredictorIfc("Random") {
-
 }
 
 RandomPredictor::~RandomPredictor() {

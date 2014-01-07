@@ -45,7 +45,7 @@ class Predictor : public cSimpleModule, public PredictorApiIfc
 
     bool m_printData;
 
-
+    double m_threshold;
     /**
      * Gets the predictor which belongs to the outPort of this packet
      */
