@@ -83,9 +83,9 @@ void PredictorIfc::callHandler(AppFlitMsg* msg, SessionMeta* meta,
         if(PREDICTION_IDLE == getPrediction(msg, meta).resolution) {
             switch(resolution) {
             case PREDICTION_HIT:
-                onHit(msg, meta); break;
+                onHit(msg, meta, getPrediction(msg, meta).interval); break;
             case PREDICTION_MISS:
-                onMiss(msg, meta); break;
+                onMiss(msg, meta, getPrediction(msg,meta).interval); break;
             case PREDICTION_DESTROY:
                 onDestroy(msg, meta);
                 removePrediction(msg, meta); break;

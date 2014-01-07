@@ -85,9 +85,9 @@ protected:
     virtual Resolution onFlit(AppFlitMsg *msg, SessionMeta *meta);
 
     // On Miss handler
-    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval) = 0;
     // On Hit handler
-    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta) = 0;
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval) = 0;
     // On Destroy session (last tail flit) handler
     virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta) = 0;
     // Return prediction delta from t=0, all request pass it, user defined algorithm

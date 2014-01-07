@@ -15,11 +15,11 @@ DefaultPredictor::~DefaultPredictor() {
 
 }
 
-void DefaultPredictor::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
+void DefaultPredictor::onMiss(AppFlitMsg* msg, SessionMeta* meta,PredictionInterval predictedInterval) {
     cerr << "Miss " << meta->getSessionId() << "\n";
 }
 
-void DefaultPredictor::onHit(AppFlitMsg* msg, SessionMeta* meta) {
+void DefaultPredictor::onHit(AppFlitMsg* msg, SessionMeta* meta, PredictionInterval predictedInterval) {
     cerr << "Hit " << meta->getSessionId() << "\n";
 }
 

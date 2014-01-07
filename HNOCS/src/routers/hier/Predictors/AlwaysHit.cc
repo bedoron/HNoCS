@@ -18,11 +18,11 @@
 AlwaysHit::AlwaysHit(): PredictorIfc("AlwaysHit") {
 }
 
-void AlwaysHit::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
+void AlwaysHit::onMiss(AppFlitMsg* msg, SessionMeta* meta,PredictionInterval predictedInterval) {
 //    cerr << "Miss " << meta->getSessionId() << "\n";
 }
 
-void AlwaysHit::onHit(AppFlitMsg* msg, SessionMeta* meta) {
+void AlwaysHit::onHit(AppFlitMsg* msg, SessionMeta* meta, PredictionInterval predictedInterval) {
 //    cerr << "Hit " << meta->getSessionId() << "\n";
 }
 

@@ -18,11 +18,11 @@ RandomPredictor::RandomPredictor():
 RandomPredictor::~RandomPredictor() {
 }
 
-void RandomPredictor::onMiss(AppFlitMsg* msg, SessionMeta* meta) {
+void RandomPredictor::onMiss(AppFlitMsg* msg, SessionMeta* meta,PredictionInterval predictedInterval) {
     cerr << "Missed session " << meta->getSessionId() << "\n";
 }
 
-void RandomPredictor::onHit(AppFlitMsg* msg, SessionMeta* meta) {
+void RandomPredictor::onHit(AppFlitMsg* msg, SessionMeta* meta, PredictionInterval predictedInterval) {
     cerr << "Hit session " << meta->getSessionId() << "\n";
 }
 

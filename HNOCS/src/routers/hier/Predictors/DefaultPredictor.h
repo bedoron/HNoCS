@@ -16,9 +16,9 @@ class DefaultPredictor: public PredictorIfc {
     string m_method;
 protected:
     // On Miss handler
-    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta);
+    virtual void onMiss(AppFlitMsg *msg, SessionMeta *meta,PredictionInterval predictedInterval);
     // On Hit handler
-    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta);
+    virtual void onHit(AppFlitMsg *msg, SessionMeta *meta, PredictionInterval predictedInterval);
     // On Destroy session (last tail flit) handler
     virtual void onDestroy(AppFlitMsg *msg, SessionMeta *meta);
     // Return prediction delta from t=0, all request pass it, user defined algorithm

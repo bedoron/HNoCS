@@ -49,46 +49,47 @@ OBJS = \
     $O/ResponseDB.o \
     $O/Utils.o \
     $O/SessionMeta.o \
-    $O/cores/EchoApp.o \
     $O/cores/DRAM.o \
+    $O/cores/EchoApp.o \
     $O/cores/CoreL1.o \
     $O/cores/L2.o \
-    $O/cores/central/CSched.o \
     $O/cores/central/ParallelCentralSched.o \
-    $O/cores/sinks/AppSink.o \
-    $O/cores/sinks/InfiniteBWMultiVCSinkperSrc.o \
+    $O/cores/central/CSched.o \
     $O/cores/sinks/InfiniteBWMultiVCSink.o \
-    $O/cores/sources/CAppSrc.o \
-    $O/cores/sources/AppSrc.o \
-    $O/cores/sources/PktFifoSrc.o \
+    $O/cores/sinks/InfiniteBWMultiVCSinkperSrc.o \
+    $O/cores/sinks/AppSink.o \
     $O/cores/sources/CentSchedPktFifoSrc.o \
+    $O/cores/sources/CAppSrc.o \
+    $O/cores/sources/PktFifoSrc.o \
+    $O/cores/sources/AppSrc.o \
     $O/routers/flat/CentSchedRouter.o \
     $O/routers/hier/Predictor.o \
+    $O/routers/hier/PredictorIfc.o \
     $O/routers/hier/PredictionObject.o \
     $O/routers/hier/PredictorFactory.o \
     $O/routers/hier/RouterSWHook.o \
-    $O/routers/hier/PredictorIfc.o \
+    $O/routers/hier/Predictors/MovingAveragePredictor.o \
     $O/routers/hier/Predictors/RandomPredictor.o \
     $O/routers/hier/Predictors/DefaultPredictor.o \
     $O/routers/hier/Predictors/AlwaysHit.o \
+    $O/routers/hier/inPort/InPortSync.o \
     $O/routers/hier/inPort/InPortAsync.o \
     $O/routers/hier/inPort/ISLIPInPort.o \
-    $O/routers/hier/inPort/InPortSync.o \
     $O/routers/hier/opCalc/static/XYOPCalc.o \
-    $O/routers/hier/sched/wormhole/ISLIPSched.o \
     $O/routers/hier/sched/wormhole/SchedSync.o \
     $O/routers/hier/sched/wormhole/SchedAsync.o \
+    $O/routers/hier/sched/wormhole/ISLIPSched.o \
     $O/routers/hier/vcCalc/free/FLUVCCalc.o \
+    $O/CMP_m.o \
     $O/App_m.o \
     $O/Central_m.o \
-    $O/CMP_m.o \
     $O/NoCs_m.o
 
 # Message files
 MSGFILES = \
+    CMP.msg \
     App.msg \
     Central.msg \
-    CMP.msg \
     NoCs.msg
 
 #------------------------------------------------------------------------------
@@ -352,6 +353,16 @@ $O/routers/hier/Predictors/DefaultPredictor.o: routers/hier/Predictors/DefaultPr
 	routers/hier/PredictorApiIfc.h \
 	routers/hier/PredictorIfc.h \
 	routers/hier/Predictors/DefaultPredictor.h
+$O/routers/hier/Predictors/MovingAveragePredictor.o: routers/hier/Predictors/MovingAveragePredictor.cc \
+	App_m.h \
+	CMP_m.h \
+	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
+	routers/hier/PredictionObject.h \
+	routers/hier/PredictorApiIfc.h \
+	routers/hier/PredictorIfc.h \
+	routers/hier/Predictors/MovingAveragePredictor.h
 $O/routers/hier/Predictors/RandomPredictor.o: routers/hier/Predictors/RandomPredictor.cc \
 	App_m.h \
 	CMP_m.h \
