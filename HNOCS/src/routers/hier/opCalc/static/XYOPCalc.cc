@@ -334,6 +334,12 @@ void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
             emit(flitSecondIncidence, &data);
         }
     }
+
+    NoCFlitMsg *flit = (NoCFlitMsg*)msg;
+    if(flit->getPktId()==262144) {
+        cerr << "=-=-=-=-=-= Decided that 262144 will go out on port: " << swOutPortIdx << "\n";
+      cerr << "----------------------------\n";
+    }
 }
 
 void XYOPCalc::handlePacketMsg(NoCFlitMsg* msg)
@@ -343,6 +349,15 @@ void XYOPCalc::handlePacketMsg(NoCFlitMsg* msg)
 //        cerr << msg;
 //        cerr << "\n";
 //    }
+
+    NoCFlitMsg *flit = (NoCFlitMsg*)msg;
+    if(flit->getPktId()==262144) {
+       cerr << "OPCLALC!!!\n";
+       cerr << "Caught flit " << 262144 << " in router " << getParentModule()->getParentModule()->getIndex() << " port " << getParentModule()->getIndex() << "\n";
+       cerr << flit;
+       cerr << "----------------------------\n";
+    }
+
     if(msg->getType()==NOC_START_FLIT) {
         SetOutPort(msg);
     }

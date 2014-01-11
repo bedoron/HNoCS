@@ -486,6 +486,14 @@ void InPortSync::handleGntMsg(NoCGntMsg *msg) {
 void InPortSync::handleMessage(cMessage *msg) {
 	int msgType = msg->getKind();
 	cGate *inGate = msg->getArrivalGate();
+
+	NoCFlitMsg *flit = (NoCFlitMsg*)msg;
+	if(flit->getPktId()==262144) {
+      cerr << "Caught flit " << 262144 << " in router " << getParentModule()->getParentModule()->getIndex() << " port " << getParentModule()->getIndex() << "\n";
+      cerr << flit;
+      cerr << "----------------------------\n";
+	}
+
 	if (msgType == NOC_FLIT_MSG) {
 		if (inGate == gate("calcVc$i")) {
 			handleCalcVCResp((NoCFlitMsg*) msg);
