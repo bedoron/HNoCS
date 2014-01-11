@@ -260,12 +260,18 @@ void XYOPCalc::initialize()
 }
 
 void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
-
-//    int dstPort = msg->getDstId();
     bool tagged = ResponseDB::getInstance()->exists(msg->getId());
     bool response = ResponseDB::getInstance()->isResponse(msg->getId());
     int swOutPortIdx;
 
+    SessionMeta *session = ResponseDB::getInstance()->find(msg);
+
+    if((session != NULL) && session->getSessionId()==36) {
+        if(msg->getPktId()==262144 && (getParentModule()->getParentModule()->getIndex()==4) ) {
+            cerr << "Packet 262144 detected\n";
+            cerr << msg;
+        }
+    }
 
 
 //    if(dstPort!=m_meshIndex) {
@@ -336,7 +342,7 @@ void XYOPCalc::SetOutPort(NoCFlitMsg* msg) {
     }
 
     NoCFlitMsg *flit = (NoCFlitMsg*)msg;
-    if(flit->getPktId()==262144) {
+    if(flit->getPktId()==262144 && (getParentModule()->getParentModule()->getIndex()==4)) {
         cerr << "=-=-=-=-=-= Decided that 262144 will go out on port: " << swOutPortIdx << "\n";
       cerr << "----------------------------\n";
     }
