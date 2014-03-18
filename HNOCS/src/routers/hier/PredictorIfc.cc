@@ -247,5 +247,5 @@ void PredictorIfc::log(const string fmt, ...) {
     vsprintf(buffer, fmt.c_str(),args);
     va_end(args);
 
-    std::cerr << "Predictor["<< getRouterIndex()<<"][" << getPortIndex() <<"] " << buffer << "\n";
+    //std::cerr << "Predictor["<< getRouterIndex()<<"][" << getPortIndex() <<"] " << buffer << "\n";
 }

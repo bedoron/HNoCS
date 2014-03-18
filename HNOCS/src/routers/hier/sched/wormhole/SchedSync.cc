@@ -281,13 +281,16 @@ void SchedSync::handleFlitMsg(NoCFlitMsg *msg) {
 	    ss << "got flit when request was empty. error\n";
 	    ss << msg->getName() << "\n";
 	    ss << "Message statistics: \n";
-	    cerr << ss;
-
+	    cerr << ss.str() << "\n";
+	    long msgId = msg->getId();
+	    long pktId = msg->getPktId();
+	    cerr << "ID: " << msgId << " pkt " << pktId << "\n";
 	    throw new cRuntimeError(ss.str().c_str());
 	}
 //	cerr << "Requests on " << ip << "-" << "vc: " << ReqsByIPoVC[ip][vc].size() << "\n";
 	// this info is only available on debug...
 	if (req->getPktId() != msg->getPktId()) {
+	    cerr << msg;
 		throw cRuntimeError(
 				"-E- Received PktId 0x%x that does not match the head Req PktId: 0x%x",
 				msg->getPktId(), req->getPktId());
@@ -345,7 +348,7 @@ void SchedSync::handleReqMsg(NoCReqMsg *msg) {
 
 	if((msg->getPrediction()) && (0==arbitration_type)) { // Successful prediction + Winner takes all
 	    m_predReq.push(HighPriorityRequests(ip, vc, msg));
-
+	    cerr << getFullPath() << ": " <<msg->getPktId() << " was scheduled to be a high priority packet\n";
 	    if(m_predReq.size()>10000) { // TODO: Threshold + Drop and Ignore
 	        EV << "OVER 10000 Requests in high priority Queue";
 	    }
@@ -400,9 +403,26 @@ void SchedSync::handlePopMsg(cMessage *msg) {
 
 void SchedSync::handleMessage(cMessage *msg) {
 	int msgType = msg->getKind();
+
+//	stringstream ss;
+//    int routerId = getParentModule()->getParentModule()->getIndex();
+//    int portId = getParentModule()->getIndex();
+//    ss << "Sched[" << routerId << "]["<< portId << "] ";
+//    bool prn = false;
+//    if(msgType == NOC_REQ_MSG) {
+//        ss << "REQ";
+//        prn = true;
+//    } else if(msgType==NOC_FLIT_MSG) {
+//        ss << "FLT";
+//        prn = true;
+//    }
+//    if(prn) {
+//        ss << " - " << msg->getId();
+//        cerr << "(*) "<< ss.str() << "\n";
+//    }
+
 	if (msgType == NOC_FLIT_MSG) {
-//        int routerId = getParentModule()->getParentModule()->getIndex();
-//        int portId = getParentModule()->getIndex();
+
 
 		handleFlitMsg((NoCFlitMsg*) msg);
 	} else if (msgType == NOC_REQ_MSG) {

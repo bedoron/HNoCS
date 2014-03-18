@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgc 4.3 from NoCs.msg.
+// Generated file, do not edit! Created by opp_msgc 4.4 from NoCs.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include "NoCs_m.h"
+
+USING_NAMESPACE
 
 // Template rule which fires if a struct or class doesn't have operator<<
 template<typename T>
@@ -53,7 +55,7 @@ EXECUTE_ON_STARTUP(
 
 Register_Class(NoCFlitMsg);
 
-NoCFlitMsg::NoCFlitMsg(const char *name, int kind) : cPacket(name,kind)
+NoCFlitMsg::NoCFlitMsg(const char *name, int kind) : ::cPacket(name,kind)
 {
     this->type_var = 0;
     this->VC_var = 0;
@@ -69,7 +71,7 @@ NoCFlitMsg::NoCFlitMsg(const char *name, int kind) : cPacket(name,kind)
     this->replicated_var = false;
 }
 
-NoCFlitMsg::NoCFlitMsg(const NoCFlitMsg& other) : cPacket(other)
+NoCFlitMsg::NoCFlitMsg(const NoCFlitMsg& other) : ::cPacket(other)
 {
     copy(other);
 }
@@ -81,7 +83,7 @@ NoCFlitMsg::~NoCFlitMsg()
 NoCFlitMsg& NoCFlitMsg::operator=(const NoCFlitMsg& other)
 {
     if (this==&other) return *this;
-    cPacket::operator=(other);
+    ::cPacket::operator=(other);
     copy(other);
     return *this;
 }
@@ -104,7 +106,7 @@ void NoCFlitMsg::copy(const NoCFlitMsg& other)
 
 void NoCFlitMsg::parsimPack(cCommBuffer *b)
 {
-    cPacket::parsimPack(b);
+    ::cPacket::parsimPack(b);
     doPacking(b,this->type_var);
     doPacking(b,this->VC_var);
     doPacking(b,this->SL_var);
@@ -121,7 +123,7 @@ void NoCFlitMsg::parsimPack(cCommBuffer *b)
 
 void NoCFlitMsg::parsimUnpack(cCommBuffer *b)
 {
-    cPacket::parsimUnpack(b);
+    ::cPacket::parsimUnpack(b);
     doUnpacking(b,this->type_var);
     doUnpacking(b,this->VC_var);
     doUnpacking(b,this->SL_var);
@@ -520,14 +522,14 @@ void *NoCFlitMsgDescriptor::getFieldStructPointer(void *object, int field, int i
 
 Register_Class(NoCCreditMsg);
 
-NoCCreditMsg::NoCCreditMsg(const char *name, int kind) : cMessage(name,kind)
+NoCCreditMsg::NoCCreditMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->VC_var = 0;
     this->flits_var = 0;
     this->msgs_var = 0;
 }
 
-NoCCreditMsg::NoCCreditMsg(const NoCCreditMsg& other) : cMessage(other)
+NoCCreditMsg::NoCCreditMsg(const NoCCreditMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -539,7 +541,7 @@ NoCCreditMsg::~NoCCreditMsg()
 NoCCreditMsg& NoCCreditMsg::operator=(const NoCCreditMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -553,7 +555,7 @@ void NoCCreditMsg::copy(const NoCCreditMsg& other)
 
 void NoCCreditMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->VC_var);
     doPacking(b,this->flits_var);
     doPacking(b,this->msgs_var);
@@ -561,7 +563,7 @@ void NoCCreditMsg::parsimPack(cCommBuffer *b)
 
 void NoCCreditMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->VC_var);
     doUnpacking(b,this->flits_var);
     doUnpacking(b,this->msgs_var);
@@ -798,7 +800,7 @@ void *NoCCreditMsgDescriptor::getFieldStructPointer(void *object, int field, int
 
 Register_Class(NoCReqMsg);
 
-NoCReqMsg::NoCReqMsg(const char *name, int kind) : cMessage(name,kind)
+NoCReqMsg::NoCReqMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->outVC_var = 0;
     this->inVC_var = 0;
@@ -810,7 +812,7 @@ NoCReqMsg::NoCReqMsg(const char *name, int kind) : cMessage(name,kind)
     this->prediction_var = 0;
 }
 
-NoCReqMsg::NoCReqMsg(const NoCReqMsg& other) : cMessage(other)
+NoCReqMsg::NoCReqMsg(const NoCReqMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -822,7 +824,7 @@ NoCReqMsg::~NoCReqMsg()
 NoCReqMsg& NoCReqMsg::operator=(const NoCReqMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -841,7 +843,7 @@ void NoCReqMsg::copy(const NoCReqMsg& other)
 
 void NoCReqMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->outVC_var);
     doPacking(b,this->inVC_var);
     doPacking(b,this->outPortNum_var);
@@ -854,7 +856,7 @@ void NoCReqMsg::parsimPack(cCommBuffer *b)
 
 void NoCReqMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->outVC_var);
     doUnpacking(b,this->inVC_var);
     doUnpacking(b,this->outPortNum_var);
@@ -1181,14 +1183,14 @@ void *NoCReqMsgDescriptor::getFieldStructPointer(void *object, int field, int i)
 
 Register_Class(NoCGntMsg);
 
-NoCGntMsg::NoCGntMsg(const char *name, int kind) : cMessage(name,kind)
+NoCGntMsg::NoCGntMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->outVC_var = 0;
     this->inVC_var = 0;
     this->outPortNum_var = 0;
 }
 
-NoCGntMsg::NoCGntMsg(const NoCGntMsg& other) : cMessage(other)
+NoCGntMsg::NoCGntMsg(const NoCGntMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -1200,7 +1202,7 @@ NoCGntMsg::~NoCGntMsg()
 NoCGntMsg& NoCGntMsg::operator=(const NoCGntMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -1214,7 +1216,7 @@ void NoCGntMsg::copy(const NoCGntMsg& other)
 
 void NoCGntMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->outVC_var);
     doPacking(b,this->inVC_var);
     doPacking(b,this->outPortNum_var);
@@ -1222,7 +1224,7 @@ void NoCGntMsg::parsimPack(cCommBuffer *b)
 
 void NoCGntMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->outVC_var);
     doUnpacking(b,this->inVC_var);
     doUnpacking(b,this->outPortNum_var);
@@ -1459,7 +1461,7 @@ void *NoCGntMsgDescriptor::getFieldStructPointer(void *object, int field, int i)
 
 Register_Class(NoCAckMsg);
 
-NoCAckMsg::NoCAckMsg(const char *name, int kind) : cMessage(name,kind)
+NoCAckMsg::NoCAckMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->OK_var = 0;
     this->outVC_var = 0;
@@ -1467,7 +1469,7 @@ NoCAckMsg::NoCAckMsg(const char *name, int kind) : cMessage(name,kind)
     this->outPortNum_var = 0;
 }
 
-NoCAckMsg::NoCAckMsg(const NoCAckMsg& other) : cMessage(other)
+NoCAckMsg::NoCAckMsg(const NoCAckMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -1479,7 +1481,7 @@ NoCAckMsg::~NoCAckMsg()
 NoCAckMsg& NoCAckMsg::operator=(const NoCAckMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -1494,7 +1496,7 @@ void NoCAckMsg::copy(const NoCAckMsg& other)
 
 void NoCAckMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->OK_var);
     doPacking(b,this->outVC_var);
     doPacking(b,this->inVC_var);
@@ -1503,7 +1505,7 @@ void NoCAckMsg::parsimPack(cCommBuffer *b)
 
 void NoCAckMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->OK_var);
     doUnpacking(b,this->outVC_var);
     doUnpacking(b,this->inVC_var);
@@ -1758,13 +1760,13 @@ void *NoCAckMsgDescriptor::getFieldStructPointer(void *object, int field, int i)
 
 Register_Class(NoCPopMsg);
 
-NoCPopMsg::NoCPopMsg(const char *name, int kind) : cMessage(name,kind)
+NoCPopMsg::NoCPopMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->VC_var = 0;
     this->outPortNum_var = 0;
 }
 
-NoCPopMsg::NoCPopMsg(const NoCPopMsg& other) : cMessage(other)
+NoCPopMsg::NoCPopMsg(const NoCPopMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -1776,7 +1778,7 @@ NoCPopMsg::~NoCPopMsg()
 NoCPopMsg& NoCPopMsg::operator=(const NoCPopMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -1789,14 +1791,14 @@ void NoCPopMsg::copy(const NoCPopMsg& other)
 
 void NoCPopMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->VC_var);
     doPacking(b,this->outPortNum_var);
 }
 
 void NoCPopMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->VC_var);
     doUnpacking(b,this->outPortNum_var);
 }

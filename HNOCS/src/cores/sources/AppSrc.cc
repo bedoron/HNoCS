@@ -171,6 +171,12 @@ void AppSrc::sendFlit(int vc) {
 
 	flit->setMsgId(vcCurMsg[vc]->getMsgId());
 
+	if(flit->getId()==331997) {
+	    cerr << "AppSrc sending 331997 from " << getParentModule()->getFullName() << "\n";
+	}
+
+
+
 	CMPMsg *msg = (CMPMsg*)(vcCurMsg[vc]);
 	SessionMeta *meta = NULL;
 
