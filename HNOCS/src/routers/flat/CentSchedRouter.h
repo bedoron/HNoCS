@@ -21,6 +21,9 @@
 #include <omnetpp.h>
 #include <NoCs_m.h>
 
+#include <vector>
+using std::vector;
+
 //
 // Central Scheduling Router - it's main task is to
 // send the input flits to the correct output port
@@ -43,10 +46,36 @@ private:
 
 	// methods
 
+	// my stuff
+	struct vc_t {
+	    vector<NoCFlitMsg*> m_messages; // Flits Queue
+	    int m_activeMessage; // Current CMP message being sent
+	    int m_activePacket; // Current NoC packet being sent
+	    int m_vcSize;
+	    int m_credits;
+	    bool accept(NoCFlitMsg& flit); // Specify rules to accept flits
+	    bool empty(); // True if VC is empty
+	    NoCFlitMsg& release(); // release one flit from Q and update state, throw exception if empty
+	};
+
+	struct port_t {
+	    cGate *gate; // Associated gate
+	    vector<vc_t> m_vcs; // vcs for this gate
+	    int m_size; // maximum number of VC's for this gate
+	    vc_t& getVC(NoCFlitMsg* msg); // Returns an available vc or an existing one if this flit is part of it
+	};
+
+	vector<port_t> m_ports;
+
+
 	// fill in west... port indexes
 	int analyzeMeshTopology();
 	void handleFlitMsg(NoCFlitMsg *msg);
 	void sendCredits(int ip, int numFlits);
+
+	void handleReq(NoCReqMsg *msg);
+	void handleGnt(NoCGntMsg *msg);
+	void handlePop(NoCPopMsg *msg);
 
 protected:
     virtual void initialize();

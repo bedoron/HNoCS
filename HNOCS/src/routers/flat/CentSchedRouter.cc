@@ -220,10 +220,40 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 	send(msg, "out$o", swOutPortIdx);
 }
 
-void CentSchedRouter::handleMessage(cMessage *msg) {
-	if (msg->getKind() != NOC_FLIT_MSG) {
-		delete msg;
-	} else {
-		handleFlitMsg((NoCFlitMsg*) msg);
-	}
+void CentSchedRouter::handleReq(NoCReqMsg* msg) {
 }
+
+void CentSchedRouter::handleGnt(NoCGntMsg* msg) {
+}
+
+void CentSchedRouter::handlePop(NoCPopMsg* msg) {
+}
+
+void CentSchedRouter::handleMessage(cMessage *msg) {
+    /*
+    NOC_MSGS type = msg->getKind();
+    NoCFlitMsg flit = *(dynamic_cast<NoCFlitMsg*>(msg));
+
+    switch(type) {
+    case NOC_FLIT_MSG: handleFlitMsg(flit); break;
+    case NOC_REQ_MSG: handleReq(flit); break;
+    case NOC_GNT_MSG: handleGnt(flit); break;
+    case NOC_POP_MSG: handlePop(flit); break;
+    default:
+        throw cRuntimeError("Unsupported message arrival");
+    }
+    */
+}
+/*
+bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
+}
+
+bool CentSchedRouter::vc_t::empty() {
+}
+
+NoCFlitMsg& CentSchedRouter::vc_t::release() {
+}
+
+vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
+}
+*/
