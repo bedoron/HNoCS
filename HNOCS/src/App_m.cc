@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgc 4.3 from App.msg.
+// Generated file, do not edit! Created by opp_msgc 4.4 from App.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include "App_m.h"
+
+USING_NAMESPACE
 
 // Template rule which fires if a struct or class doesn't have operator<<
 template<typename T>
@@ -32,7 +34,7 @@ void doUnpacking(cCommBuffer *, T& t) {
 
 Register_Class(AppFlitMsg);
 
-AppFlitMsg::AppFlitMsg(const char *name, int kind) : NoCFlitMsg(name,kind)
+AppFlitMsg::AppFlitMsg(const char *name, int kind) : ::NoCFlitMsg(name,kind)
 {
     this->srcAppId_var = 0;
     this->dstAppId_var = 0;
@@ -41,7 +43,7 @@ AppFlitMsg::AppFlitMsg(const char *name, int kind) : NoCFlitMsg(name,kind)
     this->msgId_var = 0;
 }
 
-AppFlitMsg::AppFlitMsg(const AppFlitMsg& other) : NoCFlitMsg(other)
+AppFlitMsg::AppFlitMsg(const AppFlitMsg& other) : ::NoCFlitMsg(other)
 {
     copy(other);
 }
@@ -53,7 +55,7 @@ AppFlitMsg::~AppFlitMsg()
 AppFlitMsg& AppFlitMsg::operator=(const AppFlitMsg& other)
 {
     if (this==&other) return *this;
-    NoCFlitMsg::operator=(other);
+    ::NoCFlitMsg::operator=(other);
     copy(other);
     return *this;
 }
@@ -69,7 +71,7 @@ void AppFlitMsg::copy(const AppFlitMsg& other)
 
 void AppFlitMsg::parsimPack(cCommBuffer *b)
 {
-    NoCFlitMsg::parsimPack(b);
+    ::NoCFlitMsg::parsimPack(b);
     doPacking(b,this->srcAppId_var);
     doPacking(b,this->dstAppId_var);
     doPacking(b,this->pktIdx_var);
@@ -79,7 +81,7 @@ void AppFlitMsg::parsimPack(cCommBuffer *b)
 
 void AppFlitMsg::parsimUnpack(cCommBuffer *b)
 {
-    NoCFlitMsg::parsimUnpack(b);
+    ::NoCFlitMsg::parsimUnpack(b);
     doUnpacking(b,this->srcAppId_var);
     doUnpacking(b,this->dstAppId_var);
     doUnpacking(b,this->pktIdx_var);
@@ -352,7 +354,7 @@ void *AppFlitMsgDescriptor::getFieldStructPointer(void *object, int field, int i
 
 Register_Class(AppMsg);
 
-AppMsg::AppMsg(const char *name, int kind) : cPacket(name,kind)
+AppMsg::AppMsg(const char *name, int kind) : ::cPacket(name,kind)
 {
     this->msgId_var = 0;
     this->srcAppId_var = 0;
@@ -366,7 +368,7 @@ AppMsg::AppMsg(const char *name, int kind) : cPacket(name,kind)
     this->InjectTime_var = 0;
 }
 
-AppMsg::AppMsg(const AppMsg& other) : cPacket(other)
+AppMsg::AppMsg(const AppMsg& other) : ::cPacket(other)
 {
     copy(other);
 }
@@ -378,7 +380,7 @@ AppMsg::~AppMsg()
 AppMsg& AppMsg::operator=(const AppMsg& other)
 {
     if (this==&other) return *this;
-    cPacket::operator=(other);
+    ::cPacket::operator=(other);
     copy(other);
     return *this;
 }
@@ -399,7 +401,7 @@ void AppMsg::copy(const AppMsg& other)
 
 void AppMsg::parsimPack(cCommBuffer *b)
 {
-    cPacket::parsimPack(b);
+    ::cPacket::parsimPack(b);
     doPacking(b,this->msgId_var);
     doPacking(b,this->srcAppId_var);
     doPacking(b,this->dstAppId_var);
@@ -414,7 +416,7 @@ void AppMsg::parsimPack(cCommBuffer *b)
 
 void AppMsg::parsimUnpack(cCommBuffer *b)
 {
-    cPacket::parsimUnpack(b);
+    ::cPacket::parsimUnpack(b);
     doUnpacking(b,this->msgId_var);
     doUnpacking(b,this->srcAppId_var);
     doUnpacking(b,this->dstAppId_var);
@@ -777,12 +779,12 @@ void *AppMsgDescriptor::getFieldStructPointer(void *object, int field, int i) co
 
 Register_Class(AppTestMsg);
 
-AppTestMsg::AppTestMsg(const char *name, int kind) : AppMsg(name,kind)
+AppTestMsg::AppTestMsg(const char *name, int kind) : ::AppMsg(name,kind)
 {
     this->payload_var = 0;
 }
 
-AppTestMsg::AppTestMsg(const AppTestMsg& other) : AppMsg(other)
+AppTestMsg::AppTestMsg(const AppTestMsg& other) : ::AppMsg(other)
 {
     copy(other);
 }
@@ -794,7 +796,7 @@ AppTestMsg::~AppTestMsg()
 AppTestMsg& AppTestMsg::operator=(const AppTestMsg& other)
 {
     if (this==&other) return *this;
-    AppMsg::operator=(other);
+    ::AppMsg::operator=(other);
     copy(other);
     return *this;
 }
@@ -806,13 +808,13 @@ void AppTestMsg::copy(const AppTestMsg& other)
 
 void AppTestMsg::parsimPack(cCommBuffer *b)
 {
-    AppMsg::parsimPack(b);
+    ::AppMsg::parsimPack(b);
     doPacking(b,this->payload_var);
 }
 
 void AppTestMsg::parsimUnpack(cCommBuffer *b)
 {
-    AppMsg::parsimUnpack(b);
+    ::AppMsg::parsimUnpack(b);
     doUnpacking(b,this->payload_var);
 }
 

@@ -11,4 +11,5 @@ HNOCS/simulations/*/results/*
 HNOCS/simulations/*/.tkenvrc
 HNOCS/simulations/CMPTraces-16threads-simsmall/*
 HNOCS/.svn*
+.metadata/*
 core

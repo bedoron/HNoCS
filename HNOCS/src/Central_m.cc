@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgc 4.3 from Central.msg.
+// Generated file, do not edit! Created by opp_msgc 4.4 from Central.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include "Central_m.h"
+
+USING_NAMESPACE
 
 // Template rule which fires if a struct or class doesn't have operator<<
 template<typename T>
@@ -32,7 +34,7 @@ void doUnpacking(cCommBuffer *, T& t) {
 
 Register_Class(CentralRequestMsg);
 
-CentralRequestMsg::CentralRequestMsg(const char *name, int kind) : cMessage(name,kind)
+CentralRequestMsg::CentralRequestMsg(const char *name, int kind) : ::cMessage(name,kind)
 {
     this->srcId_var = 0;
     this->dstId_var = 0;
@@ -41,7 +43,7 @@ CentralRequestMsg::CentralRequestMsg(const char *name, int kind) : cMessage(name
     this->age_var = 0;
 }
 
-CentralRequestMsg::CentralRequestMsg(const CentralRequestMsg& other) : cMessage(other)
+CentralRequestMsg::CentralRequestMsg(const CentralRequestMsg& other) : ::cMessage(other)
 {
     copy(other);
 }
@@ -53,7 +55,7 @@ CentralRequestMsg::~CentralRequestMsg()
 CentralRequestMsg& CentralRequestMsg::operator=(const CentralRequestMsg& other)
 {
     if (this==&other) return *this;
-    cMessage::operator=(other);
+    ::cMessage::operator=(other);
     copy(other);
     return *this;
 }
@@ -69,7 +71,7 @@ void CentralRequestMsg::copy(const CentralRequestMsg& other)
 
 void CentralRequestMsg::parsimPack(cCommBuffer *b)
 {
-    cMessage::parsimPack(b);
+    ::cMessage::parsimPack(b);
     doPacking(b,this->srcId_var);
     doPacking(b,this->dstId_var);
     doPacking(b,this->pktId_var);
@@ -79,7 +81,7 @@ void CentralRequestMsg::parsimPack(cCommBuffer *b)
 
 void CentralRequestMsg::parsimUnpack(cCommBuffer *b)
 {
-    cMessage::parsimUnpack(b);
+    ::cMessage::parsimUnpack(b);
     doUnpacking(b,this->srcId_var);
     doUnpacking(b,this->dstId_var);
     doUnpacking(b,this->pktId_var);

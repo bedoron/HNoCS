@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgc 4.3 from CMP.msg.
+// Generated file, do not edit! Created by opp_msgc 4.4 from CMP.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include "CMP_m.h"
+
+USING_NAMESPACE
 
 // Template rule which fires if a struct or class doesn't have operator<<
 template<typename T>
@@ -39,7 +41,7 @@ EXECUTE_ON_STARTUP(
 
 Register_Class(CMPMsg);
 
-CMPMsg::CMPMsg(const char *name, int kind) : AppMsg(name,kind)
+CMPMsg::CMPMsg(const char *name, int kind) : ::AppMsg(name,kind)
 {
     this->origin_var = 0;
     this->operation_var = 0;
@@ -49,7 +51,7 @@ CMPMsg::CMPMsg(const char *name, int kind) : AppMsg(name,kind)
     this->roundtrip_var = false;
 }
 
-CMPMsg::CMPMsg(const CMPMsg& other) : AppMsg(other)
+CMPMsg::CMPMsg(const CMPMsg& other) : ::AppMsg(other)
 {
     copy(other);
 }
@@ -61,7 +63,7 @@ CMPMsg::~CMPMsg()
 CMPMsg& CMPMsg::operator=(const CMPMsg& other)
 {
     if (this==&other) return *this;
-    AppMsg::operator=(other);
+    ::AppMsg::operator=(other);
     copy(other);
     return *this;
 }
@@ -78,7 +80,7 @@ void CMPMsg::copy(const CMPMsg& other)
 
 void CMPMsg::parsimPack(cCommBuffer *b)
 {
-    AppMsg::parsimPack(b);
+    ::AppMsg::parsimPack(b);
     doPacking(b,this->origin_var);
     doPacking(b,this->operation_var);
     doPacking(b,this->l2hit_var);
@@ -89,7 +91,7 @@ void CMPMsg::parsimPack(cCommBuffer *b)
 
 void CMPMsg::parsimUnpack(cCommBuffer *b)
 {
-    AppMsg::parsimUnpack(b);
+    ::AppMsg::parsimUnpack(b);
     doUnpacking(b,this->origin_var);
     doUnpacking(b,this->operation_var);
     doUnpacking(b,this->l2hit_var);
