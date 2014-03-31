@@ -230,30 +230,45 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
 }
 
 void CentSchedRouter::handleMessage(cMessage *msg) {
-    /*
-    NOC_MSGS type = msg->getKind();
-    NoCFlitMsg flit = *(dynamic_cast<NoCFlitMsg*>(msg));
+    NOC_MSGS type = (NOC_MSGS) msg->getKind();
+    NoCFlitMsg *flit = dynamic_cast<NoCFlitMsg*>(msg);
 
     switch(type) {
     case NOC_FLIT_MSG: handleFlitMsg(flit); break;
-    case NOC_REQ_MSG: handleReq(flit); break;
-    case NOC_GNT_MSG: handleGnt(flit); break;
-    case NOC_POP_MSG: handlePop(flit); break;
+    case NOC_REQ_MSG: handleReq((NoCReqMsg*)flit); break;
+    case NOC_GNT_MSG: handleGnt((NoCGntMsg*)flit); break;
+    case NOC_POP_MSG: handlePop((NoCPopMsg*)flit); break;
     default:
         throw cRuntimeError("Unsupported message arrival");
     }
-    */
 }
-/*
+
+// VC Accepting Flit
 bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
 }
 
+// Check if current VC is empty
 bool CentSchedRouter::vc_t::empty() {
+    return m_flits.empty();
 }
 
 NoCFlitMsg& CentSchedRouter::vc_t::release() {
+    if(empty()) {
+        throw cRuntimeError("Trying to release a flit from an empty VC");
+    }
+
+    NoCFlitMsg *msg = m_flits.front();
+    m_flits.pop();
+
+    NOC_MSGS type = msg->getKind();
+    if(type == NOC_END_FLIT) {
+
+    }
+
+    return *msg;
 }
 
-vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
+struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
+
 }
-*/
+

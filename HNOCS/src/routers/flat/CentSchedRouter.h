@@ -21,8 +21,9 @@
 #include <omnetpp.h>
 #include <NoCs_m.h>
 
-#include <vector>
-using std::vector;
+#include <queue>
+//#include <vector>
+using std::queue;
 
 //
 // Central Scheduling Router - it's main task is to
@@ -48,7 +49,7 @@ private:
 
 	// my stuff
 	struct vc_t {
-	    vector<NoCFlitMsg*> m_messages; // Flits Queue
+	    queue<NoCFlitMsg*> m_flits; // Flits Queue
 	    int m_activeMessage; // Current CMP message being sent
 	    int m_activePacket; // Current NoC packet being sent
 	    int m_vcSize;
@@ -70,9 +71,10 @@ private:
 
 	// fill in west... port indexes
 	int analyzeMeshTopology();
-	void handleFlitMsg(NoCFlitMsg *msg);
+
 	void sendCredits(int ip, int numFlits);
 
+	void handleFlitMsg(NoCFlitMsg *msg);
 	void handleReq(NoCReqMsg *msg);
 	void handleGnt(NoCGntMsg *msg);
 	void handlePop(NoCPopMsg *msg);
