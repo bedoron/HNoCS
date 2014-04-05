@@ -16,6 +16,7 @@
 // 
 
 #include "CentSchedRouter.h"
+#include "App_m.h"
 #include <iostream>
 using std::cerr;
 
@@ -277,6 +278,9 @@ void CentSchedRouter::deliver() {
     // Iterate all out-ports and try to deliver messages
 }
 
+void CentSchedRouter::handleCredit(NoCCreditMsg* msg) {
+}
+
 bool CentSchedRouter::isTail(NoCFlitMsg& msg) {
     NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg.getType();
     return type==NOC_END_FLIT;
@@ -309,14 +313,32 @@ void CentSchedRouter::handleMessage(cMessage *msg) {
 
 // VC Accepting Flit
 bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
-    if(isHead(flit)) {
-        if(!m_flits.empty()) {
-            throw cRuntimeError("Can't accept ")
+    AppFlitMsg &appFlit = *(dynamic_cast<AppFlitMsg*>(&flit));
+    int msgId = appFlit.getMsgId();
+    bool canAccept = false;
+
+    // Check if packet fits
+    if(!empty() && (m_activeMessage==msgId)) {
+        canAccept = true;
+    } else if(empty()) {
+        if(isHead(flit)) { // Only heads can "open" empty VCs
+            canAccept = true;
         }
     }
-//    inPortFlitInfo *info = getFlitInfo(msg);
-//    int flitVc = info->inVC;
-
+    // Check if packet queueable and queue it
+    if(canAccept) {
+        if(m_credits<=0) { // not enough credits
+            return false;
+        } else {
+            if(empty()) {
+                m_activeMessage = msgId;
+                m_activePacket = flit.getPktId();
+            }
+            m_flits.push(&flit);
+            m_credits--;
+        }
+    }
+    return canAccept;
 }
 
 // Check if current VC is empty
@@ -331,7 +353,7 @@ NoCFlitMsg& CentSchedRouter::vc_t::release() {
 
     NoCFlitMsg *msg = m_flits.front();
     m_flits.pop();
-    --m_credits;
+    ++m_credits;
 
     NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getKind();
     if(type == NOC_END_FLIT) {

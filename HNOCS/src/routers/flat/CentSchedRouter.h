@@ -78,6 +78,7 @@ private:
 
 	void sendCredits(int ip, int numFlits);
 
+	void handleCredit(NoCCreditMsg *msg);
 	void handleFlitMsg(NoCFlitMsg *msg);
 	void handlePop(NoCPopMsg *msg);
 	void deliver(); // Send all pending packets that we can send
