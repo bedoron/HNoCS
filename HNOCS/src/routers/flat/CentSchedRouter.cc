@@ -16,18 +16,25 @@
 // 
 
 #include "CentSchedRouter.h"
+#include <iostream>
+using std::cerr;
 
 Define_Module(CentSchedRouter)
 ;
 
 void CentSchedRouter::initialize() {
-	numPorts = par("numPorts");
+    numPorts = gateSize("in");
 	numCols = par("columns");
 	id = par("id");
 	rx = id % numCols;
 	ry = id / numCols;
 	coreType = par("coreType");
 	routerType = par("routerType");
+	double data_rate = par("dataRate");
+
+    int numVCs = par("numVCs");
+    int flitSize_B = par("flitSize");
+    //int arbitration_type = par("arbitration_type");
 
 	// calculate the routing information
 	analyzeMeshTopology();
@@ -40,8 +47,31 @@ void CentSchedRouter::initialize() {
 	WATCH(southPort);
 	WATCH(corePort);
 
-	for (int ip = 0; ip < numPorts; ip++)
-	sendCredits(ip, 2);
+	m_ports.resize(numPorts);
+
+
+	for (int ip = 0; ip < numPorts; ip++) {
+	    sendCredits(ip, 2);
+
+	    cGate *g = gate("out$o", ip);
+	    m_ports[ip].connected = (g->getPathEndGate()->getType()!= cGate::INPUT);
+
+	    if(m_ports[ip].connected) {
+	        m_ports[ip].m_vcs.resize(numVCs);
+	        m_ports[ip].gate = g;
+	    } else {
+	        m_ports[ip].gate = NULL;
+	    }
+
+	}
+
+	double data_rate = chan->getDatarate();
+	tClk_s = (8 * flitSize_B) / data_rate;
+
+    popMsg = new cMessage("pop");
+    popMsg->setKind(NOC_POP_MSG);
+    popMsg->setSchedulingPriority(5);
+    scheduleAt(simTime()+tClk_s, popMsg);
 }
 
 	// send back a credit on the in port
@@ -220,24 +250,58 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 	send(msg, "out$o", swOutPortIdx);
 }
 
-void CentSchedRouter::handleReq(NoCReqMsg* msg) {
-}
-
-void CentSchedRouter::handleGnt(NoCGntMsg* msg) {
-}
-
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
+    if (!popMsg->isScheduled()) {
+        scheduleAt(simTime() + tClk_s, popMsg);
+        // EV<< "-I" << getFullPath() << "popMsg is scheduled to:" <<simTime() + tClk_s << endl;
+    }
+    deliver();
+}
+
+bool CentSchedRouter::isHead(NoCFlitMsg* msg) {
+    NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getType();
+    return type==NOC_START_FLIT;
+}
+
+bool CentSchedRouter::isTail(NoCFlitMsg* msg) {
+    NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getType();
+    return type==NOC_END_FLIT;
+}
+
+bool CentSchedRouter::isHead(NoCFlitMsg& msg) {
+    NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg.getType();
+    return type==NOC_START_FLIT;
+}
+
+void CentSchedRouter::deliver() {
+    // Iterate all out-ports and try to deliver messages
+}
+
+bool CentSchedRouter::isTail(NoCFlitMsg& msg) {
+    NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg.getType();
+    return type==NOC_END_FLIT;
+}
+
+inPortFlitInfo* CentSchedRouter::getFlitInfo(NoCFlitMsg* msg) {
+    cObject *obj = msg->getControlInfo();
+    if (obj == NULL) {
+        throw cRuntimeError("-E- BUG - No Control Info for FLIT: %s",
+                msg->getFullName());
+    }
+
+    inPortFlitInfo *info = dynamic_cast<inPortFlitInfo*> (obj);
+    return info;
 }
 
 void CentSchedRouter::handleMessage(cMessage *msg) {
+
     NOC_MSGS type = (NOC_MSGS) msg->getKind();
     NoCFlitMsg *flit = dynamic_cast<NoCFlitMsg*>(msg);
 
     switch(type) {
     case NOC_FLIT_MSG: handleFlitMsg(flit); break;
-    case NOC_REQ_MSG: handleReq((NoCReqMsg*)flit); break;
-    case NOC_GNT_MSG: handleGnt((NoCGntMsg*)flit); break;
     case NOC_POP_MSG: handlePop((NoCPopMsg*)flit); break;
+    case NOC_CREDIT_MSG: handleCredit((NoCCreditMsg*)flit); break;
     default:
         throw cRuntimeError("Unsupported message arrival");
     }
@@ -245,6 +309,14 @@ void CentSchedRouter::handleMessage(cMessage *msg) {
 
 // VC Accepting Flit
 bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
+    if(isHead(flit)) {
+        if(!m_flits.empty()) {
+            throw cRuntimeError("Can't accept ")
+        }
+    }
+//    inPortFlitInfo *info = getFlitInfo(msg);
+//    int flitVc = info->inVC;
+
 }
 
 // Check if current VC is empty
@@ -259,16 +331,38 @@ NoCFlitMsg& CentSchedRouter::vc_t::release() {
 
     NoCFlitMsg *msg = m_flits.front();
     m_flits.pop();
+    --m_credits;
 
-    NOC_MSGS type = msg->getKind();
+    NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getKind();
     if(type == NOC_END_FLIT) {
-
+        // Release this Virtual channel
+        m_activeMessage = -1;
+        m_activePacket = -1;
     }
 
     return *msg;
 }
 
 struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
+    msg->getControlInfo();
+    if(isHead(msg)) {
+        // look for a free VC
 
+        for(uint i=0; i < m_vcs.size(); ++i) {
+            if(m_vcs[i].m_flits.empty())
+                return m_vcs[i];
+        }
+        cerr << "Head flit arrived but no free VC available";
+        throw new cRuntimeError("Head flit arrived but no free VC available");
+    } else {
+        // Find the VC this flit belongs to
+        inPortFlitInfo *info = getFlitInfo(msg);
+        int flitVc = info->inVC;
+        try {
+            vc_t &vc = m_vcs.at(flitVc);
+            return vc;
+        } catch(std::out_of_range ex) {
+            throw cRuntimeError("Flit arrived with invalid VC");
+        }
+    }
 }
-

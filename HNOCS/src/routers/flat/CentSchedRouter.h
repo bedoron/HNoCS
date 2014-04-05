@@ -22,9 +22,10 @@
 #include <NoCs_m.h>
 
 #include <queue>
-//#include <vector>
+#include <vector>
+#include <FlitMsgCtrl.h>
 using std::queue;
-
+using std::vector;
 //
 // Central Scheduling Router - it's main task is to
 // send the input flits to the correct output port
@@ -38,9 +39,11 @@ private:
 	int numPorts;
 	int numCols;
 	int numRows;
+	double tClk_s;
 	const char* routerType;
 	const char* coreType;
 
+	cMessage *popMsg; // this is the clock...
 	// state
 	int westPort, eastPort, northPort, southPort, corePort;
 	int rx, ry; // xy coordinates of this router
@@ -63,6 +66,7 @@ private:
 	    cGate *gate; // Associated gate
 	    vector<vc_t> m_vcs; // vcs for this gate
 	    int m_size; // maximum number of VC's for this gate
+	    bool connected;
 	    vc_t& getVC(NoCFlitMsg* msg); // Returns an available vc or an existing one if this flit is part of it
 	};
 
@@ -75,13 +79,19 @@ private:
 	void sendCredits(int ip, int numFlits);
 
 	void handleFlitMsg(NoCFlitMsg *msg);
-	void handleReq(NoCReqMsg *msg);
-	void handleGnt(NoCGntMsg *msg);
 	void handlePop(NoCPopMsg *msg);
+	void deliver(); // Send all pending packets that we can send
 
+	static inPortFlitInfo* getFlitInfo(NoCFlitMsg *msg);
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+
+public:
+    static bool isHead(NoCFlitMsg *msg);
+    static bool isTail(NoCFlitMsg *msg);
+    static bool isHead(NoCFlitMsg& msg);
+    static bool isTail(NoCFlitMsg& msg);
 };
 
 #endif
