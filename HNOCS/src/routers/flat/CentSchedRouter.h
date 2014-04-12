@@ -39,6 +39,7 @@ private:
 	int numPorts;
 	int numCols;
 	int numRows;
+	int flitsPerVC;
 	double tClk_s;
 	const char* routerType;
 	const char* coreType;
@@ -55,28 +56,41 @@ private:
 	    queue<NoCFlitMsg*> m_flits; // Flits Queue
 	    int m_activeMessage; // Current CMP message being sent
 	    int m_activePacket; // Current NoC packet being sent
-	    int m_vcSize;
-	    int m_credits;
+	    int m_vcSize; // Size of VC
+	    unsigned int m_id; // ID of this VC
+	    unsigned int m_credits; // Current availability of credits
+	    unsigned int m_linkCredits; // number of credits available by configuration (upper bound of m_credits)
+
+	    // Simulation of Pipeline delay
+        unsigned int m_pipelineDepth; // Setting - nr. of clocks to delay a packet on this VC
+        unsigned int m_pipelineStage; // Counter for current pipeline stage
+
 	    bool accept(NoCFlitMsg& flit); // Specify rules to accept flits
+	    bool belongs(NoCFlitMsg& flit); // Check if flit "belongs"
 	    bool empty(); // True if VC is empty
 	    NoCFlitMsg& release(); // release one flit from Q and update state, throw exception if empty
+	    bool canRelease(); // returns true if VC can release a FLIT - enough credits are available
 	};
 
 	struct port_t {
+	    int m_transmittingVC; // which VC should transmit
 	    cGate *gate; // Associated gate
 	    vector<vc_t> m_vcs; // vcs for this gate
 	    int m_size; // maximum number of VC's for this gate
 	    bool connected;
+	    void electVC();
+	    bool hasElectedVC();
+	    struct vc_t& getElectedVC();
 	    vc_t& getVC(NoCFlitMsg* msg); // Returns an available vc or an existing one if this flit is part of it
 	};
 
-	vector<port_t> m_ports;
+	vector<port_t> m_ports; // In ports of this router. in ports deliver messages to next router
 
 
 	// fill in west... port indexes
 	int analyzeMeshTopology();
 
-	void sendCredits(int ip, int numFlits);
+	void sendCredits(int ip, int otherVC, int numFlits);
 
 	void handleCredit(NoCCreditMsg *msg);
 	void handleFlitMsg(NoCFlitMsg *msg);

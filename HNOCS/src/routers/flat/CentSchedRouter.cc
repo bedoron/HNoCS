@@ -31,7 +31,9 @@ void CentSchedRouter::initialize() {
 	ry = id / numCols;
 	coreType = par("coreType");
 	routerType = par("routerType");
+	flitsPerVC = par("flitsPerVC");
 	double data_rate = par("dataRate");
+	unsigned int pipelineDepth = 1; // TODO: get this as a parameter
 
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
@@ -51,22 +53,28 @@ void CentSchedRouter::initialize() {
 	m_ports.resize(numPorts);
 
 
-	for (int ip = 0; ip < numPorts; ip++) {
-	    sendCredits(ip, 2);
-
+	for (int ip = 0; ip < numPorts; ip++) { // Initialize Ports
 	    cGate *g = gate("out$o", ip);
 	    m_ports[ip].connected = (g->getPathEndGate()->getType()!= cGate::INPUT);
-
+	    m_ports[ip].m_transmittingVC = -1; // no VC is transmitting
 	    if(m_ports[ip].connected) {
 	        m_ports[ip].m_vcs.resize(numVCs);
 	        m_ports[ip].gate = g;
+	        for(int vc = 0; vc > numVCs; ++vc) { //  Initialize current port's VCs
+	            m_ports[ip].m_vcs[vc].m_linkCredits = flitsPerVC;
+	            m_ports[ip].m_vcs[vc].m_credits = 0; // Hopefully, this will happen before receiving any credits...
+	            m_ports[ip].m_vcs[vc].m_id = vc;
+	            m_ports[ip].m_vcs[vc].m_pipelineDepth = pipelineDepth;
+	            m_ports[ip].m_vcs[vc].m_pipelineStage = 0;
+	            sendCredits(ip, vc, flitsPerVC);
+	        }
 	    } else {
 	        m_ports[ip].gate = NULL;
 	    }
 
 	}
 
-	double data_rate = chan->getDatarate();
+	//double data_rate = chan->getDatarate();
 	tClk_s = (8 * flitSize_B) / data_rate;
 
     popMsg = new cMessage("pop");
@@ -76,7 +84,7 @@ void CentSchedRouter::initialize() {
 }
 
 	// send back a credit on the in port
-void CentSchedRouter::sendCredits(int ip, int numFlits) {
+void CentSchedRouter::sendCredits(int ip, int otherVC, int numFlits) {
 	if (gate("in$o", ip)->getPathEndGate()->getType() != cGate::INPUT) {
 		return;
 	}
@@ -87,7 +95,7 @@ void CentSchedRouter::sendCredits(int ip, int numFlits) {
 	sprintf(credName, "cred-%d-%d", 0, numFlits);
 	NoCCreditMsg *crd = new NoCCreditMsg(credName);
 	crd->setKind(NOC_CREDIT_MSG);
-	crd->setVC(0);
+	crd->setVC(otherVC);
 	crd->setFlits(numFlits);
 	send(crd, "in$o", ip);
 }
@@ -235,20 +243,28 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 		msg->setFirstNet(false);
 	}
 
-	// send back credits
-	sendCredits(msg->getArrivalGate()->getIndex(), 1);
-
-	// check if the out port is busy and report
-	if (gate("out$o", swOutPortIdx)->getTransmissionChannel()->isBusy()) {
-		simtime_t
-				txfinishTime =
-						gate("out$o", swOutPortIdx)->getTransmissionChannel()->getTransmissionFinishTime();
-		EV<< "-E- " << getFullPath() << " port " << swOutPortIdx << " busy until:"
-		<< txfinishTime << " now: " << simTime() << endl;
+	// Queue packet on appropriate VC/Port
+	int ip = msg->getArrivalGate()->getIndex();
+	struct vc_t &vc = m_ports[ip].getVC(msg);
+	if(!vc.accept(*msg)) { // Queue flit on VC
+	    // if this code would have seen daylight, we should have sent a NACK...
+	    throw cRuntimeError("Couldn't accept flit in VC, not enough credits");
 	}
 
-	// send the packet out - will cause exception if another packet already there
-	send(msg, "out$o", swOutPortIdx);
+//	// send back credits - this should happen only on pop event
+//	sendCredits(msg->getArrivalGate()->getIndex(), 1);
+//
+//	// check if the out port is busy and report - this should happen only on pop event
+//	if (gate("out$o", swOutPortIdx)->getTransmissionChannel()->isBusy()) {
+//		simtime_t
+//				txfinishTime =
+//						gate("out$o", swOutPortIdx)->getTransmissionChannel()->getTransmissionFinishTime();
+//		EV<< "-E- " << getFullPath() << " port " << swOutPortIdx << " busy until:"
+//		<< txfinishTime << " now: " << simTime() << endl;
+//	}
+//
+//	// send the packet out - will cause exception if another packet already there
+//	send(msg, "out$o", swOutPortIdx);
 }
 
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
@@ -275,10 +291,28 @@ bool CentSchedRouter::isHead(NoCFlitMsg& msg) {
 }
 
 void CentSchedRouter::deliver() {
-    // Iterate all out-ports and try to deliver messages
+    // Iterate all in-ports and try to deliver messages. this method implements winner-takes-all method
+    for(int ip = 0; ip < m_ports.size(); ++ip) {
+        if(!m_ports[ip].hasElectedVC()) { // Try to elect a VC
+            m_ports[ip].electVC();
+        }
+
+        if(m_ports[ip].hasElectedVC()) { // If we have an elected VC, send stuff
+            struct vc_t &vc = m_ports[ip].getElectedVC();
+            if(vc.canRelease()) {
+                NoCFlitMsg &msg = vc.release();
+                msg.setVC(vc.m_id);
+                // TODO: send(msg, bla bla bla crap crap bla);
+            }
+        }
+    }
 }
 
 void CentSchedRouter::handleCredit(NoCCreditMsg* msg) {
+    int vc = msg->getVC();
+    int numFlits = msg->getFlits();
+    int port = msg->getArrivalGate()->getIndex();
+    m_ports[port].m_vcs[vc].m_credits += numFlits;
 }
 
 bool CentSchedRouter::isTail(NoCFlitMsg& msg) {
@@ -311,8 +345,16 @@ void CentSchedRouter::handleMessage(cMessage *msg) {
     }
 }
 
-// VC Accepting Flit
-bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
+/*
+ * Checks if a flit "belongs" to this VC. belonging of a flit is defined
+ * as one of the following criterion:
+ *  1. VC is empty & flit is Head
+ *  2. flit belongs to a packet which belongs to the same message
+ *  * Credits are not considered *
+ *
+ *  @return true if flit "belongs" to vc.
+ */
+bool CentSchedRouter::vc_t::belongs(NoCFlitMsg& flit) {
     AppFlitMsg &appFlit = *(dynamic_cast<AppFlitMsg*>(&flit));
     int msgId = appFlit.getMsgId();
     bool canAccept = false;
@@ -325,17 +367,28 @@ bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
             canAccept = true;
         }
     }
+
+    return canAccept;
+}
+
+/*
+ * make this VC try and accept given flit. if flit was accepted,
+ */
+bool CentSchedRouter::vc_t::accept(NoCFlitMsg& flit) {
+    AppFlitMsg &appFlit = *(dynamic_cast<AppFlitMsg*>(&flit));
+    int msgId = appFlit.getMsgId();
+    bool canAccept = belongs(flit);
+
     // Check if packet queueable and queue it
     if(canAccept) {
-        if(m_credits<=0) { // not enough credits
+        if(m_flits.size()>=m_linkCredits) { // not enough credits
             return false;
         } else {
-            if(empty()) {
+            if(empty()) { // Assign this VC exclusively
                 m_activeMessage = msgId;
                 m_activePacket = flit.getPktId();
             }
             m_flits.push(&flit);
-            m_credits--;
         }
     }
     return canAccept;
@@ -346,14 +399,22 @@ bool CentSchedRouter::vc_t::empty() {
     return m_flits.empty();
 }
 
+/* Tells a VC to release a flit from the head of it's Queue. if no flits are found
+ * throw an exception
+ * @return Flit to transmit
+ */
 NoCFlitMsg& CentSchedRouter::vc_t::release() {
     if(empty()) {
         throw cRuntimeError("Trying to release a flit from an empty VC");
     }
 
+    if(m_credits == 0) {
+        throw cRuntimeError("Trying to release a flit when no credits are available");
+    }
+
     NoCFlitMsg *msg = m_flits.front();
     m_flits.pop();
-    ++m_credits;
+    --m_credits; // TODO: handleCreditMsg should deal with this
 
     NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getKind();
     if(type == NOC_END_FLIT) {
@@ -365,26 +426,83 @@ NoCFlitMsg& CentSchedRouter::vc_t::release() {
     return *msg;
 }
 
-struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
-    msg->getControlInfo();
-    if(isHead(msg)) {
-        // look for a free VC
-
-        for(uint i=0; i < m_vcs.size(); ++i) {
-            if(m_vcs[i].m_flits.empty())
-                return m_vcs[i];
-        }
-        cerr << "Head flit arrived but no free VC available";
-        throw new cRuntimeError("Head flit arrived but no free VC available");
-    } else {
-        // Find the VC this flit belongs to
-        inPortFlitInfo *info = getFlitInfo(msg);
-        int flitVc = info->inVC;
-        try {
-            vc_t &vc = m_vcs.at(flitVc);
-            return vc;
-        } catch(std::out_of_range ex) {
-            throw cRuntimeError("Flit arrived with invalid VC");
+/**
+ * checks if we can release a flit from the current VC. we can release if
+ * there are flits AND there is enough credit on the channel AND pipeline
+ * stage has reached maximal depth
+ * @return true if we can release a flit on this channel, otherwise false
+ */
+bool CentSchedRouter::vc_t::canRelease() {
+    bool release = false;
+    if((!empty() && (m_credits!=0))) {
+        if(m_pipelineStage==(m_pipelineDepth-1)) {
+            release = true;
+            m_pipelineStage = 0;
+        } else {
+            ++m_pipelineStage;
         }
     }
+    return release;
+}
+
+/**
+ * Sets the next VC which has data to send as active. if no VC found, set sending VC
+ * to none. electing sending VC will select the next VC which is after last sending VC
+ * if none found search will wrap around.
+ */
+void CentSchedRouter::port_t::electVC() {
+    unsigned int startAt = 0;
+    if(m_transmittingVC!=-1) {
+        startAt = m_transmittingVC;
+        m_transmittingVC = -1;
+    }
+
+    for(unsigned int i = 0; vc < m_vcs.size(); ++i) {
+        unsigned vc = (i + startAt) % m_vcs.size();
+        if(!m_vcs[vc].empty()) {
+            m_transmittingVC = vc;
+            break;
+        }
+    }
+}
+
+/**
+ * Gets the currently elected VC. calling this when no VC is elected will result
+ * in an exception
+ */
+struct vc_t& CentSchedRouter::port_t::getElectedVC() {
+    return m_vcs[m_transmittingVC];
+}
+
+/**
+ * check if we've elected a VC. if VC was previously elected and it got nothing to send
+ * function will return that there is no elected vc
+ */
+bool CentSchedRouter::port_t::hasElectedVC() {
+    bool elected = false;
+    if(m_transmittingVC!=-1) {
+        if(!m_vcs[m_transmittingVC].empty()) {
+            elected = true;
+        }
+    }
+    return elected;
+}
+
+
+/* A port's method to get a VC given a NoCFlitMsg. this method will check the type of
+ * Flit and search for a matching VC.
+ * if Flit is a head flit - look for an empty VC, otherwise, look for a VC which holds
+ * the Packet which this flit belongs to.
+ * THIS METHOD WILL NOT ADD THE FLIT TO THE GIVEN VC
+ *
+ * @return vc_t struct which can accept this flit
+ * @throws cRuntimeError if flit can't be assigned to any of the vc's this port holds
+ */
+struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
+    for(unsigned int i=0; i <= m_vcs.size(); ++i) {
+        if(m_vcs[i].belongs(*msg)) {
+            return m_vcs[i];
+        }
+    }
+    throw new cRuntimeError("Flit doesn't fit in any VC on this port");
 }
