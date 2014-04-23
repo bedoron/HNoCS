@@ -33,10 +33,10 @@ void CentSchedRouter::initialize() {
 	routerType = par("routerType");
 	flitsPerVC = par("flitsPerVC");
 	double data_rate = par("dataRate");
-	unsigned int pipelineDepth = 1; // TODO: get this as a parameter
-
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
+
+    unsigned int pipelineDepth = 1; // TODO: get this as a parameter
     //int arbitration_type = par("arbitration_type");
 
 	// calculate the routing information
@@ -217,26 +217,7 @@ int CentSchedRouter::analyzeMeshTopology() {
 }
 
 void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
-	int dx, dy;
-	dy = msg->getDstId() / numCols;
-	dx = msg->getDstId() % numCols;
-	int swOutPortIdx;
-	if ((dx == rx) && (dy == ry)) {
-		swOutPortIdx = corePort;
-	} else if (dx > rx) {
-		swOutPortIdx = eastPort;
-	} else if (dx < rx) {
-		swOutPortIdx = westPort;
-	} else if (dy > ry) {
-		swOutPortIdx = northPort;
-	} else {
-		swOutPortIdx = southPort;
-	}
-	if (swOutPortIdx < 0) {
-		throw cRuntimeError("Routing dead end at %s (%d,%d) "
-			"for destination %d (%d,%d)", getFullPath().c_str(), rx, ry,
-				msg->getDstId(), dx, dy);
-	}
+    OPCalc(*msg);
 
 	if (msg->getFirstNet()) {
 		msg->setFirstNetTime(simTime());
@@ -250,21 +231,6 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 	    // if this code would have seen daylight, we should have sent a NACK...
 	    throw cRuntimeError("Couldn't accept flit in VC, not enough credits");
 	}
-
-//	// send back credits - this should happen only on pop event
-//	sendCredits(msg->getArrivalGate()->getIndex(), 1);
-//
-//	// check if the out port is busy and report - this should happen only on pop event
-//	if (gate("out$o", swOutPortIdx)->getTransmissionChannel()->isBusy()) {
-//		simtime_t
-//				txfinishTime =
-//						gate("out$o", swOutPortIdx)->getTransmissionChannel()->getTransmissionFinishTime();
-//		EV<< "-E- " << getFullPath() << " port " << swOutPortIdx << " busy until:"
-//		<< txfinishTime << " now: " << simTime() << endl;
-//	}
-//
-//	// send the packet out - will cause exception if another packet already there
-//	send(msg, "out$o", swOutPortIdx);
 }
 
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
@@ -290,9 +256,13 @@ bool CentSchedRouter::isHead(NoCFlitMsg& msg) {
     return type==NOC_START_FLIT;
 }
 
+/**
+ * Deliver flits for each gate that has flits to send. using winner-takes-all method.
+ * This function is being called for each TICK in the system.
+ */
 void CentSchedRouter::deliver() {
     // Iterate all in-ports and try to deliver messages. this method implements winner-takes-all method
-    for(int ip = 0; ip < m_ports.size(); ++ip) {
+    for(unsigned int ip = 0; ip < m_ports.size(); ++ip) {
         if(!m_ports[ip].hasElectedVC()) { // Try to elect a VC
             m_ports[ip].electVC();
         }
@@ -301,8 +271,14 @@ void CentSchedRouter::deliver() {
             struct vc_t &vc = m_ports[ip].getElectedVC();
             if(vc.canRelease()) {
                 NoCFlitMsg &msg = vc.release();
+                int prevVC = msg.getVC();
+                int incommingPort = msg.getArrivalGate()->getIndex();
+
                 msg.setVC(vc.m_id);
-                // TODO: send(msg, bla bla bla crap crap bla);
+                sendCredits(incommingPort,prevVC, 1);
+
+                int swOutPortIdx = OPCalc(msg); // Get output port which would reach the flit's destination
+                send(&msg, gate("out", swOutPortIdx));
             }
         }
     }
@@ -313,6 +289,32 @@ void CentSchedRouter::handleCredit(NoCCreditMsg* msg) {
     int numFlits = msg->getFlits();
     int port = msg->getArrivalGate()->getIndex();
     m_ports[port].m_vcs[vc].m_credits += numFlits;
+}
+
+int CentSchedRouter::OPCalc(NoCFlitMsg& msg) {
+    int dx, dy;
+    dy = msg.getDstId() / numCols;
+    dx = msg.getDstId() % numCols;
+    int swOutPortIdx = -1;
+    if ((dx == rx) && (dy == ry)) {
+        swOutPortIdx = corePort;
+    } else if (dx > rx) {
+        swOutPortIdx = eastPort;
+    } else if (dx < rx) {
+        swOutPortIdx = westPort;
+    } else if (dy > ry) {
+        swOutPortIdx = northPort;
+    } else {
+        swOutPortIdx = southPort;
+    }
+
+    if (swOutPortIdx < 0) {
+        throw cRuntimeError("Routing dead end at %s (%d,%d) "
+            "for destination %d (%d,%d)", getFullPath().c_str(), rx, ry,
+                msg.getDstId(), dx, dy);
+    }
+
+    return swOutPortIdx;
 }
 
 bool CentSchedRouter::isTail(NoCFlitMsg& msg) {
@@ -457,7 +459,7 @@ void CentSchedRouter::port_t::electVC() {
         m_transmittingVC = -1;
     }
 
-    for(unsigned int i = 0; vc < m_vcs.size(); ++i) {
+    for(unsigned int i = 0; i < m_vcs.size(); ++i) {
         unsigned vc = (i + startAt) % m_vcs.size();
         if(!m_vcs[vc].empty()) {
             m_transmittingVC = vc;
@@ -470,7 +472,7 @@ void CentSchedRouter::port_t::electVC() {
  * Gets the currently elected VC. calling this when no VC is elected will result
  * in an exception
  */
-struct vc_t& CentSchedRouter::port_t::getElectedVC() {
+struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getElectedVC() {
     return m_vcs[m_transmittingVC];
 }
 

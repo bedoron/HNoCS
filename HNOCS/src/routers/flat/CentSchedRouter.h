@@ -80,7 +80,7 @@ private:
 	    bool connected;
 	    void electVC();
 	    bool hasElectedVC();
-	    struct vc_t& getElectedVC();
+	    struct CentSchedRouter::vc_t& getElectedVC();
 	    vc_t& getVC(NoCFlitMsg* msg); // Returns an available vc or an existing one if this flit is part of it
 	};
 
@@ -96,6 +96,7 @@ private:
 	void handleFlitMsg(NoCFlitMsg *msg);
 	void handlePop(NoCPopMsg *msg);
 	void deliver(); // Send all pending packets that we can send
+	int OPCalc(NoCFlitMsg &msg);
 
 	static inPortFlitInfo* getFlitInfo(NoCFlitMsg *msg);
 protected:
