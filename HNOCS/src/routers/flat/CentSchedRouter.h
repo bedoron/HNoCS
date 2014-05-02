@@ -57,19 +57,59 @@ private:
 	    int m_activeMessage; // Current CMP message being sent
 	    int m_activePacket; // Current NoC packet being sent
 	    int m_vcSize; // Size of VC
-	    unsigned int m_id; // ID of this VC
-	    unsigned int m_credits; // Current availability of credits
-	    unsigned int m_linkCredits; // number of credits available by configuration (upper bound of m_credits)
+	    int m_id; // ID of this VC
+	    int m_credits; // Current availability of credits
+	    int m_linkCredits; // number of credits available by configuration (upper bound of m_credits)
 
 	    // Simulation of Pipeline delay
         unsigned int m_pipelineDepth; // Setting - nr. of clocks to delay a packet on this VC
         unsigned int m_pipelineStage; // Counter for current pipeline stage
 
-	    bool accept(NoCFlitMsg& flit); // Specify rules to accept flits
-	    bool belongs(NoCFlitMsg& flit); // Check if flit "belongs"
+        // parent path
+        int m_portId;
+        int m_routerId;
+
+	    bool accept(NoCFlitMsg* flit); // Specify rules to accept flits
+	    bool belongs(NoCFlitMsg* flit); // Check if flit "belongs"
 	    bool empty(); // True if VC is empty
-	    NoCFlitMsg& release(); // release one flit from Q and update state, throw exception if empty
+	    NoCFlitMsg* release(); // release one flit from Q and update state, throw exception if empty
+	    void takeOwnership(NoCFlitMsg* flit);
 	    bool canRelease(); // returns true if VC can release a FLIT - enough credits are available
+
+	    vc_t(const vc_t& src) {
+	        std::cerr << "VC Copy CTOR Invoked on [" << src.m_routerId << "][" << src.m_portId << "][" << src.m_id << "]\n";
+            //m_flits; // Flits Queue
+            m_activeMessage = src.m_activeMessage; // Current CMP message being sent
+            m_activePacket = src.m_activePacket ; // Current NoC packet being sent
+            m_vcSize = src.m_vcSize; // Size of VC
+            m_id = src.m_id; // ID of this VC
+            m_credits = src.m_credits; // Current availability of credits
+            m_linkCredits = src.m_linkCredits; // number of credits available by configuration (upper bound of m_credits)
+
+            // Simulation of Pipeline delay
+            m_pipelineDepth = src.m_pipelineDepth; // Setting - nr. of clocks to delay a packet on this VC
+            m_pipelineStage = src.m_pipelineStage; // Counter for current pipeline stage
+
+            m_portId = src.m_portId;
+            m_routerId = src.m_routerId;
+	    }
+
+	    vc_t() {
+	        //m_flits; // Flits Queue
+            m_activeMessage = -1; // Current CMP message being sent
+            m_activePacket = -1; // Current NoC packet being sent
+            m_vcSize = -1; // Size of VC
+            m_id = -1; // ID of this VC
+            m_credits = -1; // Current availability of credits
+            m_linkCredits = -1; // number of credits available by configuration (upper bound of m_credits)
+
+            // Simulation of Pipeline delay
+            m_pipelineDepth = 0; // Setting - nr. of clocks to delay a packet on this VC
+            m_pipelineStage = 0; // Counter for current pipeline stage
+
+            m_portId = -1;
+            m_routerId = -1;
+	    }
 	};
 
 	struct port_t {
@@ -82,6 +122,23 @@ private:
 	    bool hasElectedVC();
 	    struct CentSchedRouter::vc_t& getElectedVC();
 	    vc_t& getVC(NoCFlitMsg* msg); // Returns an available vc or an existing one if this flit is part of it
+
+	    port_t(const port_t& src) {
+	        std::cerr << "Port Copy CTOR Invoked on [X]\n";
+            m_transmittingVC = src.m_transmittingVC;
+            gate = src.gate;
+            m_vcs = src.m_vcs;
+            m_size = src.m_size;
+            connected = src.connected;
+	    }
+
+	    port_t() {
+            m_transmittingVC = -1;
+            gate = NULL;
+            m_vcs.resize(0);
+            m_size = 0;
+            connected = false;
+	    }
 	};
 
 	vector<port_t> m_ports; // In ports of this router. in ports deliver messages to next router
@@ -92,16 +149,16 @@ private:
 
 	void sendCredits(int ip, int otherVC, int numFlits);
 
-	void handleCredit(NoCCreditMsg *msg);
-	void handleFlitMsg(NoCFlitMsg *msg);
-	void handlePop(NoCPopMsg *msg);
+	void handleCredit(NoCCreditMsg* msg);
+	void handleFlitMsg(NoCFlitMsg* msg);
+	void handlePop(NoCPopMsg* msg);
 	void deliver(); // Send all pending packets that we can send
-	int OPCalc(NoCFlitMsg &msg);
+	int OPCalc(NoCFlitMsg* msg);
 
-	static inPortFlitInfo* getFlitInfo(NoCFlitMsg *msg);
+	static inPortFlitInfo* getFlitInfo(NoCFlitMsg* msg);
 protected:
     virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    virtual void handleMessage(cMessage* msg);
 
 public:
     static bool isHead(NoCFlitMsg *msg);

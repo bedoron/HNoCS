@@ -29,6 +29,9 @@ simple CentSchedRouter like hnocs.routers.Router_Ifc
         int rows;
         int columns;
         int dataRate = 1.374e+11; // 16 Gigabits per second
+        int flitsPerVC;
+        int numVCs = 1;
+        int flitSize @unit(byte);   // flitSize [bytes]
         string coreType;
         string routerType;
  	@display("i=block/broadcast");   
