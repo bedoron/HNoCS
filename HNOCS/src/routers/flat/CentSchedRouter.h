@@ -23,9 +23,11 @@
 
 #include <queue>
 #include <vector>
+#include <map>
 #include <FlitMsgCtrl.h>
 using std::queue;
 using std::vector;
+using std::map;
 //
 // Central Scheduling Router - it's main task is to
 // send the input flits to the correct output port
@@ -55,12 +57,13 @@ private:
 	// my stuff
 	struct vc_t {
 	    queue<NoCFlitMsg*> m_flits; // Flits Queue
-	    int m_activeMessage; // Current CMP message being sent
+	    vc_t* m_linkedTo;
 	    int m_activePacket; // Current NoC packet being sent
 	    int m_vcSize; // Size of VC
 	    int m_id; // ID of this VC
 	    int m_credits; // Current availability of credits
 	    int m_linkCredits; // number of credits available by configuration (upper bound of m_credits)
+	    bool m_used;
 
 	    // Simulation of Pipeline delay
         unsigned int m_pipelineDepth; // Setting - nr. of clocks to delay a packet on this VC
@@ -73,14 +76,13 @@ private:
 	    bool accept(NoCFlitMsg* flit); // Specify rules to accept flits
 	    bool belongs(NoCFlitMsg* flit); // Check if flit "belongs"
 	    bool empty(); // True if VC is empty
+	    bool used(); // True if VC belongs to some flow
 	    NoCFlitMsg* release(); // release one flit from Q and update state, throw exception if empty
 	    void takeOwnership(NoCFlitMsg* flit);
 	    bool canRelease(); // returns true if VC can release a FLIT - enough credits are available
 
 	    vc_t(const vc_t& src) {
 //	        std::cerr << "VC Copy CTOR Invoked on [" << src.m_routerId << "][" << src.m_portId << "][" << src.m_id << "]\n";
-            //m_flits; // Flits Queue
-            m_activeMessage = src.m_activeMessage; // Current CMP message being sent
             m_activePacket = src.m_activePacket ; // Current NoC packet being sent
             m_vcSize = src.m_vcSize; // Size of VC
             m_id = src.m_id; // ID of this VC
@@ -93,11 +95,13 @@ private:
 
             m_portId = src.m_portId;
             m_routerId = src.m_routerId;
+
+            m_linkedTo = src.m_linkedTo;
+            m_used = src.m_used;
 	    }
 
 	    vc_t() {
 	        //m_flits; // Flits Queue
-            m_activeMessage = -1; // Current CMP message being sent
             m_activePacket = -1; // Current NoC packet being sent
             m_vcSize = -1; // Size of VC
             m_id = -1; // ID of this VC
@@ -110,6 +114,9 @@ private:
 
             m_portId = -1;
             m_routerId = -1;
+
+            m_linkedTo = NULL;
+            m_used = false;
 	    }
 	};
 
@@ -143,8 +150,14 @@ private:
 	    }
 	};
 
-	vector<port_t> m_ports; // In ports of this router. in ports deliver messages to next router
+	/**
+	 * Maps the outgoing channel to the incoming channel. using this map the router
+	 * can associate credits comming from one end to the other end and create a pass-by
+	 * effect where incoming credit reaches the ingress port and not the egress one.
+	 */
+	map<vc_t*, vc_t*> m_linker; // Maps the outgoing channel to the incoming channel
 
+	vector<port_t> m_ports; // In ports of this router. in ports deliver messages to next router
 
 	// fill in west... port indexes
 	int analyzeMeshTopology();
@@ -158,6 +171,10 @@ private:
 	int OPCalc(NoCFlitMsg* msg);
 
 	bool hasData();
+
+	bool isLinked(vc_t& source); // Checks if input vc has an output vc linked to it
+	bool tryToLink(vc_t& srource, int outPort);
+
 	static inPortFlitInfo* getFlitInfo(NoCFlitMsg* msg);
 
 protected:
