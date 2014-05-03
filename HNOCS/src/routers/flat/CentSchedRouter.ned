@@ -32,6 +32,7 @@ simple CentSchedRouter like hnocs.routers.Router_Ifc
         int flitsPerVC;
         int numVCs = 1;
         int flitSize @unit(byte);   // flitSize [bytes]
+        int pipelineDepth = default(1);
         string coreType;
         string routerType;
  	@display("i=block/broadcast");   

@@ -32,12 +32,11 @@ void CentSchedRouter::initialize() {
 	coreType = par("coreType");
 	routerType = par("routerType");
 	flitsPerVC = par("flitsPerVC");
-	double data_rate = par("dataRate");
+	dataRate = par("dataRate");
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
 
-    unsigned int pipelineDepth = 1; // TODO: get this as a parameter
-    //int arbitration_type = par("arbitration_type");
+    unsigned int pipelineDepth = par("pipelineDepth"); //40; // TODO: get this as a parameter
 
 	// calculate the routing information
 	analyzeMeshTopology();
@@ -57,12 +56,9 @@ void CentSchedRouter::initialize() {
         cGate *g = gate("in$o", ip);
         m_ports[ip].connected = g->isConnectedOutside();
 
-//	    cGate *g = gate("out$o", ip);
-//	    m_ports[ip].connected = (g->getPathEndGate()->getType()!= cGate::INPUT);
 	    m_ports[ip].m_transmittingVC = -1; // no VC is transmitting
 	    if(m_ports[ip].connected) {
 	        m_ports[ip].m_vcs.resize(numVCs);
-//	        m_ports[ip].m_vcs.resize(numVCs);
 	        m_ports[ip].gate = g;
 	        for(int vc = 0; vc < numVCs; ++vc) { //  Initialize current port's VCs
 	            m_ports[ip].m_vcs[vc].m_linkCredits = flitsPerVC;
@@ -73,10 +69,6 @@ void CentSchedRouter::initialize() {
 	            sendCredits(ip, vc, flitsPerVC);
 	            m_ports[ip].m_vcs[vc].m_portId = ip;
 	            m_ports[ip].m_vcs[vc].m_routerId = getIndex();
-
-	            if(getIndex()==8 && ip==4 && vc==0) {
-	                cerr << "Address of data structure router[8][4][0]: #" << &(m_ports[ip].m_vcs[vc].m_flits) << "\n";
-	            }
 	        }
 	    } else {
 	        m_ports[ip].gate = NULL;
@@ -84,23 +76,15 @@ void CentSchedRouter::initialize() {
 
 	}
 
-	//double data_rate = chan->getDatarate();
-	tClk_s = (8 * flitSize_B) / data_rate;
+	tClk_s = (8 * flitSize_B) / dataRate;
 
     popMsg = new cMessage("pop");
     popMsg->setKind(NOC_POP_MSG);
     popMsg->setSchedulingPriority(5);
-    scheduleAt(simTime()+tClk_s, popMsg);
 }
 
 	// send back a credit on the in port
 void CentSchedRouter::sendCredits(int ip, int otherVC, int numFlits) {
-
-//    cGate::Type gType = gate("in$o", ip)->getPathEndGate()->getType();
-//    const char* fullName = gate("in$o", ip)->getPathEndGate()->getFullName();
-//	if (gate("in$o", ip)->getPathEndGate()->getType() != cGate::INOUT) {
-//		return;
-//	}
 	EV<< "-I- " << getFullPath() << " sending " << numFlits
 	<< " credits on VC=" << 0 << endl;
 
@@ -231,8 +215,7 @@ int CentSchedRouter::analyzeMeshTopology() {
 
 void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
     OPCalc(msg);
-    //cerr << msg << "\n";
-    cerr << ((AppFlitMsg*)msg) << " Queued on router["<<getIndex() <<"]\n";
+//    cerr << ((AppFlitMsg*)msg) << " Queued on router["<<getIndex() <<"]\n";
 
 	if (msg->getFirstNet()) {
 		msg->setFirstNetTime(simTime());
@@ -246,14 +229,33 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 	    // if this code would have seen daylight, we should have sent a NACK...
 	    throw cRuntimeError("Couldn't accept flit in VC, not enough credits");
 	}
+
+	if(!popMsg->isScheduled()) {
+	    scheduleAt(simTime()+tClk_s, popMsg);
+	}
 }
 
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
-    if (!popMsg->isScheduled()) {
+    if (hasData() && (!popMsg->isScheduled())) {
         scheduleAt(simTime() + tClk_s, popMsg);
-        // EV<< "-I" << getFullPath() << "popMsg is scheduled to:" <<simTime() + tClk_s << endl;
     }
     deliver();
+}
+
+bool CentSchedRouter::port_t::hasData() {
+    bool hasData = false;
+    for(unsigned int i = 0; i < m_vcs.size(); ++i) {
+        hasData |= !(m_vcs[i].empty());
+    }
+    return hasData;
+}
+
+bool CentSchedRouter::hasData() {
+    bool hasData = false;
+    for(unsigned int i = 0; i < m_ports.size(); ++i) {
+        hasData |= m_ports[i].hasData();
+    }
+    return hasData;
 }
 
 bool CentSchedRouter::isHead(NoCFlitMsg* msg) {
@@ -297,10 +299,6 @@ void CentSchedRouter::deliver() {
 
                     msg->setVC(vc.m_id);
                     sendCredits(incommingPort,prevVC, 1);
-
-                    cerr << "Router["<< getIndex()<<"]["<< swOutPortIdx<<"]["<<vc.m_id <<"] Delivering " << msg << "\n";
-                    //send(&msg, gate("out", swOutPortIdx));
-                    //m_ports[swOutPortIdx].gate->getTransmissionChannel()->getTransmissionFinishTime();
                     send(msg, "out$o", swOutPortIdx);
                 }
             }
@@ -386,8 +384,8 @@ bool CentSchedRouter::vc_t::belongs(NoCFlitMsg* flit) {
     int msgId = appFlit->getMsgId();
     bool canAccept = false;
 
-    cerr  << "vc << " << m_id <<" Empty: " << m_flits.empty() << " size " << m_flits.size() << "\n";
-    cerr << "Belongness on vc #" << this << "\n";
+//    cerr  << "vc << " << m_id <<" Empty: " << m_flits.empty() << " size " << m_flits.size() << "\n";
+//    cerr << "Belongness on vc #" << this << "\n";
 
     // Check if packet fits
     /**
@@ -427,8 +425,8 @@ bool CentSchedRouter::vc_t::accept(NoCFlitMsg* flit) {
                 }
             }
             m_flits.push(flit);
-            cerr << "vc << " << m_id <<" Empty after insertion: " << m_flits.empty() << " size " << m_flits.size() << "\n";
-            cerr << "Inserting on vc #" << this << " queue #" << (&(m_flits)) << "\n";
+//            cerr << "vc << " << m_id <<" Empty after insertion: " << m_flits.empty() << " size " << m_flits.size() << "\n";
+//            cerr << "Inserting on vc #" << this << " queue #" << (&(m_flits)) << "\n";
         }
     }
     return canAccept;
@@ -500,6 +498,7 @@ bool CentSchedRouter::vc_t::canRelease() {
             release = true;
             m_pipelineStage = 0;
         } else {
+            // TODO: Prediction will cause m_pipelineStage = m_pipelineDepth-1
             ++m_pipelineStage;
         }
     }
@@ -566,4 +565,9 @@ struct CentSchedRouter::vc_t& CentSchedRouter::port_t::getVC(NoCFlitMsg* msg) {
         }
     }
     throw new cRuntimeError("Flit doesn't fit in any VC on this port");
+}
+
+
+CentSchedRouter::~CentSchedRouter() {
+    cancelAndDelete(popMsg);
 }

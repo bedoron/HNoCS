@@ -125,6 +125,8 @@ void AppSink::handleDataMsg(AppFlitMsg *flit) {
 
 	if (flit->getType() == NOC_END_FLIT) {
 		// de-encapsulate the the embedded message on the last FLIT of the message
+	    int pktIdx = flit->getPktIdx();
+	    int appMsgLen = flit->getAppMsgLen();
 		if (flit->getPktIdx() == flit->getAppMsgLen() - 1) {
 			cPacket *decapMsg = flit->decapsulate();
 			if (!decapMsg) {
@@ -214,6 +216,9 @@ void AppSink::handleMessage(cMessage *msg)
 	if (msgType == NOC_CREDIT_MSG) {
 		handleAppCreditMsg((NoCCreditMsg*) msg);
 	} else if (msgType == NOC_FLIT_MSG) {
+	    if(getParentModule()->getIndex()==11) {
+//	        cerr << "Core 11\n";
+	    }
 		handleDataMsg((AppFlitMsg*) msg);
 	} else {
 		throw cRuntimeError("-E- BUG - unknown message type %d", msgType);
