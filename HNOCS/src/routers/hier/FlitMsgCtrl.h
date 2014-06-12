@@ -21,6 +21,8 @@
 // we need extra info inside the InPort for tracking FLITs
 class inPortFlitInfo : public cObject {
 public:
+    inPortFlitInfo() {}
+    inPortFlitInfo(int outPort, int inVC): inVC(inVC), outPort(outPort) {}
 	int inVC; // the input VC the FLIT arrived on
 	int outPort; // the out port assigned to the FLIT
 };

@@ -227,7 +227,7 @@ void InPortAsync::handleCalcOPResp(NoCFlitMsg *msg) {
 	// handle received FLIT
 void InPortAsync::handleInFlitMsg(NoCFlitMsg *msg) {
 	// allocate control info
-	inPortFlitInfo *info = new inPortFlitInfo;
+	inPortFlitInfo *info = new inPortFlitInfo();
 	msg->setControlInfo(info);
 	int inVC = msg->getVC();
 	info->inVC = inVC;

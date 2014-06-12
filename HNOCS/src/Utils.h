@@ -9,6 +9,7 @@
 #include "CMP_m.h"
 #include "NoCs_m.h"
 #include <iostream>
+#include "FlitMsgCtrl.h"
 using std::ostream;
 #ifndef UTILS_H_
 #define UTILS_H_
@@ -18,6 +19,13 @@ class Utils {
 public:
     Utils();
     virtual ~Utils();
+
+    static bool isHead(NoCFlitMsg *msg);
+    static bool isTail(NoCFlitMsg *msg);
+    static bool isHead(NoCFlitMsg& msg);
+    static bool isTail(NoCFlitMsg& msg);
+
+    static inPortFlitInfo* getFlitInfo(NoCFlitMsg* msg);
 };
 
 // Global "nice" printers
@@ -25,7 +33,5 @@ ostream &operator<<(ostream& stream, cPacket *msg);
 ostream &operator<<(ostream& stream, AppMsg *msg);
 ostream &operator<<(ostream& stream, CMPMsg *msg);
 
-
-
-
 #endif /* UTILS_H_ */
+

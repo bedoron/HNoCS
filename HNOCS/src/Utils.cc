@@ -16,6 +16,39 @@ Utils::~Utils() {
     // TODO Auto-generated destructor stub
 }
 
+bool Utils::isHead(NoCFlitMsg* msg) {
+        NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getType();
+        return type==NOC_START_FLIT;
+    }
+
+    bool Utils::isTail(NoCFlitMsg* msg) {
+        NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg->getType();
+        return type==NOC_END_FLIT;
+    }
+
+    bool Utils::isHead(NoCFlitMsg& msg) {
+        NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg.getType();
+        return type==NOC_START_FLIT;
+    }
+
+
+    bool Utils::isTail(NoCFlitMsg& msg) {
+        NOC_FLIT_TYPES type = (NOC_FLIT_TYPES)msg.getType();
+        return type==NOC_END_FLIT;
+    }
+
+    inPortFlitInfo* Utils::getFlitInfo(NoCFlitMsg* msg) {
+        cObject *obj = msg->getControlInfo();
+        if (obj == NULL) {
+            throw cRuntimeError("-E- BUG - No Control Info for FLIT: %s",
+                    msg->getFullName());
+        }
+
+        inPortFlitInfo *info = dynamic_cast<inPortFlitInfo*> (obj);
+        return info;
+    }
+
+
 /**
  * Class generated from <tt>CMP.msg</tt> by opp_msgc.
  * <pre>
