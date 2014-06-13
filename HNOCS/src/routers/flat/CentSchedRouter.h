@@ -44,7 +44,7 @@ private:
 	int numRows;
 	int flitsPerVC;
 	double tClk_s;
-	double dataRate;
+	int dataRate;
 	const char* routerType;
 	const char* coreType;
 

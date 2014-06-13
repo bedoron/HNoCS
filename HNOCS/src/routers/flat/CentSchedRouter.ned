@@ -28,7 +28,7 @@ simple CentSchedRouter like hnocs.routers.Router_Ifc
         int id; // serve as a global identifier for routing etc
         int rows;
         int columns;
-        int dataRate = 1.374e+11; // 16 Gigabits per second
+        int dataRate = 16000; // 16 Gigabits per second - speed is in MBps
         int flitsPerVC;
         int numVCs = 1;
         int flitSize @unit(byte);   // flitSize [bytes]

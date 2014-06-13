@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2010-2011 Eitan Zahavi, The Technion EE Department
+// Copyright (C) 2010-2011 Eitan Zahav8i, The Technion EE Department
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -38,7 +38,11 @@ void CentSchedRouter::initialize() {
     int flitSize_B = par("flitSize");
 
     unsigned int pipelineDepth = par("pipelineDepth"); //40; // TODO: get this as a parameter
-    tClk_s = (8 * flitSize_B) / dataRate;
+    tClk_s = 1.0/(dataRate*1000000.0/(8.0 * flitSize_B));
+
+    if( tClk_s < 0 ) {
+        throw new cRuntimeError("Clock frequency of %f is negative " , tClk_s);
+    }
 
 	// calculate the routing information
 	analyzeMeshTopology();
@@ -226,6 +230,11 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
         scheduleAt(simTime() + tClk_s, popMsg);
     }
 
+    if(id == 8) {
+        cerr << "Router 8!\n";
+    }
+
+
     for(int i=0; i < numPorts; ++i) {
         if(ports[i] != NULL)
             ports[i]->tickInner();
@@ -351,6 +360,10 @@ void CentSchedRouter::handleMessage(cMessage *msg) {
     default:
         throw cRuntimeError("Unsupported message arrival");
     }
+
+    if (hasData() && (!popMsg->isScheduled())) {
+        scheduleAt(simTime() + tClk_s, popMsg);
+    }
 }
 
 FlatPort* CentSchedRouter::getAdjacent(cGate *g) {
@@ -375,6 +388,9 @@ FlatPort* CentSchedRouter::requestPort(int portId) {
 }
 
 bool CentSchedRouter::hasData() {
+    if(id==8) {
+        cerr << "Router8 has data\n";
+    }
     bool data = false;
     for(int port = 0; (port < numPorts) && (data == false); ++port) {
         data |= (ports[port]==NULL)?false:ports[port]->hasData();
