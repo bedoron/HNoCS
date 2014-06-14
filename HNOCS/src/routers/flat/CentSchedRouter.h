@@ -56,7 +56,7 @@ private:
 	// methods
 
 	// my stuff
-	vector<FlatPort*> ports;
+	vector<FlatPortIfc*> ports;
 
 
 
@@ -68,15 +68,13 @@ private:
 	void handlePop(NoCPopMsg* msg);
 	void deliver(); // Send all pending packets that we can send
 
-	FlatPort* requestPort(int portId);
 	bool hasData();
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage* msg);
 
 public:
-
-    FlatPort* getAdjacent(cGate *g);
+    FlatPortIfc* requestPort(int portId);
 
     void sendCredits(int ip, int otherVC, int numFlits);
 

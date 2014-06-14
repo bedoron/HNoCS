@@ -29,24 +29,44 @@ class CentSchedRouter;
 
 enum vcState { FREE, INTERNALY_TAKEN, EXTERNALY_TAKEN };
 
+class FlatPortIfc;
+
 struct vc_t {
    int id;
    int credit;
    bool delivering; // Is it currently delivering data, relevant only is state is not free
    int pktId;
-   FlatPort *outPort;
+   FlatPortIfc *outPort;
    int outVC;
    int pipelineLatency;
    queue<NoCFlitMsg*> flits;
    vcState state;
 };
 
-class FlatPort {
-    vector<FlatPort*> &ports; // ports[id] is me!
+class FlatPortIfc {
+public:
+    virtual vc_t* acceptExternal(NoCFlitMsg* msg) = 0;
+    virtual vc_t* acceptExternal(NoCCreditMsg* msg) = 0;
+
+    virtual vc_t* acceptInternal(NoCFlitMsg* msg) = 0;
+    virtual vc_t* acceptInternal(int vcNum, int credits) = 0;
+    virtual vector<vcState> getVCStates() = 0;
+
+    virtual void tickInner() = 0;
+    virtual void tickOuter() = 0;
+
+    virtual bool hasData() = 0;
+
+    virtual ~FlatPortIfc() {};
+};
+
+
+class FlatPort: public FlatPortIfc {
+    vector<FlatPortIfc*> &ports; // ports[id] is me!
     CentSchedRouter *router;
     cGate *gate;
     int routerId;
-    FlatPort *adjacent;
+    FlatPortIfc *adjacent;
     int id;
     int pipelineLatency;
     vector<vc_t> vcs;
@@ -55,27 +75,33 @@ class FlatPort {
     int outerActiveVc;
 
     bool vcCanAccept(vc_t *vc, NoCFlitMsg* msg);
-    vc_t* acceptFlit(FlatPort *outPort, NoCFlitMsg* msg, vcState state);
-    void setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPort* outPort, vc_t& vc);
-    void electInnerActiveVc();
-    void electOuterActiveVc();
-
+    vc_t* acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state);
     void releaseVc(vc_t& vc);
+
+    void logIf(NoCFlitMsg *msg, int routerId, int portId, int vcId);
+    void logIf(NoCFlitMsg *msg, int flitId);
+
+protected:
+    virtual void electInnerActiveVc();
+    virtual void electOuterActiveVc();
+
+    virtual void setupExternalLinkIfNeeded(NoCFlitMsg* msg, vc_t& vc);
+    virtual void setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPortIfc* outPort, vc_t& vc);
+
 public:
+    FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency);
+    virtual vc_t* acceptExternal(NoCFlitMsg* msg);
+    virtual vc_t* acceptExternal(NoCCreditMsg* msg);
 
-    FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPort*> &allPorts, int numVcs, int pipelineLatency);
-    vc_t* acceptExternal(NoCFlitMsg* msg);
-    vc_t* acceptExternal(NoCCreditMsg* msg);
+    virtual vc_t* acceptInternal(NoCFlitMsg* msg);
+    virtual vc_t* acceptInternal(int vcNum, int credits);
+    virtual vector<vcState> getVCStates();
 
-    vc_t* acceptInternal(NoCFlitMsg* msg);
-    vc_t* acceptInternal(int vcNum, int credits);
-    vector<vcState> getVCStates();
-
-    void tickInner();
-    void tickOuter();
+    virtual void tickInner();
+    virtual void tickOuter();
 
 
-    bool hasData();
+    virtual bool hasData();
     virtual ~FlatPort();
 
 };

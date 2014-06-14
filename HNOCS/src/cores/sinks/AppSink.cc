@@ -63,7 +63,7 @@ void AppSink::initialize()
 
 void AppSink::sendCredit(int vc, int num) {
 	char credName[64];
-	sprintf(credName, "cred-%d-%d", vc, 1);
+	sprintf(credName, "sink-cred-%d-%d", vc, 1);
 	NoCCreditMsg *crd = new NoCCreditMsg(credName);
 	crd->setKind(NOC_CREDIT_MSG);
 	crd->setVC(vc);

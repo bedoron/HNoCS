@@ -17,8 +17,9 @@
 #include "Utils.h"
 #include <algorithm>
 #include "CentSchedRouter.h"
+#include "InterRouterMatchers.h"
 using std::find;
-
+using std::cerr;
 /**
  * router - the router which this port resides on.
  * gate - the gate which this port is connected to
@@ -26,7 +27,7 @@ using std::find;
  * allPort - a vector of all ports in the router which contains this port
  * numVCs - the total amount of VCs on this port
  */
-FlatPort::FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPort*> &allPorts, int numVcs, int pipelineLatency):
+FlatPort::FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency):
         ports(allPorts), router(router), gate(gate), routerId(router->getIndex()), id(gate->getIndex()),
         pipelineLatency(pipelineLatency) {
     innerActiveVc = 0;
@@ -50,12 +51,24 @@ vc_t* FlatPort::acceptExternal(NoCCreditMsg* msg) {
 
     vc_t &vc = vcs[msg->getVC()];
 
-    if(vc.state == INTERNALY_TAKEN) {
-        throw cRuntimeError("Accepted credit on a VC which is internally taken.");
-    }
-
     vc.credit += msg->getFlits();
     return &vc;
+    class FlatPortIfc {
+    public:
+        virtual vc_t* acceptExternal(NoCFlitMsg* msg) = 0;
+        virtual vc_t* acceptExternal(NoCCreditMsg* msg) = 0;
+
+        virtual vc_t* acceptInternal(NoCFlitMsg* msg) = 0;
+        virtual vc_t* acceptInternal(int vcNum, int credits) = 0;
+        virtual vector<vcState> getVCStates() = 0;
+
+        virtual void tickInner() = 0;
+        virtual void tickOuter() = 0;
+
+        virtual bool hasData() = 0;
+
+        virtual ~FlatPortIfc() {};
+    };
 }
 
 vc_t* FlatPort::acceptExternal(NoCFlitMsg* msg) {
@@ -76,16 +89,15 @@ vector<vcState> FlatPort::getVCStates() {
 }
 
 bool FlatPort::vcCanAccept(vc_t *vc, NoCFlitMsg* msg) {
-    bool canAccept =
-            ((Utils::isHead(msg) && vc->state==FREE) ||
-             (!Utils::isHead(msg) && vc->pktId==msg->getPktId())) && (vc->credit!=0);
+    bool canAccept = (Utils::isHead(msg) && vc->state==FREE) && (vc->credit!=0);
+    canAccept |= (!Utils::isHead(msg) && vc->pktId==msg->getPktId()) && (vc->credit!=0);
     return canAccept;
 }
 
 /**
  * link vc to another vc on outPort.
  */
-void FlatPort::setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPort* outPort, vc_t& vc) {
+void FlatPort::setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPortIfc* outPort, vc_t& vc) {
     if (Utils::isHead(msg) && (vc.outVC==-1) && (--vc.pipelineLatency == 0)) {
         // we need to setup a channel because it wasn't setup
         vc.pipelineLatency = pipelineLatency;
@@ -126,35 +138,48 @@ void FlatPort::tickInner() {
 
     if((vc.state == EXTERNALY_TAKEN) && !vc.flits.empty()) { // We have a sendable packet
         NoCFlitMsg *msg = vc.flits.front();
-        FlatPort *outPort = vc.outPort;
+        FlatPortIfc *outPort = vc.outPort;
 
         setupInternalLinkIfNeeded(msg, outPort, vc);
 
         if(!Utils::isHead(msg) && (vc.outVC == -1)) {
-            throw new cRuntimeError("Head is not in Q and link wasn't setup");
+            throw cRuntimeError("Head is not in Q and link wasn't setup");
         }
 
         // Channel + Credits are available
         if((vc.outVC != -1) && (vc.credit > 0)) {
             vc.flits.pop();
+            int prevVc = vc.id;
 
-            inPortFlitInfo *oldInfo = Utils::getFlitInfo(msg);
+            if((id!=4)) { // Core port internal doesn't have an intial flit info
+                inPortFlitInfo *oldInfo = Utils::getFlitInfo(msg);
+                prevVc = oldInfo->inVC;
+                delete oldInfo;
+            }
+
             inPortFlitInfo *newInfo = new inPortFlitInfo(id, vc.id);
-
-            int prevVc = oldInfo->inVC;
-            delete oldInfo;
 
             msg->setControlInfo(newInfo);
             msg->setVC(vc.outVC);
             outPort->acceptInternal(msg);
 
-            router->sendCredits(id, prevVc, 1);
             --vc.credit;
 
             if(Utils::isTail(msg)) {
                 releaseVc(vc);
             }
+
+            router->sendCredits(id, prevVc, 1);
         }
+    }
+}
+
+void FlatPort::setupExternalLinkIfNeeded(NoCFlitMsg* msg, vc_t& vc) {
+    if (Utils::isHead(msg) && (vc.outVC == -1)) {
+        InterRouterMatcher *matcher = InterRouterMatchers::build(router, gate, vc);
+        vc.outVC = matcher->getFreeVC();
+        vc.pipelineLatency = pipelineLatency;
+        delete matcher;
     }
 }
 
@@ -165,53 +190,54 @@ void FlatPort::tickOuter() {
     if((vc.state == INTERNALY_TAKEN) && !vc.flits.empty()) {
         NoCFlitMsg *msg = vc.flits.front();
 
-        FlatPort *adjPort = router->getAdjacent(gate);
-
         // Setup link here
-        if(Utils::isHead(msg) && (vc.outVC == -1)) {
-            vc.pipelineLatency = pipelineLatency;
-            vector<vcState> states = adjPort->getVCStates();
-            unsigned int outVCId = find(states.begin(), states.end(), FREE) - states.begin();
-            if (outVCId != states.size()) {
-                vc.outVC = outVCId;
-            }
-        }
+        setupExternalLinkIfNeeded(msg, vc);
 
         if(!Utils::isHead(msg) && (vc.outVC == -1)) {
-            throw new cRuntimeError("Head is not in Q and link wasn't setup");
+            throw cRuntimeError("Head is not in Q and link wasn't setup");
         }
 
         if((vc.outVC != -1)&&vc.credit) {
             if(!gate->getTransmissionChannel()->isBusy()) {
+                vc.flits.pop();
                 inPortFlitInfo *info = Utils::getFlitInfo(msg);
                 int originVC = info->inVC;
                 int originPort = info->outPort;
                 delete info;
                 info = new inPortFlitInfo(id, vc.id);
                 msg->setControlInfo(info);
+
                 ports[originPort]->acceptInternal(originVC, 1);
 
-                router->send(msg, "in$o", id);
                 vc.credit--;
 
                 if(Utils::isTail(msg)) {
                     releaseVc(vc);
                 }
+
+                router->send(msg, "out$o", id);
             }
         }
     }
 }
 
-vc_t* FlatPort::acceptFlit(FlatPort *outPort, NoCFlitMsg* msg, vcState state) {
+vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state) {
     vc_t *accepting = NULL;
     try {
         accepting = &(vcs.at(msg->getVC()));
     } catch(std::out_of_range e) { // Sanity
-        throw new cRuntimeError("vc %d doesn't exist on port %d", msg->getVC(), id);
+        throw cRuntimeError("vc %d doesn't exist on port %d", msg->getVC(), id);
     }
 
+    logIf(msg, 8, 4, 0);
+
     if(!vcCanAccept(accepting, msg)) {
-        throw new cRuntimeError("vc %d can't accept flit", accepting->id);
+        char buff[1024];
+        sprintf(buff, "router %d port %d vc %d state %s credits %d", routerId, id, accepting->id,(accepting->state==FREE)?"Free":((accepting->state==INTERNALY_TAKEN?"INTERNAL":"EXTERNAL")), accepting->credit);
+        std::cerr << "VC " << accepting->id << " on port "<< id<< " Router " << routerId << " Can't accept message \n";
+        std::cerr << msg << "\n";
+        std::cerr << "VC State: " << buff << "\n";
+        throw cRuntimeError("vc %d can't accept flit", accepting->id);
     }
 
     accepting->flits.push(msg);
@@ -237,7 +263,7 @@ void FlatPort::releaseVc(vc_t& vc) {
     vc.pipelineLatency = pipelineLatency;
 
     if(!vc.flits.empty()) {
-        throw new cRuntimeError("Releasing vc %d on port %d which is not empty", vc.id, id);
+        throw cRuntimeError("Releasing vc %d on port %d which is not empty", vc.id, id);
     }
 }
 
@@ -250,6 +276,22 @@ vc_t* FlatPort::acceptInternal(int vcNum, int credits) {
         throw cRuntimeError("Accessing Virtual channel which isn't in range");
     }
     return NULL;
+}
+
+void FlatPort::logIf(NoCFlitMsg *msg, int routerId, int portId, int vcId) {
+    if(this->routerId==routerId && id==portId && vcId==msg->getVC()) {
+        char buff[1024];
+        sprintf(buff, "[ByHW] r[%d] p[%d] vc[%d]: Packet %s [%ld]", routerId, portId, vcId, msg->getFullName(), msg->getId());
+        cerr << buff << " " << msg << "\n";
+    }
+}
+
+void FlatPort::logIf(NoCFlitMsg *msg, int flitId) {
+    if(msg->getId() == flitId) {
+        char buff[1024];
+        sprintf(buff, "[ById] r[%d] p[%d] vc[%d]: Packet %s [%ld]", routerId, id, msg->getVC(), msg->getFullName(), msg->getId());
+        cerr << buff << " " << msg << "\n";
+    }
 }
 
 FlatPort::~FlatPort() {

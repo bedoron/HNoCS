@@ -17,6 +17,7 @@
 
 #include "CentSchedRouter.h"
 #include "App_m.h"
+#include "DoubleBufferFlatPort.h"
 #include <iostream>
 using std::cerr;
 using std::out_of_range;
@@ -41,7 +42,7 @@ void CentSchedRouter::initialize() {
     tClk_s = 1.0/(dataRate*1000000.0/(8.0 * flitSize_B));
 
     if( tClk_s < 0 ) {
-        throw new cRuntimeError("Clock frequency of %f is negative " , tClk_s);
+        throw cRuntimeError("Clock frequency of %f is negative " , tClk_s);
     }
 
 	// calculate the routing information
@@ -57,10 +58,14 @@ void CentSchedRouter::initialize() {
 
 	ports.resize(numPorts);
 	for(int i = 0; i < numPorts; ++i) {
-	    cGate *g = gate("in$o", i);
-	    FlatPort *p = NULL;
+	    cGate *g = gate("out$o", i);
+	    FlatPortIfc *p = NULL;
 	    if(g->isConnectedOutside()) {
-	        p = new FlatPort(this, g, ports, numVCs, pipelineDepth);
+	        if(i==corePort) {
+	            p = new DoubleBufferFlatPort(this, g, ports, numVCs, pipelineDepth);
+	        } else {
+	            p = new FlatPort(this, g, ports, numVCs, pipelineDepth);
+	        }
 	    }
 	    ports[i] = p;
 
@@ -82,7 +87,7 @@ void CentSchedRouter::sendCredits(int ip, int otherVC, int numFlits) {
 	<< " credits on VC=" << 0 << endl;
 
 	char credName[64];
-	sprintf(credName, "cred-%d-%d", 0, numFlits);
+	sprintf(credName, "cred-%d-%d-%d", ip, otherVC, numFlits);
 	NoCCreditMsg *crd = new NoCCreditMsg(credName);
 	crd->setKind(NOC_CREDIT_MSG);
 	crd->setVC(otherVC);
@@ -222,102 +227,23 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 }
 
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
-    if(id==8) {
-        cerr << "123\n";
-    }
 
     if (hasData() && (!popMsg->isScheduled())) {
         scheduleAt(simTime() + tClk_s, popMsg);
     }
 
-    if(id == 8) {
-        cerr << "Router 8!\n";
-    }
-
-
     for(int i=0; i < numPorts; ++i) {
         if(ports[i] != NULL)
             ports[i]->tickInner();
     }
+
     // Maintain this order !
     for(int i=0; i < numPorts; ++i) {
         if(ports[i] != NULL)
-         ports[i]->tickOuter();
+            ports[i]->tickOuter();
     }
 }
 
-/**
- * Deliver flits for each gate that has flits to send. using winner-takes-all method.
- * This function is being called for each TICK in the system.
- */
-//void CentSchedRouter::deliver() {
-//    // Iterate all in-ports and try to deliver messages. this method implements winner-takes-all method
-//    for(unsigned int ip = 0; ip < m_ports.size(); ++ip) {
-//        if(!m_ports[ip].hasElectedVC()) { // Try to elect a VC
-//            m_ports[ip].electVC();
-//        }
-//
-//        if(m_ports[ip].hasElectedVC()) { // If we have an elected VC, send stuff
-//            struct vc_t &vc = m_ports[ip].getElectedVC();
-//            NoCFlitMsg *msg = vc.m_flits.front();
-//            int swOutPortIdx = OPCalc(msg); // Get output port which would reach the flit's destination
-//            bool linked = isLinked(vc);
-//
-//            if(!linked) {
-//                linked = tryToLink(vc, swOutPortIdx);
-//            }
-//
-//            if(linked) {
-//                if(vc.canRelease()) {
-//                    bool busy = this->gate("out$o", swOutPortIdx)->getTransmissionChannel()->isBusy();
-//                    if(!busy) {
-//                        msg = vc.release();
-//                        int prevVC = msg->getVC();
-//                        msg->setVC(vc.m_linkedTo->m_id);
-//                        int incommingPort = msg->getArrivalGate()->getIndex();
-//
-//                        sendCredits(incommingPort,prevVC, 1);
-//                        send(msg, "out$o", swOutPortIdx);
-//                    }
-//                }
-//            } else {
-//                continue;
-//            }
-//
-//
-////            if(vc.canRelease()) {
-////                NoCFlitMsg *msg = vc.m_flits.front();
-////                int swOutPortIdx = OPCalc(msg); // Get output port which would reach the flit's destination
-////                bool busy = this->gate("out$o", swOutPortIdx)->getTransmissionChannel()->isBusy();
-////                if(busy) {
-//////                    cerr << "Channel busy, skipping round\n";
-////                } else {
-////                    msg = vc.release();
-////                    int prevVC = msg->getVC();
-////                    int incommingPort = msg->getArrivalGate()->getIndex();
-////
-////                    msg->setVC(vc.m_id);
-////
-//////                    const char* objType = msg->getArrivalGate()->getPreviousGate()->getOwnerModule()->getClassName();
-//////                    if(strcmp("CentSchedRouter", objType)==0) {
-//////                        CentSchedRouter* rt = (CentSchedRouter*)msg->getArrivalGate()->getPreviousGate()->getOwnerModule();
-//////                        int fromPort = msg->getArrivalGate()->getPreviousGate()->getIndex();
-//////                        if(rt->getIndex()==7 && fromPort==1 && prevVC==0) {
-//////                            cerr << "router["<< getIndex() <<"]["<< ip <<"]["<< vc.m_id <<"] Flit: " << msg << " " << msg->getId()<<" **\n";
-//////                        }
-//////                    }
-//////
-//////                    if(msg->getId() == 179) {
-//////                        cerr << vc.m_credits << "\n";
-//////                    }
-//////
-////                    sendCredits(incommingPort,prevVC, 1);
-////                    send(msg, "out$o", swOutPortIdx);
-////                }
-////            }
-//        }
-//    }
-//}
 
 void CentSchedRouter::handleCredit(NoCCreditMsg* msg) {
     ports[msg->getArrivalGate()->getIndex()]->acceptExternal(msg);
@@ -366,31 +292,17 @@ void CentSchedRouter::handleMessage(cMessage *msg) {
     }
 }
 
-FlatPort* CentSchedRouter::getAdjacent(cGate *g) {
-    if(!g->isConnectedOutside()) {
-        throw cRuntimeError("Requesting adjacent port when gate %d is disconnected", g->getIndex());
-    }
-
-    CentSchedRouter *router = (CentSchedRouter*)(g->getPathEndGate()->getOwnerModule());
-    int connectedGate = g->getPathEndGate()->getIndex();
-
-    return router->requestPort(connectedGate);
-}
-
-FlatPort* CentSchedRouter::requestPort(int portId) {
-    FlatPort *p = NULL;
+FlatPortIfc* CentSchedRouter::requestPort(int portId) {
+    FlatPortIfc *p = NULL;
     try {
         p = ports.at(portId);
     } catch (std::out_of_range e) {
-        throw new cRuntimeError("Port %d doesn't exit");
+        throw cRuntimeError("Port %d doesn't exit");
     }
     return p;
 }
 
 bool CentSchedRouter::hasData() {
-    if(id==8) {
-        cerr << "Router8 has data\n";
-    }
     bool data = false;
     for(int port = 0; (port < numPorts) && (data == false); ++port) {
         data |= (ports[port]==NULL)?false:ports[port]->hasData();
@@ -400,4 +312,7 @@ bool CentSchedRouter::hasData() {
 
 CentSchedRouter::~CentSchedRouter() {
     cancelAndDelete(popMsg);
+    for(int i=0;i < numPorts; ++i) {
+        delete ports[i];
+    }
 }
