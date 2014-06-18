@@ -35,15 +35,10 @@ DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate,
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCFlitMsg* msg) {
-//    cerr << "Accepting message " << msg->getFullName() << " on router " << routerId << " port " << id << "\n";
     return externalAcceptor->acceptExternal(msg);
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCCreditMsg* msg) {
-//    std::cerr << msg->getArrivalGate()->getPathStartGate()->getOwnerModule()->getFullName() << "\n";
-//    std::cerr << "Credit's origin: "<< msg->getFullName() << " credits: " << msg->getFlits() << "\n";
-//    cerr << "External credit msg \n";
-
     if(strstr(msg->getFullName(), "[EXT]")!=NULL) {
         return externalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
     } else {
