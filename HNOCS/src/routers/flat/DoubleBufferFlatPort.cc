@@ -80,3 +80,8 @@ DoubleBufferFlatPort::~DoubleBufferFlatPort() {
     delete internalAcceptor;
     delete externalAcceptor;
 }
+
+bool DoubleBufferFlatPort::reserveVC(int int1) {
+    // not connected to anything...
+    return true;
+}

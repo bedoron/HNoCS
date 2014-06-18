@@ -30,7 +30,7 @@ simple CentSchedRouter like hnocs.routers.Router_Ifc
         int columns;
         int dataRate = 16000; // 16 Gigabits per second - speed is in MBps
         int flitsPerVC;
-        int numVCs = 1;
+        int numVCs = default(1);
         int flitSize @unit(byte);   // flitSize [bytes]
         int pipelineDepth = default(1);
         string coreType;

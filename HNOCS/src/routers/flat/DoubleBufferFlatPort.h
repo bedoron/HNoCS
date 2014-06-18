@@ -36,6 +36,7 @@ public:
     void tickInner();
     void tickOuter();
 
+    bool reserveVC(int);
     bool hasData();
     virtual ~DoubleBufferFlatPort();
 };

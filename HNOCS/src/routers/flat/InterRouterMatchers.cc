@@ -57,5 +57,11 @@ int InterRouterRouterMatcher::getFreeVC() {
     vector<vcState> states = requestee->requestPort(connectedGate)->getVCStates();
     unsigned int outVCId = find(states.begin(), states.end(), FREE)
             - states.begin();
-    return (outVCId==states.size())?-1:outVCId;
+    int selectedVC = (outVCId==states.size())?-1:outVCId;
+
+    if(selectedVC != -1) {
+        requestee->requestPort(connectedGate)->reserveVC(selectedVC);
+    }
+
+    return selectedVC;
 }

@@ -265,8 +265,9 @@ void L2::handleDramResp(CMPMsg *dramResp)	// TODO: FIX THIS FUNCTION
 			SessionMeta *original = ResponseDB::getInstance()->find(req);
 			assert(respMeta != 0);
 			assert(original != 0);
-			assert(original == respMeta);
-			respMeta->addResponse(resp->getId());
+			//assert(original == respMeta);
+			//respMeta->addResponse(resp->getId());
+			original->addResponse(resp->getId());
 		}
 
 		cancelAndDelete(dramResp);

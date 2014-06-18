@@ -56,6 +56,7 @@ public:
     virtual void tickOuter() = 0;
 
     virtual bool hasData() = 0;
+    virtual bool reserveVC(int vcNum) = 0;
 
     virtual ~FlatPortIfc() {};
 };
@@ -82,6 +83,8 @@ class FlatPort: public FlatPortIfc {
     void logIf(NoCFlitMsg *msg, int flitId);
     void logIfRouter(NoCFlitMsg *msg, int routerId);
     void logIfRouterPort(NoCFlitMsg *msg, int routerId, int port);
+    void dumpVC(vc_t* vc);
+    void dumpAllVCs();
 
 protected:
     virtual void electInnerActiveVc();
@@ -104,6 +107,7 @@ public:
     virtual void tickInner();
     virtual void tickOuter();
 
+    virtual bool reserveVC(int vcNum);
 
     virtual bool hasData();
     virtual ~FlatPort();
