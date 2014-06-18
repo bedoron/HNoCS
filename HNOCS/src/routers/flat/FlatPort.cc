@@ -44,7 +44,6 @@ FlatPort::FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &a
 }
 
 vc_t* FlatPort::acceptExternal(NoCCreditMsg* msg) {
-
     if(msg->getArrivalGate()->getIndex()!=id) {
         throw cRuntimeError("Credit is not mine... [port %d router %d]", id, routerId);
     }
@@ -53,22 +52,6 @@ vc_t* FlatPort::acceptExternal(NoCCreditMsg* msg) {
 
     vc.credit += msg->getFlits();
     return &vc;
-    class FlatPortIfc {
-    public:
-        virtual vc_t* acceptExternal(NoCFlitMsg* msg) = 0;
-        virtual vc_t* acceptExternal(NoCCreditMsg* msg) = 0;
-
-        virtual vc_t* acceptInternal(NoCFlitMsg* msg) = 0;
-        virtual vc_t* acceptInternal(int vcNum, int credits) = 0;
-        virtual vector<vcState> getVCStates() = 0;
-
-        virtual void tickInner() = 0;
-        virtual void tickOuter() = 0;
-
-        virtual bool hasData() = 0;
-
-        virtual ~FlatPortIfc() {};
-    };
 }
 
 vc_t* FlatPort::acceptExternal(NoCFlitMsg* msg) {
@@ -92,6 +75,24 @@ bool FlatPort::vcCanAccept(vc_t *vc, NoCFlitMsg* msg) {
     bool canAccept = (Utils::isHead(msg) && vc->state==FREE) && (vc->credit!=0);
     canAccept |= (!Utils::isHead(msg) && vc->pktId==msg->getPktId()) && (vc->credit!=0);
     return canAccept;
+}
+
+void FlatPort::failIfCantAccept(vc_t* vc, NoCFlitMsg* msg) {
+    bool canAccept = vcCanAccept(vc, msg);
+    if (canAccept==false) {
+        std::stringstream buff;
+        buff << "\nFlit " << msg << " failed.\n";
+        buff << "VC " << routerId << "." << id << "." << vc->id <<" was taken ";
+        buff << ((vc->state==EXTERNALY_TAKEN)?"EXTERNALLY":(vc->state==FREE?"FREE":"INTERNALLY")) << " ";
+        buff << "by packet " << vc->pktId << " and had " << vc->credit << " credits";
+        cerr << buff.str() << "\n";
+        cerr << "Contents of VC: \n";
+        while(!(vc->flits.empty())) {
+            cerr << vc->flits.front() << "\n";
+            vc->flits.pop();
+        }
+        throw cRuntimeError("%s",buff.str().c_str());
+    }
 }
 
 /**
@@ -222,6 +223,8 @@ void FlatPort::tickOuter() {
 }
 
 vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state) {
+//    logIfRouterPort(msg, 14, 4);
+
     vc_t *accepting = NULL;
     try {
         accepting = &(vcs.at(msg->getVC()));
@@ -229,23 +232,25 @@ vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state)
         throw cRuntimeError("vc %d doesn't exist on port %d", msg->getVC(), id);
     }
 
-    logIf(msg, 8, 4, 0);
+//    logIf(msg, 8, 4, 0);
 
-    if(!vcCanAccept(accepting, msg)) {
-        char buff[1024];
-        sprintf(buff, "router %d port %d vc %d state %s credits %d", routerId, id, accepting->id,(accepting->state==FREE)?"Free":((accepting->state==INTERNALY_TAKEN?"INTERNAL":"EXTERNAL")), accepting->credit);
-        std::cerr << "VC " << accepting->id << " on port "<< id<< " Router " << routerId << " Can't accept message \n";
-        std::cerr << msg << "\n";
-        std::cerr << "VC State: " << buff << "\n";
-        throw cRuntimeError("vc %d can't accept flit", accepting->id);
-    }
+//    if(!vcCanAccept(accepting, msg)) {
+//        char buff[1024];
+//        sprintf(buff, "router %d port %d vc %d state %s credits %d", routerId, id, accepting->id,(accepting->state==FREE)?"Free":((accepting->state==INTERNALY_TAKEN?"INTERNAL":"EXTERNAL")), accepting->credit);
+//        std::cerr << "VC " << accepting->id << " on port "<< id<< " Router " << routerId << " Can't accept message \n";
+//        std::cerr << msg << "\n";
+//        std::cerr << "VC State: " << buff << "\n";
+//        failIfCantAccept(accepting, msg);
+//        //throw cRuntimeError("vc %d can't accept flit", accepting->id);
+//    }
+    failIfCantAccept(accepting, msg);
 
     accepting->flits.push(msg);
 
     // Flit acceptance logic
-    if(Utils::isHead(msg)) { // Initiate a new channel
+    if(Utils::isHead(msg) && (accepting->state==FREE)) {
         if(accepting->flits.size()!=1) {
-            throw cRuntimeError("Q wasn't empty when head was added");
+            throw cRuntimeError("VC channel was down but packets were found in the Q");
         }
         accepting->state = state;
         accepting->pktId = msg->getPktId();
@@ -253,18 +258,18 @@ vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state)
         accepting->outVC = -1;
         accepting->pipelineLatency = pipelineLatency;
     }
+
     return accepting;
 }
 
 void FlatPort::releaseVc(vc_t& vc) {
+    if(!vc.flits.empty()) {
+        throw cRuntimeError("Releasing vc %d on port %d which is not empty", vc.id, id);
+    }
     vc.state = FREE;
     vc.pktId = -1;
     vc.outPort = NULL;
     vc.pipelineLatency = pipelineLatency;
-
-    if(!vc.flits.empty()) {
-        throw cRuntimeError("Releasing vc %d on port %d which is not empty", vc.id, id);
-    }
 }
 
 vc_t* FlatPort::acceptInternal(int vcNum, int credits) {
@@ -273,7 +278,7 @@ vc_t* FlatPort::acceptInternal(int vcNum, int credits) {
         vc.credit += credits;
         return &vc;
     } catch (std::out_of_range e) {
-        throw cRuntimeError("Accessing Virtual channel which isn't in range");
+        throw cRuntimeError("Accessing Virtual channel %d on port %d which isn't in range or doesn't exist", vcNum, id);
     }
     return NULL;
 }
@@ -294,6 +299,13 @@ void FlatPort::logIf(NoCFlitMsg *msg, int flitId) {
     }
 }
 
+void FlatPort::logIfRouterPort(NoCFlitMsg* msg, int routerId, int port) {
+    if(port==id) {
+        logIfRouter(msg, routerId);
+    }
+}
+
+
 FlatPort::~FlatPort() {
 }
 
@@ -304,3 +316,13 @@ bool FlatPort::hasData() {
     }
     return data;
 }
+
+void FlatPort::logIfRouter(NoCFlitMsg* msg, int routerId) {
+    if(this->routerId==routerId) {
+        char buff[1024];
+        sprintf(buff, "[ByHW] r[%d] p[%d] vc[%d]: Packet %s [%ld]", routerId, id, msg->getVC(), msg->getFullName(), msg->getId());
+        cerr << buff << " " << msg << "\n";
+    }
+}
+
+

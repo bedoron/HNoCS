@@ -48,6 +48,20 @@ bool Utils::isHead(NoCFlitMsg* msg) {
         return info;
     }
 
+const char* Utils::getTypeName(NoCFlitMsg* msg) {
+    return getTypeName(*msg);
+}
+
+const char* Utils::getTypeName(NoCFlitMsg& msg) {
+    if(isHead(msg)) {
+        return "HEAD";
+    } else if (isTail(msg)) {
+        return "TAIL";
+    } else {
+        return "BODY";
+    }
+}
+
     bool Utils::hasFlitInfo(NoCFlitMsg* msg) {
         return msg->getControlInfo() != NULL;
     }

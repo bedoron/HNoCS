@@ -62,7 +62,7 @@ void CentSchedRouter::initialize() {
 	    FlatPortIfc *p = NULL;
 	    if(g->isConnectedOutside()) {
 	        if(i==corePort) {
-	            p = new DoubleBufferFlatPort(this, g, ports, numVCs, pipelineDepth);
+	            p = new DoubleBufferFlatPort(this, g, ports, numVCs, pipelineDepth, flitsPerVC);
 	        } else {
 	            p = new FlatPort(this, g, ports, numVCs, pipelineDepth);
 	        }

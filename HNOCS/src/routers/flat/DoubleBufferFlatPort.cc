@@ -14,23 +14,41 @@
 // 
 
 #include <DoubleBufferFlatPort.h>
+#include "SourceFlatPort.h"
 #include <iostream>
-using std::cerr;
 
-DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*>& allPorts, int numVcs, int pipelineLatency) {
+#include <string>
+using std::cerr;
+using std::string;
+
+DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*>& allPorts, int numVcs, int pipelineLatency, int flitsPerVC) {
     id = gate->getIndex();
     routerId = -1;
+    // Initialize internal acceptor because its not being bootstrapped
     internalAcceptor = new FlatPort(router,gate, allPorts, numVcs, pipelineLatency);
-    externalAcceptor = new FlatPort(router,gate, allPorts, numVcs, pipelineLatency);
+
+    for(int i=0; i < numVcs; ++i) {
+        internalAcceptor->acceptInternal(i, flitsPerVC);
+    }
+
+    externalAcceptor = new SourceFlatPort(router,gate, allPorts, numVcs, pipelineLatency);//new FlatPort(router,gate, allPorts, numVcs, pipelineLatency);
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCFlitMsg* msg) {
-    cerr << "Accepting message " << msg->getFullName() << " on router " << routerId << " port " << id << "\n";
+//    cerr << "Accepting message " << msg->getFullName() << " on router " << routerId << " port " << id << "\n";
     return externalAcceptor->acceptExternal(msg);
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCCreditMsg* msg) {
-    return internalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
+//    std::cerr << msg->getArrivalGate()->getPathStartGate()->getOwnerModule()->getFullName() << "\n";
+//    std::cerr << "Credit's origin: "<< msg->getFullName() << " credits: " << msg->getFlits() << "\n";
+//    cerr << "External credit msg \n";
+
+    if(strstr(msg->getFullName(), "[EXT]")!=NULL) {
+        return externalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
+    } else {
+        return internalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
+    }
 }
 
 vc_t* DoubleBufferFlatPort::acceptInternal(NoCFlitMsg* msg) {
@@ -38,6 +56,7 @@ vc_t* DoubleBufferFlatPort::acceptInternal(NoCFlitMsg* msg) {
 }
 
 vc_t* DoubleBufferFlatPort::acceptInternal(int vcNum, int credits) {
+//    cerr << "Internal credit msg \n";
     return internalAcceptor->acceptInternal(vcNum, credits);
 }
 

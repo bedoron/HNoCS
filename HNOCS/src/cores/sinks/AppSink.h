@@ -62,7 +62,7 @@ class AppSink : public cSimpleModule
 
 	std::vector<simtime_t> SoPFirstNetTime; // save the SoP First Trans time until EoP arrive
 
-	void sendCredit(int vc, int num);
+	void sendCredit(int vc, int num, const char* attach = NULL);
 	void handleDataMsg(AppFlitMsg *msg);
 	void handleAppCreditMsg(cMessage *msg);
 

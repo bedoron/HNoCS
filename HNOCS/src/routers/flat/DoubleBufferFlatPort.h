@@ -24,7 +24,7 @@ class DoubleBufferFlatPort: public FlatPortIfc {
     FlatPort *internalAcceptor;
     FlatPort *externalAcceptor;
 public:
-    DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency);
+    DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency, int flitsPerVC);
 
     vc_t* acceptExternal(NoCFlitMsg* msg);
     vc_t* acceptExternal(NoCCreditMsg* msg);

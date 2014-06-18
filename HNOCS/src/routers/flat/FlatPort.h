@@ -74,12 +74,14 @@ class FlatPort: public FlatPortIfc {
     int innerActiveVc;
     int outerActiveVc;
 
-    bool vcCanAccept(vc_t *vc, NoCFlitMsg* msg);
+    void failIfCantAccept(vc_t *vc, NoCFlitMsg* msg);
     vc_t* acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state);
-    void releaseVc(vc_t& vc);
+
 
     void logIf(NoCFlitMsg *msg, int routerId, int portId, int vcId);
     void logIf(NoCFlitMsg *msg, int flitId);
+    void logIfRouter(NoCFlitMsg *msg, int routerId);
+    void logIfRouterPort(NoCFlitMsg *msg, int routerId, int port);
 
 protected:
     virtual void electInnerActiveVc();
@@ -88,6 +90,8 @@ protected:
     virtual void setupExternalLinkIfNeeded(NoCFlitMsg* msg, vc_t& vc);
     virtual void setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPortIfc* outPort, vc_t& vc);
 
+    virtual bool vcCanAccept(vc_t *vc, NoCFlitMsg* msg);
+    virtual void releaseVc(vc_t& vc);
 public:
     FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency);
     virtual vc_t* acceptExternal(NoCFlitMsg* msg);

@@ -56,14 +56,17 @@ void AppSink::initialize()
 
 	// send the credits to the other size
 	for (int vc = 0; vc < numVCs; vc++)
-		sendCredit(vc, 100);
+		sendCredit(vc, 100, "EXT"); // TODO: This is stupid -- horriffic w/a
 
 	SoPEnd2EndLatencyHist.setName("SoP-E2E-Latency-Hist");
 }
 
-void AppSink::sendCredit(int vc, int num) {
-	char credName[64];
+void AppSink::sendCredit(int vc, int num, const char* attach) {
+	char credName[512];
 	sprintf(credName, "sink-cred-%d-%d", vc, 1);
+	if(attach != NULL) {
+	    sprintf(credName, "%s [%s]", credName, attach);
+	}
 	NoCCreditMsg *crd = new NoCCreditMsg(credName);
 	crd->setKind(NOC_CREDIT_MSG);
 	crd->setVC(vc);
@@ -73,7 +76,7 @@ void AppSink::sendCredit(int vc, int num) {
 
 void AppSink::handleDataMsg(AppFlitMsg *flit) {
 	int vc = flit->getVC();
-	sendCredit(vc, 1);
+	sendCredit(vc, 1, flit->getFullName());
 
 	// some statistics
 	if (simTime() > statStartTime) {

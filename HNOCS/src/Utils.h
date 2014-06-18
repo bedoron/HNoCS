@@ -24,6 +24,8 @@ public:
     static bool isTail(NoCFlitMsg *msg);
     static bool isHead(NoCFlitMsg& msg);
     static bool isTail(NoCFlitMsg& msg);
+    static const char* getTypeName(NoCFlitMsg *msg);
+    static const char* getTypeName(NoCFlitMsg& msg);
 
     static inPortFlitInfo* getFlitInfo(NoCFlitMsg* msg);
     static bool hasFlitInfo(NoCFlitMsg* msg);

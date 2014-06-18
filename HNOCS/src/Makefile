@@ -63,6 +63,7 @@ OBJS = \
     $O/cores/sources/AppSrc.o \
     $O/cores/sources/PktFifoSrc.o \
     $O/routers/flat/InterRouterMatchers.o \
+    $O/routers/flat/SourceFlatPort.o \
     $O/routers/flat/CentSchedRouter.o \
     $O/routers/flat/FlatPort.o \
     $O/routers/flat/DoubleBufferFlatPort.o \
@@ -298,6 +299,7 @@ $O/routers/flat/DoubleBufferFlatPort.o: routers/flat/DoubleBufferFlatPort.cc \
 	Utils.h \
 	routers/flat/DoubleBufferFlatPort.h \
 	routers/flat/FlatPort.h \
+	routers/flat/SourceFlatPort.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/flat/FlatPort.o: routers/flat/FlatPort.cc \
 	App_m.h \
@@ -318,6 +320,15 @@ $O/routers/flat/InterRouterMatchers.o: routers/flat/InterRouterMatchers.cc \
 	routers/flat/FlatPort.h \
 	routers/flat/InterRouterMatcher.h \
 	routers/flat/InterRouterMatchers.h \
+	routers/hier/FlitMsgCtrl.h
+$O/routers/flat/SourceFlatPort.o: routers/flat/SourceFlatPort.cc \
+	App_m.h \
+	CMP_m.h \
+	NoCs_m.h \
+	Utils.h \
+	routers/flat/CentSchedRouter.h \
+	routers/flat/FlatPort.h \
+	routers/flat/SourceFlatPort.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/hier/PredictionObject.o: routers/hier/PredictionObject.cc
 $O/routers/hier/Predictor.o: routers/hier/Predictor.cc \
