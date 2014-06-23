@@ -229,6 +229,18 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 	    throw cRuntimeError("Flit arrived on a disconnected port :(");
 	}
 
+	bool tagged = ResponseDB::getInstance()->exists(msg->getId());
+    if (tagged) {
+        SessionMeta* meta = ResponseDB::getInstance()->find(msg->getId());
+        AppFlitMsg* moomsg = dynamic_cast<AppFlitMsg*>(msg);
+
+        if (moomsg->getPktIdx() == 0) { // This is the first flit of the AppMsg packet
+            meta->addRouter(msg, this->getIndex());
+            meta->addOutPort(OPCalc(msg));
+            meta->addInPort(msg->getArrivalGate()->getIndex());
+        }
+    }
+
 	ports[inPort]->acceptExternal(msg);
 }
 
@@ -242,7 +254,6 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
         if(ports[i] != NULL)
             ports[i]->tickInner();
     }
-
     // Maintain this order !
     for(int i=0; i < numPorts; ++i) {
         if(ports[i] != NULL)
@@ -261,7 +272,7 @@ int CentSchedRouter::OPCalc(NoCFlitMsg* msg) {
     dy = msg->getDstId() / numCols;
     dx = msg->getDstId() % numCols;
     int swOutPortIdx = -1;
-    bool tagged = ResponseDB::getInstance()->exists(msg->getId());
+
     bool response = ResponseDB::getInstance()->isResponse(msg->getId());
     // Select routing as needed
     if (response) {
@@ -290,75 +301,11 @@ int CentSchedRouter::OPCalc(NoCFlitMsg* msg) {
         }
     }
 
-//    if ((dx == rx) && (dy == ry)) {
-//        swOutPortIdx = corePort;
-//    } else if (dy > ry) {
-//        swOutPortIdx = northPort;
-//    } else if (dy < ry) {
-//        swOutPortIdx = southPort;
-//    } else if (dx > rx) {
-//        swOutPortIdx = eastPort;
-//    } else {
-//        swOutPortIdx = westPort;
-//    }
-
     if(swOutPortIdx<0) {
         throw cRuntimeError("Dead end routing");
     }
 
-    if (tagged) {
-        //int srcPort = boundPort;//getIdxOfSwPortConnectedToPort(getParentModule());
-        int srcPort = msg->getArrivalGate()->getIndex();
-        SessionMeta* meta = ResponseDB::getInstance()->find(msg->getId());
-        cModule* router = this;
-        AppFlitMsg* moomsg = dynamic_cast<AppFlitMsg*>(msg);
-        // This is the first flit of the NoC packet
-        if (moomsg->getPktIdx() == 0) {
-            meta->addRouter(msg, router->getIndex());
-            meta->addOutPort(swOutPortIdx);
-            meta->addInPort(srcPort);
-        }
-    }
-
     return swOutPortIdx;
-
-/*
-    int dx, dy;
-    dy = msg->getDstId() / numCols;
-    dx = msg->getDstId() % numCols;
-    int swOutPortIdx = -1;
-    if ((dx == rx) && (dy == ry)) {
-        swOutPortIdx = corePort;
-    } else if (dx > rx) {
-        swOutPortIdx = eastPort;
-    } else if (dx < rx) {
-        swOutPortIdx = westPort;
-    } else if (dy > ry) {
-        swOutPortIdx = northPort;
-    } else {
-        swOutPortIdx = southPort;
-    }
-
-    if (swOutPortIdx < 0) {
-        throw cRuntimeError("Routing dead end at %s (%d,%d) "
-            "for destination %d (%d,%d)", getFullPath().c_str(), rx, ry,
-                msg->getDstId(), dx, dy);
-    }
-
-    SessionMeta *session = ResponseDB::getInstance()->find(msg->getId());
-    if(session != NULL) {
-        if(session->isResponse(msg->getId()))
-            cerr << "RESP ON " << getIndex() << "\n";
-        else if(session->isRequest(msg->getId())) {
-            cerr << "REQ ON " << getIndex() << "\n";
-        } else {
-            cerr << "UNKNOWN ON "<< getIndex() << "\n";
-        }
-    }
-
-
-    return swOutPortIdx;
-    */
 }
 
 void CentSchedRouter::handleMessage(cMessage *msg) {
@@ -393,6 +340,14 @@ bool CentSchedRouter::hasData() {
         data |= (ports[port]==NULL)?false:ports[port]->hasData();
     }
     return data;
+}
+
+void CentSchedRouter::callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPortIfc* outPort, vc_t& inVC) {
+    if(inVC.pipelineLatency) {
+        --inVC.pipelineLatency;
+    } else {
+        inVC.pipelineLatency = 0;
+    }
 }
 
 CentSchedRouter::~CentSchedRouter() {

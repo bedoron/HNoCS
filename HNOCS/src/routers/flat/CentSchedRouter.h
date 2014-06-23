@@ -66,7 +66,7 @@ private:
 	void handleCredit(NoCCreditMsg* msg);
 	void handleFlitMsg(NoCFlitMsg* msg);
 	void handlePop(NoCPopMsg* msg);
-	void deliver(); // Send all pending packets that we can send
+//	void deliver(); // Send all pending packets that we can send
 
 	bool hasData();
 protected:
@@ -77,6 +77,7 @@ public:
     FlatPortIfc* requestPort(int portId);
 
     void sendCredits(int ip, int otherVC, int numFlits);
+    void callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPortIfc* outPort, vc_t& inVC);
 
     int OPCalc(NoCFlitMsg* msg);
     ~CentSchedRouter();

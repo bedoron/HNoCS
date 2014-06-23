@@ -108,14 +108,17 @@ void FlatPort::failIfCantAccept(vc_t* vc, NoCFlitMsg* msg) {
  * link vc to another vc on outPort.
  */
 void FlatPort::setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPortIfc* outPort, vc_t& vc) {
-    if (Utils::isHead(msg) && (vc.outVC==-1) && (--vc.pipelineLatency == 0)) {
-        // we need to setup a channel because it wasn't setup
-        vc.pipelineLatency = pipelineLatency;
-        vector<vcState> states = outPort->getVCStates();
-        unsigned int outVCId = find(states.begin(), states.end(), FREE) - states.begin();
-        if (outVCId != states.size()) {
-            vc.outVC = outVCId;
-            outPort->reserveVC(outVCId, INTERNALY_TAKEN);
+    if (Utils::isHead(msg) && (vc.outVC==-1)) {
+        router->callPredictor(msg, this, outPort, vc);
+        if(vc.pipelineLatency == 0) {
+            // we need to setup a channel because it wasn't setup
+            vc.pipelineLatency = pipelineLatency;
+            vector<vcState> states = outPort->getVCStates();
+            unsigned int outVCId = find(states.begin(), states.end(), FREE) - states.begin();
+            if (outVCId != states.size()) {
+                vc.outVC = outVCId;
+                outPort->reserveVC(outVCId, INTERNALY_TAKEN);
+            }
         }
     }
 }
@@ -160,7 +163,7 @@ void FlatPort::tickInner() {
         // Channel + Credits are available
         if((vc.outVC != -1)) {
             //vc.flits.pop();
-            int prevVc = vc.id;
+//            int prevVc = vc.id;
 
             if((id==4)&&(msg->getControlInfo()==NULL)) { // Core port internal doesn't have an intial flit info
                 inPortFlitInfo *newInfo = new inPortFlitInfo(id, vc.id);
@@ -229,7 +232,7 @@ void FlatPort::tickOuter() {
             }
 
             int originVC = info->inVC;
-            int originPort = info->outPort;
+//            int originPort = info->outPort;
             delete info;
             // Info will hold the port id + vc id which this message came from
             info = new inPortFlitInfo(id, vc.id);
