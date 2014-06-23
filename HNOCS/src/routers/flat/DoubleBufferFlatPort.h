@@ -42,6 +42,7 @@ public:
     virtual bool hasCredits(int vc);
 
     virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
+    virtual int getId() { return id; }
 
     virtual ~DoubleBufferFlatPort();
 };

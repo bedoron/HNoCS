@@ -40,6 +40,7 @@ FlatPort::FlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &a
         vcs[i].outVC = -1;
         vcs[i].credit = 0;
         vcs[i].pipelineLatency = pipelineLatency;
+        vcs[i].predicted = false;
     }
 }
 
@@ -110,7 +111,7 @@ void FlatPort::failIfCantAccept(vc_t* vc, NoCFlitMsg* msg) {
 void FlatPort::setupInternalLinkIfNeeded(NoCFlitMsg* msg, FlatPortIfc* outPort, vc_t& vc) {
     if (Utils::isHead(msg) && (vc.outVC==-1)) {
         router->callPredictor(msg, this, outPort, vc);
-        if(vc.pipelineLatency == 0) {
+        if(--vc.pipelineLatency < 0) {
             // we need to setup a channel because it wasn't setup
             vc.pipelineLatency = pipelineLatency;
             vector<vcState> states = outPort->getVCStates();
@@ -265,6 +266,7 @@ void FlatPort::handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, Fl
     accepting->outPort = outPort;
     accepting->outVC = -1;
     accepting->pipelineLatency = pipelineLatency;
+    accepting->predicted = false;
 }
 
 vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state) {
@@ -300,6 +302,7 @@ void FlatPort::releaseVc(vc_t& vc) {
     vc.pktId = -1;
     vc.outPort = NULL;
     vc.pipelineLatency = pipelineLatency;
+    vc.predicted = false;
 }
 
 vc_t* FlatPort::acceptInternal(int vcNum, int credits) {
@@ -390,4 +393,6 @@ void FlatPort::logIfRouter(NoCFlitMsg* msg, int routerId) {
     }
 }
 
-
+int FlatPort::getId() {
+    return this->id;
+}

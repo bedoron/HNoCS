@@ -40,6 +40,7 @@ void SourceFlatPort::releaseVc(vc_t& vc) {
     }
     vc.outVC = -1;
     vc.pipelineLatency = pipelineLatency;
+    vc.predicted = false;
 }
 
 SourceFlatPort::~SourceFlatPort() {

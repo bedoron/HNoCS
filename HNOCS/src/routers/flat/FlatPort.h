@@ -34,7 +34,7 @@ class FlatPortIfc;
 struct vc_t {
    int id;
    int credit;
-   bool delivering; // Is it currently delivering data, relevant only is state is not free
+   bool predicted; // Is it currently delivering data, relevant only is state is not free
    int pktId;
    FlatPortIfc *outPort;
    int outVC;
@@ -63,6 +63,8 @@ public:
     virtual bool hasCredits(int vc) = 0;
 
     virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort) = 0;
+
+    virtual int getId()=0;
 
     virtual ~FlatPortIfc() {};
 };
@@ -120,6 +122,7 @@ public:
 
     virtual bool hasData();
     virtual ~FlatPort();
+    virtual int getId();
 
     void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
 };

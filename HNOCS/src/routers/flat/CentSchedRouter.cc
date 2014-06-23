@@ -40,7 +40,7 @@ void CentSchedRouter::initialize() {
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
 
-    unsigned int pipelineDepth = par("pipelineDepth"); //40; // TODO: get this as a parameter
+    int pipelineDepth = par("pipelineDepth"); //40; // TODO: get this as a parameter
     tClk_s = 1.0/(dataRate*1000000.0/(8.0 * flitSize_B));
 
     if( tClk_s < 0 ) {
@@ -343,11 +343,22 @@ bool CentSchedRouter::hasData() {
 }
 
 void CentSchedRouter::callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPortIfc* outPort, vc_t& inVC) {
-    if(inVC.pipelineLatency) {
-        --inVC.pipelineLatency;
-    } else {
-        inVC.pipelineLatency = 0;
+
+    ResponseDB* respDB = ResponseDB::getInstance();
+    bool predict = respDB->exists(msg->getId()) && respDB->isResponse(msg->getId()) && (!inVC.predicted);
+
+    // Random predictor proof of concept
+    if(predict) {
+        inVC.predicted = true;
+        if(rand()%2) {
+            inVC.pipelineLatency = 0;
+            cerr << "Router " << getIndex() << " predicted pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
+        } else {
+            cerr << "Router " << getIndex() << " missed pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
+        }
     }
+
+
 }
 
 CentSchedRouter::~CentSchedRouter() {

@@ -30,6 +30,7 @@ protected:
 public:
     SourceFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency);
     virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
+    virtual int getId() { return id; };
     virtual ~SourceFlatPort();
 };
 

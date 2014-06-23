@@ -57,6 +57,8 @@ private:
 
 	// my stuff
 	vector<FlatPortIfc*> ports;
+
+	unsigned int pipelineDepth;
 	bool finishInit;
 
 
