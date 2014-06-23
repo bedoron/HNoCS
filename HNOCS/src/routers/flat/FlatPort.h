@@ -49,14 +49,20 @@ public:
     virtual vc_t* acceptExternal(NoCCreditMsg* msg) = 0;
 
     virtual vc_t* acceptInternal(NoCFlitMsg* msg) = 0;
+
     virtual vc_t* acceptInternal(int vcNum, int credits) = 0;
+
     virtual vector<vcState> getVCStates() = 0;
 
     virtual void tickInner() = 0;
     virtual void tickOuter() = 0;
 
     virtual bool hasData() = 0;
-    virtual bool reserveVC(int vcNum) = 0;
+    virtual bool reserveVC(int vcNum, vcState intext) = 0;
+
+    virtual bool hasCredits(int vc) = 0;
+
+    virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort) = 0;
 
     virtual ~FlatPortIfc() {};
 };
@@ -102,16 +108,20 @@ public:
 
     virtual vc_t* acceptInternal(NoCFlitMsg* msg);
     virtual vc_t* acceptInternal(int vcNum, int credits);
+
+
     virtual vector<vcState> getVCStates();
 
     virtual void tickInner();
     virtual void tickOuter();
 
-    virtual bool reserveVC(int vcNum);
+    virtual bool reserveVC(int vcNum, vcState intext);
+    virtual bool hasCredits(int vc);
 
     virtual bool hasData();
     virtual ~FlatPort();
 
+    void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
 };
 
 #endif /* FLATPORT_H_ */

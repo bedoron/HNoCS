@@ -57,7 +57,7 @@ private:
 
 	// my stuff
 	vector<FlatPortIfc*> ports;
-
+	bool finishInit;
 
 
 	// fill in west... port indexes

@@ -22,6 +22,7 @@ Define_Module(AppSink);
 
 void AppSink::initialize()
 {
+    moduleId = getParentModule()->getIndex();
 	numVCs = par("numVCs");
 	numApps = gate("app$o",0)->size();
 
@@ -213,16 +214,20 @@ void AppSink::handleAppCreditMsg(cMessage* msg)
 	delete msg;
 }
 
+void AppSink::logMsg(int modId, AppFlitMsg* appMsg, const char* prefix) {
+    if (moduleId == modId) {
+        std::cerr << prefix << ":" << appMsg->getFullName() <<  " - (vc:" << appMsg->getVC()<<") "<< appMsg->getId() << "\n";
+    }
+}
+
 void AppSink::handleMessage(cMessage *msg)
 {
 	int msgType = msg->getKind();
 	if (msgType == NOC_CREDIT_MSG) {
 		handleAppCreditMsg((NoCCreditMsg*) msg);
 	} else if (msgType == NOC_FLIT_MSG) {
-	    if(getParentModule()->getIndex()==11) {
-//	        cerr << "Core 11\n";
-	    }
-		handleDataMsg((AppFlitMsg*) msg);
+//	    logMsg(1, (AppFlitMsg*) msg, "TO-SINK");
+	    handleDataMsg((AppFlitMsg*) msg);
 	} else {
 		throw cRuntimeError("-E- BUG - unknown message type %d", msgType);
 	}

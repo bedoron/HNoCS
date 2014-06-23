@@ -22,12 +22,14 @@ class SourceFlatPort: public FlatPort {
     CentSchedRouter *theRouter;
     int id;
     int pipelineLatency;
+    int routerId;
 
 protected:
     virtual bool vcCanAccept(vc_t *vc, NoCFlitMsg* msg);
     virtual void releaseVc(vc_t& vc);
 public:
     SourceFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency);
+    virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
     virtual ~SourceFlatPort();
 };
 

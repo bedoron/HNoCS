@@ -23,6 +23,7 @@ class DoubleBufferFlatPort: public FlatPortIfc {
     int routerId;
     FlatPort *internalAcceptor;
     FlatPort *externalAcceptor;
+    int msgs;
 public:
     DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*> &allPorts, int numVcs, int pipelineLatency, int flitsPerVC);
 
@@ -36,8 +37,12 @@ public:
     void tickInner();
     void tickOuter();
 
-    bool reserveVC(int);
+    bool reserveVC(int vcNum, vcState intext);
     bool hasData();
+    virtual bool hasCredits(int vc);
+
+    virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
+
     virtual ~DoubleBufferFlatPort();
 };
 

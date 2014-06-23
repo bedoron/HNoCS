@@ -167,11 +167,11 @@ void CoreL1::handleCreditMsg(NoCCreditMsg *msg) {
 		CMPMsg *out = (CMPMsg *) outQ.pop();
 		// 14/11/2012: check if this message should be logged
 
-		if(out->getRoundtrip()) {	// Tag this outgoing request
-			assert(ResponseDB::getInstance()->exists(out)==true);
-			SessionMeta *session = ResponseDB::getInstance()->find(out);
-			session->start(); // update time stamp
-		}
+//		if(out->getRoundtrip()) {	// Tag this outgoing request
+//			assert(ResponseDB::getInstance()->exists(out)==true);
+//			SessionMeta *session = ResponseDB::getInstance()->find(out);
+//			session->start(); // update time stamp
+//		}
 
 		EV << "-I- " << getFullPath() << " sending msg: " << out->getMsgId()
 			<< " to: " << out->getDstId() << endl;

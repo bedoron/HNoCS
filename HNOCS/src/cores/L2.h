@@ -44,6 +44,9 @@ public:
     cQueue hitReadReqQ;   // holds read requests waiting for hit latency
     cMessage *popMsg;     // schedule moved from hitReadReqQ to outQ
 
+
+    int moduleId;
+
 	void handleCreditMsg(NoCCreditMsg *msg);
 	void handleHitRead(CMPMsg *msg);
 	void handleMissRead(CMPMsg *msg);
@@ -57,6 +60,9 @@ public:
  protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+
+private:
+    void logMsg(int modId, CMPMsg* resp, const char* prefix);
 };
 
 #endif

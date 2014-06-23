@@ -79,6 +79,7 @@ void AppSrc::initialize() {
 	popMsg = new NoCPopMsg(popMsgName);
 	popMsg->setKind(NOC_POP_MSG);
 	dstIdHist.setName("dst-hist");
+    moduleId = this->getParentModule()->getIndex();
 }
 
 // return true if found any msg to arbitrate or false if no message or no change
@@ -108,6 +109,7 @@ bool AppSrc::arbitrate() {
 		for (int j = arbiterStarOnNextVCandApp; j<=numApps;j++){
 			int app = (curApp + j) % numApps;
 
+
 			// if there is an outstanding message
 			if (msgPerAppVC[app][vc]) {
 				curVC = vc;
@@ -132,6 +134,12 @@ bool AppSrc::arbitrate() {
 
 	EV << "-I- " << getFullPath() << " nothing to arbitrate" << endl;
 	return(false);
+}
+
+void AppSrc::logMsg(int modId, AppMsg* appMsg, const char* prefix) {
+    if (moduleId == modId) {
+        std::cerr << prefix << ":" << appMsg->getFullName() <<  " - "<< appMsg->getId() << "\n";
+    }
 }
 
 // send the FLIT out and schedule the next pop
@@ -199,6 +207,8 @@ void AppSrc::sendFlit(int vc) {
 			vcCurMsg[vc]->setBitLength(0);
 			vcCurMsg[vc]->setByteLength(0);
 			flit->encapsulate(vcCurMsg[vc]);
+			AppMsg *appMsg = vcCurMsg[vc];
+//            logMsg(1, appMsg, "SRC-RLS");
 			vcCurMsg[vc] = NULL;
 		}
 	} else {
@@ -216,6 +226,11 @@ void AppSrc::sendFlit(int vc) {
 
 void AppSrc::handleCreditMsg(NoCCreditMsg *msg) {
 	int vc = msg->getVC();
+	if(vc >= credits.size()) {
+	    const char *sender = msg->getArrivalGate()->getPathStartGate()->getOwnerModule()->getFullName();
+	    cerr << "VC " << vc << " " << sender<< " " << msg->getFullName() << "\n";
+	    throw cRuntimeError("Credit from %s to vc %d which doesn't exists",sender, vc );
+	}
 	int flits = msg->getFlits();
 	delete msg;
 	credits[vc] += flits;
@@ -227,6 +242,24 @@ void AppSrc::handleAppMsg(AppMsg *msg) {
 	int app= msg->getArrivalGate()->getIndex();
 
 	if (msgPerAppVC[app][vc]){
+	    AppMsg *pending = msgPerAppVC[app][vc];
+	    AppMsg *transmitting = vcCurMsg[vc];
+	    std::cerr << "******************************************\n";
+	    logMsg(1, msg, "ARRIVING");
+	    logMsg(1, pending, "PENDING");
+	    logMsg(1, transmitting, "TRANSMITTING");
+
+
+//	    AppMsg *appMsg = msgPerAppVC[app][vc];
+//	    cerr << "App message length in pkts: " << appMsg->getAppMsgLen() << "\n";
+//	    cerr << "Transmitter is occupying: " << (appMsg->getId()==vcCurMsg[vc]->getId()) << "\n";
+//	    cerr << "Transpimtter occupant App msg ID " << vcCurMsg[vc]->getId() << "\n";
+//	    cerr << "\t Pkts needed: " << vcCurMsg[vc]->getAppMsgLen() << "\n";
+//	    cerr << "\t Flits needed: " << vcCurMsg[vc]->getPktLength() << "\n";
+//	    cerr << "msg per app occupant " << appMsg->getId() << "\n";
+	    cerr << "VC Sent pkts so far: " << pktIdx[vc] << "\n";
+	    cerr << "VC Sent flits so far: " << flitIdx[vc] << "\n";
+	    cerr << "Available credits: " << credits[vc] << "\n";
 		throw cRuntimeError("-E- %s Writing to full msgPerAppVC[%d][%d] ",
 				getFullPath().c_str(),app,vc);
 	}

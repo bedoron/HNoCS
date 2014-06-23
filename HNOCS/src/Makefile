@@ -287,6 +287,8 @@ $O/routers/flat/CentSchedRouter.o: routers/flat/CentSchedRouter.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	Utils.h \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/DoubleBufferFlatPort.h \

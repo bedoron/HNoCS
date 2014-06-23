@@ -19,6 +19,7 @@
 #include "App_m.h"
 #include "DoubleBufferFlatPort.h"
 #include <iostream>
+#include "ResponseDB.h"
 using std::cerr;
 using std::out_of_range;
 
@@ -26,6 +27,7 @@ Define_Module(CentSchedRouter)
 ;
 
 void CentSchedRouter::initialize() {
+    finishInit = false;
     numPorts = gateSize("in");
 	numCols = par("columns");
 	id = par("id");
@@ -69,16 +71,19 @@ void CentSchedRouter::initialize() {
 	    }
 	    ports[i] = p;
 
-	    if(p!=NULL) {
+	    if(p!=NULL && (i!=corePort)) {
             for(int vc=0; vc < numVCs; ++vc) {
                 sendCredits(i, vc, flitsPerVC);
             }
 	    }
 	}
 
+	sendCredits(corePort, 0, flitsPerVC);
+
     popMsg = new cMessage("pop");
     popMsg->setKind(NOC_POP_MSG);
     popMsg->setSchedulingPriority(5);
+    finishInit = true;
 }
 
 	// send back a credit on the in port
@@ -87,7 +92,8 @@ void CentSchedRouter::sendCredits(int ip, int otherVC, int numFlits) {
 	<< " credits on VC=" << 0 << endl;
 
 	char credName[64];
-	sprintf(credName, "cred-%d-%d-%d", ip, otherVC, numFlits);
+	const char *prefix = (!finishInit)?"INIT ":"";
+	sprintf(credName, "%scred-%d-%d-%d", prefix, ip, otherVC, numFlits);
 	NoCCreditMsg *crd = new NoCCreditMsg(credName);
 	crd->setKind(NOC_CREDIT_MSG);
 	crd->setVC(otherVC);
@@ -255,6 +261,72 @@ int CentSchedRouter::OPCalc(NoCFlitMsg* msg) {
     dy = msg->getDstId() / numCols;
     dx = msg->getDstId() % numCols;
     int swOutPortIdx = -1;
+    bool tagged = ResponseDB::getInstance()->exists(msg->getId());
+    bool response = ResponseDB::getInstance()->isResponse(msg->getId());
+    // Select routing as needed
+    if (response) {
+        if ((dx == rx) && (dy == ry)) {
+            swOutPortIdx = corePort;
+        } else if (dy > ry) {
+            swOutPortIdx = northPort;
+        } else if (dy < ry) {
+            swOutPortIdx = southPort;
+        } else if (dx > rx) {
+            swOutPortIdx = eastPort;
+        } else {
+            swOutPortIdx = westPort;
+        }
+    } else {
+        if ((dx == rx) && (dy == ry)) {
+            swOutPortIdx = corePort;
+        } else if (dx > rx) {
+            swOutPortIdx = eastPort;
+        } else if (dx < rx) {
+            swOutPortIdx = westPort;
+        } else if (dy > ry) {
+            swOutPortIdx = northPort;
+        } else {
+            swOutPortIdx = southPort;
+        }
+    }
+
+//    if ((dx == rx) && (dy == ry)) {
+//        swOutPortIdx = corePort;
+//    } else if (dy > ry) {
+//        swOutPortIdx = northPort;
+//    } else if (dy < ry) {
+//        swOutPortIdx = southPort;
+//    } else if (dx > rx) {
+//        swOutPortIdx = eastPort;
+//    } else {
+//        swOutPortIdx = westPort;
+//    }
+
+    if(swOutPortIdx<0) {
+        throw cRuntimeError("Dead end routing");
+    }
+
+    if (tagged) {
+        //int srcPort = boundPort;//getIdxOfSwPortConnectedToPort(getParentModule());
+        int srcPort = msg->getArrivalGate()->getIndex();
+        SessionMeta* meta = ResponseDB::getInstance()->find(msg->getId());
+        cModule* router = this;
+        AppFlitMsg* moomsg = dynamic_cast<AppFlitMsg*>(msg);
+        // This is the first flit of the NoC packet
+        if (moomsg->getPktIdx() == 0) {
+            meta->addRouter(msg, router->getIndex());
+            meta->addOutPort(swOutPortIdx);
+            meta->addInPort(srcPort);
+        }
+    }
+
+    return swOutPortIdx;
+
+/*
+    int dx, dy;
+    dy = msg->getDstId() / numCols;
+    dx = msg->getDstId() % numCols;
+    int swOutPortIdx = -1;
     if ((dx == rx) && (dy == ry)) {
         swOutPortIdx = corePort;
     } else if (dx > rx) {
@@ -273,7 +345,20 @@ int CentSchedRouter::OPCalc(NoCFlitMsg* msg) {
                 msg->getDstId(), dx, dy);
     }
 
+    SessionMeta *session = ResponseDB::getInstance()->find(msg->getId());
+    if(session != NULL) {
+        if(session->isResponse(msg->getId()))
+            cerr << "RESP ON " << getIndex() << "\n";
+        else if(session->isRequest(msg->getId())) {
+            cerr << "REQ ON " << getIndex() << "\n";
+        } else {
+            cerr << "UNKNOWN ON "<< getIndex() << "\n";
+        }
+    }
+
+
     return swOutPortIdx;
+    */
 }
 
 void CentSchedRouter::handleMessage(cMessage *msg) {

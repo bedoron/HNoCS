@@ -23,7 +23,7 @@ using std::string;
 
 DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate, vector<FlatPortIfc*>& allPorts, int numVcs, int pipelineLatency, int flitsPerVC) {
     id = gate->getIndex();
-    routerId = -1;
+    routerId = ((cModule*)router)->getIndex();
     // Initialize internal acceptor because its not being bootstrapped
     internalAcceptor = new FlatPort(router,gate, allPorts, numVcs, pipelineLatency);
 
@@ -35,40 +35,83 @@ DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate,
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCFlitMsg* msg) {
-    return externalAcceptor->acceptExternal(msg);
+    try {
+        return externalAcceptor->acceptExternal(msg);
+    } catch (cRuntimeError ex) {
+        ex.prependMessage("acceptExt::DB-EXTERNAL:");
+        throw ex;
+    }
 }
 
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCCreditMsg* msg) {
     if(strstr(msg->getFullName(), "[EXT]")!=NULL) {
+     try {
         return externalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
+    } catch (cRuntimeError ex) {
+        ex.prependMessage("DB-EXTERNAL:");
+        throw ex;
+    }
     } else {
+        try {
         return internalAcceptor->acceptExternal(msg); //Sink's credit message goes to the internal acceptor
+    } catch (cRuntimeError ex) {
+        ex.prependMessage("DB-INTERNAL:");
+        throw ex;
+    }
     }
 }
 
 vc_t* DoubleBufferFlatPort::acceptInternal(NoCFlitMsg* msg) {
+ try {
     return internalAcceptor->acceptInternal(msg);
+} catch (cRuntimeError ex) {
+    ex.prependMessage("DB-INTERNAL:");
+    throw ex;
+}
 }
 
 vc_t* DoubleBufferFlatPort::acceptInternal(int vcNum, int credits) {
-//    cerr << "Internal credit msg \n";
-    return internalAcceptor->acceptInternal(vcNum, credits);
+ try{
+    return externalAcceptor->acceptInternal(vcNum, credits);
+} catch (cRuntimeError ex) {
+    ex.prependMessage("DB-EXTERNAL:");
+    throw ex;
+}
 }
 
 vector<vcState> DoubleBufferFlatPort::getVCStates() {
+ try {
     return internalAcceptor->getVCStates();
+} catch (cRuntimeError ex) {
+    ex.prependMessage("DB-INTERNAL:");
+    throw ex;
+}
 }
 
 void DoubleBufferFlatPort::tickInner() {
+ try {
     externalAcceptor->tickInner();
+} catch (cRuntimeError ex) {
+    ex.prependMessage("DB-EXTERNAL:");
+    throw ex;
+}
 }
 
 void DoubleBufferFlatPort::tickOuter() {
+    try{
     internalAcceptor->tickOuter();
+    } catch (cRuntimeError ex) {
+        ex.prependMessage("DB-INTERNAL:");
+        throw ex;
+    }
 }
 
 bool DoubleBufferFlatPort::hasData() {
     return internalAcceptor->hasData() || externalAcceptor->hasData();
+}
+
+bool DoubleBufferFlatPort::hasCredits(int vc) {
+    return internalAcceptor->hasCredits(vc);
 }
 
 DoubleBufferFlatPort::~DoubleBufferFlatPort() {
@@ -76,7 +119,11 @@ DoubleBufferFlatPort::~DoubleBufferFlatPort() {
     delete externalAcceptor;
 }
 
-bool DoubleBufferFlatPort::reserveVC(int int1) {
+bool DoubleBufferFlatPort::reserveVC(int vcNum, vcState intext) {
     // not connected to anything...
-    return true;
+    return internalAcceptor->reserveVC(vcNum, intext);
+}
+
+void DoubleBufferFlatPort::handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort) {
+    throw cRuntimeError("Dont use double buffer's flat port vc claim");
 }

@@ -19,14 +19,11 @@
 
 bool SourceFlatPort::vcCanAccept(vc_t* vc, NoCFlitMsg* msg) {
     return (vc->credit!=0);
-
-    // Fuck you, you piece of shit
-    //return ((vc->pktId==msg->getPktId()) || (Utils::isHead(msg) && (vc->state==FREE))) && (vc->credit!=0);
 }
 
 SourceFlatPort::SourceFlatPort(CentSchedRouter* router, cGate* gate,
         vector<FlatPortIfc*>& allPorts, int numVcs, int pipelineLatency): FlatPort(router, gate, allPorts, numVcs, pipelineLatency),
-                ports(allPorts), theRouter(router), id(gate->getIndex()), pipelineLatency(pipelineLatency) {
+                ports(allPorts), theRouter(router), id(gate->getIndex()), pipelineLatency(pipelineLatency), routerId(router->getIndex()) {
 }
 
 void SourceFlatPort::releaseVc(vc_t& vc) {
@@ -49,3 +46,8 @@ SourceFlatPort::~SourceFlatPort() {
     // TODO Auto-generated destructor stub
 }
 
+void SourceFlatPort::handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort) {
+    if(accepting->flits.size() == 1) {
+        FlatPort::handleVCClaim(state, accepting, msg,outPort);
+    }
+}

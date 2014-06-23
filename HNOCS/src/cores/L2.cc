@@ -45,6 +45,7 @@ void L2::initialize()
 	popMsg->setKind(NOC_POP_MSG);
 	popMsg->setSchedulingPriority(0);
 
+    moduleId = this->getParentModule()->getIndex();
 	// tell our friends we are ready to receive one message...
 	NoCCreditMsg *crd = new NoCCreditMsg();
 	crd->setKind(NOC_CREDIT_MSG);
@@ -57,11 +58,22 @@ void L2::handleCreditMsg(NoCCreditMsg *msg)
 {
 	if (!outQ.empty()) {
 		CMPMsg *out = (CMPMsg *)outQ.pop();
+//		logMsg(1, out, "CRED-REP");
 		send(out,"out$o");
 	} else {
 		credits++;
+//        if(moduleId==1)
+//            cerr << "Got credit " << msg->getFullName() << " - " << credits << "\n";
 	}
 	delete msg;
+}
+
+void L2::logMsg(int modId, CMPMsg* resp, const char* prefix) {
+    if (moduleId == modId) {
+        const char *hitMsg = resp->getL2hit()?"HIT":"MISS";
+        std::cerr <<  prefix << ": Sending " << resp->getFullName() <<  " to " << resp->getDstId()
+                << " (" << hitMsg <<  ") - "<< resp->getId() << " | credits " << credits << "\n";
+    }
 }
 
 // a pop is only for hit-read move the head of the hitReadReqQ to the out
@@ -77,6 +89,7 @@ void L2::handlePopMsg()
 			assert(session!=0);
 			session->gen();
 		}
+//        logMsg(1, resp, "POP");
 		send(resp,"out$o");
 		credits--;
 	}
@@ -158,6 +171,7 @@ void L2::handleMissRead(CMPMsg *req)
 	dramReadReqQ.insert(req);
 	// send the dram req or Q it
 	if (credits) {
+//	    logMsg(1, pageReq, "MISS-R-REQ");
 		send(pageReq, "out$o");
 		credits--;
 	} else {
@@ -206,6 +220,7 @@ void L2::handleMissWrite(CMPMsg *req)
 
 	// send the dram req or Q it
 	if (credits) {
+//	    logMsg(1, pageReq, "MISS-W-REQ");
 		send(pageReq, "out$o");
 		credits--;
 	} else {
@@ -275,6 +290,7 @@ void L2::handleDramResp(CMPMsg *dramResp)	// TODO: FIX THIS FUNCTION
 
 		// send the dram req or Q it
 		if (credits) {
+//		    logMsg(1, resp, "DRAM-ANSWER");
 			send(resp, "out$o");
 			credits--;
 		} else {

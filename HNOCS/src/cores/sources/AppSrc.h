@@ -65,6 +65,8 @@ private:
 	cOutVector dstIdVec;
 	cStdDev numSentPkt; // number of sent packets, assume that there is only single destination
 
+    int moduleId;
+
 	// methods
 	void sendFlitFromQ();
 	void sendFlit(int vc);
@@ -72,7 +74,7 @@ private:
 	void handleAppMsg(AppMsg *msg);
 	void handlePopMsg(cMessage *msg);
 	bool arbitrate();
-
+	void logMsg(int modId, AppMsg* appMsg, const char* prefix);
 
 protected:
     virtual void initialize();

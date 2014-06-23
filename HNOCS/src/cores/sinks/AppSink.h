@@ -36,7 +36,7 @@ class AppSink : public cSimpleModule
 	simtime_t statStartTime; // in sec
 	int numRecPkt; // number of received packets, assume that onlt single source is transmitting
 	int numApps;
-
+	int moduleId;
 	// statistics
 	cOutVector end2EndLatencyVec;
 	cStdDev networkLatency; // network-latency for all flits
@@ -65,7 +65,7 @@ class AppSink : public cSimpleModule
 	void sendCredit(int vc, int num, const char* attach = NULL);
 	void handleDataMsg(AppFlitMsg *msg);
 	void handleAppCreditMsg(cMessage *msg);
-
+    void logMsg(int modId, AppFlitMsg* appMsg, const char* prefix);
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);

@@ -60,7 +60,7 @@ int InterRouterRouterMatcher::getFreeVC() {
     int selectedVC = (outVCId==states.size())?-1:outVCId;
 
     if(selectedVC != -1) {
-        requestee->requestPort(connectedGate)->reserveVC(selectedVC);
+        requestee->requestPort(connectedGate)->reserveVC(selectedVC, EXTERNALY_TAKEN);
     }
 
     return selectedVC;
