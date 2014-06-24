@@ -347,9 +347,11 @@ void CentSchedRouter::callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPo
     ResponseDB* respDB = ResponseDB::getInstance();
     bool predict = respDB->exists(msg->getId()) && respDB->isResponse(msg->getId()) && (!inVC.predicted);
 
-    // Random predictor proof of concept
+
     if(predict) {
         inVC.predicted = true;
+
+        // Random predictor proof of concept
         if(rand()%2) {
             inVC.pipelineLatency = 0;
             cerr << "Router " << getIndex() << " predicted pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
