@@ -44,7 +44,11 @@ public:
     virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
     virtual int getId() { return id; }
 
+    virtual void watchdog(SimTime timeout);
+
     virtual ~DoubleBufferFlatPort();
+
+
 };
 
 #endif /* DOUBLEBUFFERFLATPORT_H_ */

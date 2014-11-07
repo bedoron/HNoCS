@@ -34,6 +34,16 @@ DoubleBufferFlatPort::DoubleBufferFlatPort(CentSchedRouter* router, cGate* gate,
     externalAcceptor = new SourceFlatPort(router,gate, allPorts, numVcs, pipelineLatency);//new FlatPort(router,gate, allPorts, numVcs, pipelineLatency);
 }
 
+
+void DoubleBufferFlatPort::watchdog(SimTime timeout) {
+    if (internalAcceptor != NULL) {
+        internalAcceptor->watchdog(timeout);
+    }
+    if (externalAcceptor != NULL) {
+        externalAcceptor->watchdog(timeout);
+    }
+}
+
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCFlitMsg* msg) {
     try {
         return externalAcceptor->acceptExternal(msg);

@@ -17,7 +17,9 @@ run_hnocs () {
 	export tname="${1#omnetpp_}"
 	export tname="${tname%%.ini}"
 	export fname="$1"
-	$hnocs_exec -r 0 -u Cmdenv -c $tname -n $hnocs_paths $fname
+	echo "=============================================================="
+	echo $hnocs_exec -r 0 -u Cmdenv -c $tname -n $hnocs_paths $fname
+	echo "=============================================================="
 }
 
 run_and_analyze() {
@@ -27,8 +29,8 @@ run_and_analyze() {
 	echo "[** Running ${1} **]" >> ../run_status_${1}
 	run_hnocs $1 > ../run_output_${1} 2> ../run_output_${1}
 	echo "[** Analyzing ${1} **]" >> ../run_status_${1}
-	$analysis_tool $2 $3 $4
-	$to_vhdl_trace $4 > $4/$5_vhdl_out.txt
+#	$analysis_tool $2 $3 $4
+#	$to_vhdl_trace $4 > $4/$5_vhdl_out.txt
 	echo "[END  ${1}]"
 	echo "[END]" >> ../run_status_${1}
 }

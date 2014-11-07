@@ -21,7 +21,7 @@
 #include "Utils.h"
 using std::queue;
 using std::vector;
-
+using std::string;
 
 #define PIPELINE_LATENCY 1
 class FlatPort;
@@ -41,6 +41,8 @@ struct vc_t {
    int pipelineLatency;
    queue<NoCFlitMsg*> flits;
    vcState state;
+
+   SimTime *vcOpen;
 };
 
 class FlatPortIfc {
@@ -65,6 +67,10 @@ public:
     virtual void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort) = 0;
 
     virtual int getId()=0;
+
+    virtual void watchdog(SimTime timeout) = 0;
+
+
 
     virtual ~FlatPortIfc() {};
 };
@@ -93,6 +99,8 @@ class FlatPort: public FlatPortIfc {
     void logIfRouterPort(NoCFlitMsg *msg, int routerId, int port);
     void dumpVC(vc_t* vc);
     void dumpAllVCs();
+
+    bool isCorePort();
 
 protected:
     virtual void electInnerActiveVc();
@@ -123,6 +131,8 @@ public:
     virtual bool hasData();
     virtual ~FlatPort();
     virtual int getId();
+
+    virtual void watchdog(SimTime timeout);
 
     void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
 };

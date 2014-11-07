@@ -259,6 +259,12 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
         if(ports[i] != NULL)
             ports[i]->tickOuter();
     }
+
+    for(int i=0; i < numPorts; ++i) {
+            if(ports[i] != NULL)
+                (ports[i])->watchdog(SimTime(1e-4)); // -6 was too short
+    }
+
 }
 
 
@@ -354,9 +360,9 @@ void CentSchedRouter::callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPo
         // Random predictor proof of concept
         if(rand()%2) {
             inVC.pipelineLatency = 0;
-            cerr << "Router " << getIndex() << " predicted pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
+            //cerr << "Router " << getIndex() << " predicted pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
         } else {
-            cerr << "Router " << getIndex() << " missed pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
+            //cerr << "Router " << getIndex() << " missed pass from " << inPort->getId() << " to " << outPort->getId() << "\n";
         }
     }
 
