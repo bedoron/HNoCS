@@ -293,4 +293,18 @@ CoreL1::~CoreL1()
 	}
 	if (popMsg)
 		cancelAndDelete(popMsg);
+
+
+    char buff[1024];
+    int linesLeft = 0;
+    while (trace.getline(buff,1023)) {
+        ++linesLeft;
+    }
+
+    cerr << getFullPath();
+    if (linesLeft > 0) {
+        cerr << " has " << linesLeft << " instructions left\n";
+    } else {
+        cerr << " gobbled up all instructions. hurray!!\n";
+    }
 }
