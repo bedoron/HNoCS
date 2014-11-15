@@ -47,8 +47,7 @@ public:
     virtual void watchdog(SimTime timeout);
 
     virtual ~DoubleBufferFlatPort();
-
-
+    virtual void showDiffs();
 };
 
 #endif /* DOUBLEBUFFERFLATPORT_H_ */

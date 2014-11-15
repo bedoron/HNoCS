@@ -60,7 +60,7 @@ private:
 
 	unsigned int pipelineDepth;
 	bool finishInit;
-
+	unsigned long ticks;
 
 	// fill in west... port indexes
 	int analyzeMeshTopology();

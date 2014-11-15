@@ -44,6 +44,15 @@ void DoubleBufferFlatPort::watchdog(SimTime timeout) {
     }
 }
 
+void DoubleBufferFlatPort::showDiffs() {
+    if (internalAcceptor != NULL) {
+        internalAcceptor->showDiffs();
+    }
+    if (externalAcceptor != NULL) {
+        externalAcceptor->showDiffs();
+    }
+}
+
 vc_t* DoubleBufferFlatPort::acceptExternal(NoCFlitMsg* msg) {
     try {
         return externalAcceptor->acceptExternal(msg);
@@ -73,6 +82,9 @@ vc_t* DoubleBufferFlatPort::acceptExternal(NoCCreditMsg* msg) {
 
 vc_t* DoubleBufferFlatPort::acceptInternal(NoCFlitMsg* msg) {
  try {
+//     if ((routerId == 2) && (id == 4)) {
+//         cerr << "[" << msg << "] - " << cSimulation::getActiveSimulation()->getSimTime() << "\n";
+//     }
     return internalAcceptor->acceptInternal(msg);
 } catch (cRuntimeError ex) {
     ex.prependMessage("DB-INTERNAL:");

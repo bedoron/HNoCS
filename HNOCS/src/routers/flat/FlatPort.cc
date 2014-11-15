@@ -92,7 +92,7 @@ void FlatPort::dumpVC(vc_t* vc) {
     case FREE: state = "FREE"; break;
     case INTERNALY_TAKEN: state = "INTERNALY_TAKEN"; break;
     }
-    cerr << "Contents of VC " << routerId << "." << id << "." <<  vc->id << " : (c:"<< vc->credit<<",oVC:"<< vc->outVC<<") " << state << "\n";
+    cerr << "Contents of VC " << routerId << "." << id << "." <<  vc->id << " : (c:"<< vc->credit<<",oVC:"<< vc->outVC<<") " << state << " Diff - " << vc->diff.dbl() << "\n";
     while (!(vc->flits.empty())) {
         cerr << vc->flits.front() << "\n";
         vc->flits.pop();
@@ -148,7 +148,7 @@ void FlatPort::electInnerActiveVc() {
 
 void FlatPort::electOuterActiveVc() {
     for (unsigned int i = 0; i < vcs.size(); ++i) {
-        int vcId = (innerActiveVc + i) % vcs.size();
+        int vcId = (outerActiveVc + i) % vcs.size();
         vc_t& vc = vcs[vcId];
         if ((vc.state == INTERNALY_TAKEN)) {
             outerActiveVc = vcId;
@@ -196,6 +196,10 @@ void FlatPort::tickInner() {
                 outPort->acceptInternal(msg);
 
                 if(Utils::isTail(msg)) {
+//                    if ((routerId == 2) && (id == 4) && (msg->getDstId() == 2)) {
+//                        cerr << "RELEASE: vc " << vc.id << " released by " << msg << "\n";
+//                    }
+
                     releaseVc(vc);
                 }
             }
@@ -254,9 +258,18 @@ void FlatPort::tickOuter() {
             vc.credit--;
 
             if(Utils::isTail(msg)) {
+//                if ((routerId == 2) && (id == 4) && (msg->getDstId() == 2)) {
+//                    cerr << "RELEASE: vc " << vc.id << " released by " << msg << "\n";
+//                }
+
                 releaseVc(vc);
             }
             router->sendCredits(msg->getArrivalGate()->getIndex(), originVC, 1);
+
+//            if (msg->getDstId() == 2) {
+//                logIf(msg, 2,4,0);
+//            }
+
             router->send(msg, "out$o", id);
         }
     }
@@ -273,6 +286,11 @@ void FlatPort::handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, Fl
     if (state == FREE) {
         throw cRuntimeError("VC Wasn't calimed but head arrived");
     }
+
+//    if ((routerId == 2) && (id == 4) && (msg->getDstId() == 2)) {
+//        cerr << "CLAIM: vc " << accepting->id << " claimed by " << msg << "\n";
+//    }
+
     accepting->state = state;
     accepting->pktId = msg->getPktId();
     accepting->outPort = outPort;
@@ -287,9 +305,9 @@ bool FlatPort::isCorePort() {
 
 vc_t* FlatPort::acceptFlit(FlatPortIfc *outPort, NoCFlitMsg* msg, vcState state) {
 //    logIfRouterPort(msg, 14, 4);
-    if (routerId == 3) {
-        logIf(msg, 325371);
-    }
+//    if (routerId == 3) {
+//        logIf(msg, 325371);
+//    }
 
     vc_t *accepting = NULL;
     try {
@@ -432,15 +450,35 @@ int FlatPort::getId() {
     return this->id;
 }
 
+
+
 void FlatPort::watchdog(SimTime timeout) {
     for (unsigned int i=0; i < vcs.size(); ++i) {
         if (vcs[i].vcOpen != NULL) {
-            SimTime diff = cSimulation::getActiveSimulation()->getSimTime() - *(vcs[i].vcOpen);
-            if (diff > timeout) {
-                cerr << "Watchdog error on " << this->routerId << "." << this->id << "." << i << " - time since last activity " << diff.dbl() << "\n";
+            vcs[i].diff = cSimulation::getActiveSimulation()->getSimTime() - *(vcs[i].vcOpen);
+            if (vcs[i].diff > timeout) {
+                cerr << "Watchdog error on " << this->routerId << "." << this->id << "." << i << " - time since last activity " << 10e6 * vcs[i].diff.dbl() << "uS\n";
                 //dumpAllVCs();
-                throw cRuntimeError("Watchdog error - time since last activity: %f" , diff.dbl());
+                throw cRuntimeError("Watchdog error - time since last activity: %f" , vcs[i].diff.dbl());
             }
         }
+    }
+}
+
+void FlatPort::showDiffs() {
+    std::stringbuf strBuff;
+    std::ostream os(&strBuff);
+
+    os << this->routerId << "." << this->id << ": ";
+    int handled = 0;
+    for (unsigned int i=0; i < vcs.size(); ++i) {
+            if (vcs[i].vcOpen != NULL) {
+                ++handled;
+                os << i << ":" << 10e6 * vcs[i].diff.dbl() << "uS ";
+            }
+    }
+    os << "\n";
+    if (handled > 0) {
+        cerr << strBuff.str();
     }
 }

@@ -43,6 +43,7 @@ struct vc_t {
    vcState state;
 
    SimTime *vcOpen;
+   SimTime diff;
 };
 
 class FlatPortIfc {
@@ -70,7 +71,7 @@ public:
 
     virtual void watchdog(SimTime timeout) = 0;
 
-
+    virtual void showDiffs() = 0;
 
     virtual ~FlatPortIfc() {};
 };
@@ -133,6 +134,7 @@ public:
     virtual int getId();
 
     virtual void watchdog(SimTime timeout);
+    virtual void showDiffs();
 
     void handleVCClaim(vcState state, vc_t *accepting, NoCFlitMsg* msg, FlatPortIfc *outPort);
 };

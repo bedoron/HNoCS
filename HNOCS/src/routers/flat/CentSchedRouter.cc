@@ -40,6 +40,8 @@ void CentSchedRouter::initialize() {
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
 
+    ticks = 0;
+
     int pipelineDepth = par("pipelineDepth"); //40; // TODO: get this as a parameter
     tClk_s = 1.0/(dataRate*1000000.0/(8.0 * flitSize_B));
 
@@ -245,6 +247,7 @@ void CentSchedRouter::handleFlitMsg(NoCFlitMsg *msg) {
 }
 
 void CentSchedRouter::handlePop(NoCPopMsg* msg) {
+    ++ticks;
 
     if (hasData() && (!popMsg->isScheduled())) {
         scheduleAt(simTime() + tClk_s, popMsg);
@@ -254,6 +257,7 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
         if(ports[i] != NULL)
             ports[i]->tickInner();
     }
+
     // Maintain this order !
     for(int i=0; i < numPorts; ++i) {
         if(ports[i] != NULL)
@@ -262,7 +266,13 @@ void CentSchedRouter::handlePop(NoCPopMsg* msg) {
 
     for(int i=0; i < numPorts; ++i) {
             if(ports[i] != NULL)
-                (ports[i])->watchdog(SimTime(1e-4)); // -6 was too short
+                (ports[i])->watchdog(SimTime(1e-1)); // -4 was too short
+    }
+
+    if (ticks%10000 == 0) {
+        for(int i=0; i < numPorts; ++i)
+            if(ports[i] != NULL)
+                (ports[i])->showDiffs();
     }
 
 }
