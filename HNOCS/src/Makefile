@@ -22,6 +22,7 @@ INCLUDE_PATH = \
     -Icores/sources \
     -Irouters \
     -Irouters/flat \
+    -Irouters/flat/predictors \
     -Irouters/hier \
     -Irouters/hier/Predictors \
     -Irouters/hier/inPort \
@@ -68,9 +69,9 @@ OBJS = \
     $O/routers/flat/SourceFlatPort.o \
     $O/routers/flat/CentSchedRouter.o \
     $O/routers/hier/RouterSWHook.o \
-    $O/routers/hier/PredictorFactory.o \
+    $O/routers/hier/_Predictor.o \
+    $O/routers/hier/_PredictorFactory.o \
     $O/routers/hier/PredictionObject.o \
-    $O/routers/hier/Predictor.o \
     $O/routers/hier/Predictors/RandomPredictor.o \
     $O/routers/hier/Predictors/DefaultPredictor.o \
     $O/routers/hier/inPort/InPortSync.o \
@@ -171,6 +172,7 @@ clean:
 	$(Q)-rm -f cores/sources/*_m.cc cores/sources/*_m.h
 	$(Q)-rm -f routers/*_m.cc routers/*_m.h
 	$(Q)-rm -f routers/flat/*_m.cc routers/flat/*_m.h
+	$(Q)-rm -f routers/flat/predictors/*_m.cc routers/flat/predictors/*_m.h
 	$(Q)-rm -f routers/hier/*_m.cc routers/hier/*_m.h
 	$(Q)-rm -f routers/hier/Predictors/*_m.cc routers/hier/Predictors/*_m.h
 	$(Q)-rm -f routers/hier/inPort/*_m.cc routers/hier/inPort/*_m.h
@@ -187,7 +189,7 @@ cleanall: clean
 
 depend:
 	$(qecho) Creating dependencies...
-	$(Q)$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc cores/*.cc cores/central/*.cc cores/sinks/*.cc cores/sources/*.cc routers/*.cc routers/flat/*.cc routers/hier/*.cc routers/hier/Predictors/*.cc routers/hier/inPort/*.cc routers/hier/opCalc/*.cc routers/hier/opCalc/static/*.cc routers/hier/sched/*.cc routers/hier/sched/wormhole/*.cc routers/hier/vcCalc/*.cc routers/hier/vcCalc/free/*.cc topologies/*.cc
+	$(Q)$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc cores/*.cc cores/central/*.cc cores/sinks/*.cc cores/sources/*.cc routers/*.cc routers/flat/*.cc routers/flat/predictors/*.cc routers/hier/*.cc routers/hier/Predictors/*.cc routers/hier/inPort/*.cc routers/hier/opCalc/*.cc routers/hier/opCalc/static/*.cc routers/hier/sched/*.cc routers/hier/sched/wormhole/*.cc routers/hier/vcCalc/*.cc routers/hier/vcCalc/free/*.cc topologies/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/App_m.o: App_m.cc \
@@ -293,6 +295,10 @@ $O/routers/flat/CentSchedRouter.o: routers/flat/CentSchedRouter.cc \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/DoubleBufferFlatPort.h \
 	routers/flat/FlatPort.h \
+	routers/flat/predictors/NoPredictor.h \
+	routers/flat/predictors/Predictor.h \
+	routers/flat/predictors/PredictorFactory.h \
+	routers/flat/predictors/Random.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/flat/DoubleBufferFlatPort.o: routers/flat/DoubleBufferFlatPort.cc \
 	App_m.h \
@@ -307,54 +313,41 @@ $O/routers/flat/FlatPort.o: routers/flat/FlatPort.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	Utils.h \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/FlatPort.h \
 	routers/flat/InterRouterMatcher.h \
 	routers/flat/InterRouterMatchers.h \
+	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/flat/InterRouterMatchers.o: routers/flat/InterRouterMatchers.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	Utils.h \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/FlatPort.h \
 	routers/flat/InterRouterMatcher.h \
 	routers/flat/InterRouterMatchers.h \
+	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/flat/SourceFlatPort.o: routers/flat/SourceFlatPort.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
+	SessionMeta.h \
 	Utils.h \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/FlatPort.h \
 	routers/flat/SourceFlatPort.h \
+	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/hier/PredictionObject.o: routers/hier/PredictionObject.cc
-$O/routers/hier/Predictor.o: routers/hier/Predictor.cc \
-	App_m.h \
-	CMP_m.h \
-	NoCs_m.h \
-	ResponseDB.h \
-	SessionMeta.h \
-	routers/hier/FlitMsgCtrl.h \
-	routers/hier/HierRouter.h \
-	routers/hier/Predictor.h \
-	routers/hier/PredictorFactory.h \
-	routers/hier/PredictorIfc.h \
-	routers/hier/opCalc/static/XYOPCalc.h \
-	routers/hier/sched/wormhole/SchedSync.h \
-	routers/hier/vcCalc/free/FLUVCCalc.h
-$O/routers/hier/PredictorFactory.o: routers/hier/PredictorFactory.cc \
-	App_m.h \
-	CMP_m.h \
-	NoCs_m.h \
-	routers/hier/PredictorFactory.h \
-	routers/hier/PredictorIfc.h \
-	routers/hier/Predictors/DefaultPredictor.h \
-	routers/hier/Predictors/RandomPredictor.h
 $O/routers/hier/RouterSWHook.o: routers/hier/RouterSWHook.cc \
 	App_m.h \
 	CMP_m.h \
@@ -363,6 +356,15 @@ $O/routers/hier/RouterSWHook.o: routers/hier/RouterSWHook.cc \
 	SessionMeta.h \
 	cResponseHeadArrived.h \
 	routers/hier/RouterSWHook.h
+$O/routers/hier/_Predictor.o: routers/hier/_Predictor.cc
+$O/routers/hier/_PredictorFactory.o: routers/hier/_PredictorFactory.cc \
+	App_m.h \
+	CMP_m.h \
+	NoCs_m.h \
+	routers/hier/PredictorIfc.h \
+	routers/hier/Predictors/DefaultPredictor.h \
+	routers/hier/Predictors/RandomPredictor.h \
+	routers/hier/_PredictorFactory.h
 $O/routers/hier/Predictors/DefaultPredictor.o: routers/hier/Predictors/DefaultPredictor.cc \
 	App_m.h \
 	CMP_m.h \
@@ -387,28 +389,24 @@ $O/routers/hier/inPort/InPortAsync.o: routers/hier/inPort/InPortAsync.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
 	SessionMeta.h \
+	Utils.h \
+	routers/flat/FlatPort.h \
+	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h \
-	routers/hier/HierRouter.h \
-	routers/hier/Predictor.h \
-	routers/hier/PredictorIfc.h \
-	routers/hier/inPort/InPortAsync.h \
-	routers/hier/opCalc/static/XYOPCalc.h \
-	routers/hier/sched/wormhole/SchedSync.h \
-	routers/hier/vcCalc/free/FLUVCCalc.h
+	routers/hier/inPort/InPortAsync.h
 $O/routers/hier/inPort/InPortSync.o: routers/hier/inPort/InPortSync.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
+	ResponseDB.h \
 	SessionMeta.h \
+	Utils.h \
+	routers/flat/FlatPort.h \
+	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h \
-	routers/hier/HierRouter.h \
-	routers/hier/Predictor.h \
-	routers/hier/PredictorIfc.h \
-	routers/hier/inPort/InPortSync.h \
-	routers/hier/opCalc/static/XYOPCalc.h \
-	routers/hier/sched/wormhole/SchedSync.h \
-	routers/hier/vcCalc/free/FLUVCCalc.h
+	routers/hier/inPort/InPortSync.h
 $O/routers/hier/opCalc/static/XYOPCalc.o: routers/hier/opCalc/static/XYOPCalc.cc \
 	App_m.h \
 	CMP_m.h \

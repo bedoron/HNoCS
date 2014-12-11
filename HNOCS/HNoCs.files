@@ -81,3 +81,7 @@ src/SessionMeta.cc
 src/SessionMeta.h
 src/Utils.cc
 src/Utils.h
+src/routers/flat/predictors/NoPredictor.h
+src/routers/flat/predictors/Predictor.h
+src/routers/flat/predictors/PredictorFactory.h
+src/routers/flat/predictors/Random.h

@@ -26,6 +26,7 @@
 #include <map>
 #include <FlitMsgCtrl.h>
 #include "FlatPort.h"
+#include "Predictor.h"
 using std::queue;
 using std::vector;
 using std::map;
@@ -62,6 +63,7 @@ private:
 	bool finishInit;
 	unsigned long ticks;
 
+	Predictor *predictor;
 	// fill in west... port indexes
 	int analyzeMeshTopology();
 

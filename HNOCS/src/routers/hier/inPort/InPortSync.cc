@@ -160,14 +160,14 @@ void InPortSync::sendReq(NoCFlitMsg *msg) {
 	 * Create a prediction object
 	 * Attach it to the request using : getControlInfo()
 	 */
-	if(m_predictor->Hit(inVC)) {
-	    // Hit will get us here if this is a response message
-	    // and it has a prediction
-	    req->setPrediction(true);
-	} else {
-
-	    m_predictor->PredictIfRequest(msg, outPort);
-	}
+//	if(m_predictor->Hit(inVC)) {
+//	    // Hit will get us here if this is a response message
+//	    // and it has a prediction
+//	    req->setPrediction(true);
+//	} else {
+//
+//	    m_predictor->PredictIfRequest(msg, outPort);
+//	}
 
 	send(req, "ctrl$o", outPort);
 }
@@ -260,12 +260,12 @@ void InPortSync::handleCalcOPResp(NoCFlitMsg *msg) {
 
 	// send it to get the out VC
 	if (QByiVC[inVC].empty()) {
-	    if(!m_predictor->Hit(inVC)) {
-	        send(msg,"calcVc$o");
-	    } else {
-	        m_predictor->getVcCalc().PredictorSetOutVC(msg);
-	        handleCalcVCResp(msg);
-	    }
+//	    if(!m_predictor->Hit(inVC)) {
+//	        send(msg,"calcVc$o");
+//	    } else {
+//	        m_predictor->getVcCalc().PredictorSetOutVC(msg);
+//	        handleCalcVCResp(msg);
+//	    }
 	} else {
 		// we queue the flits on their inVC
 		QByiVC[inVC].insert(msg);
@@ -306,13 +306,13 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		//EV << "CHECK THE ABOVE TO SEE IF WE HAVE THE ORIGINAL ID SOMEWHERE HERE\n";
 
 		// send it to get the out port calc
-		if(!m_predictor->Hit(msg)) {
-		    send(msg, "calcOp$o");
-		} else {
-		    m_predictor->getOpCalc().PredictorSetOutPort(msg);
+//		if(!m_predictor->Hit(msg)) {
+//		    send(msg, "calcOp$o");
+//		} else {
+//		    m_predictor->getOpCalc().PredictorSetOutPort(msg);
 		    handleCalcOPResp(msg);
 		    return; // LAST CALL
-		}
+//		}
 
 	} else {
 		// make sure the packet id is correct
@@ -324,7 +324,7 @@ void InPortSync::handleInFlitMsg(NoCFlitMsg *msg) {
 		// on last FLIT need to zero out the current packet Id
 		if (msg->getType() == NOC_END_FLIT) {
 			curPktId[inVC] = 0;
-			m_predictor->DestroyHit(inVC);
+//			m_predictor->DestroyHit(inVC);
 		}
 
 		// since we do not allow interleaving of packets on same inVC we can use last head

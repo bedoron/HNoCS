@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgc 4.5 from App.msg.
+// Generated file, do not edit! Created by nedtool 4.6 from App.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:

@@ -6,7 +6,7 @@
  */
 #include <iostream>
 #include <algorithm>
-#include "PredictorFactory.h"
+#include "_PredictorFactory.h"
 using std::transform;
 using std::cerr;
 // ----- Predictors

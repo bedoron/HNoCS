@@ -20,6 +20,7 @@
 #include "DoubleBufferFlatPort.h"
 #include <iostream>
 #include "ResponseDB.h"
+#include "predictors/PredictorFactory.h"
 using std::cerr;
 using std::out_of_range;
 
@@ -39,6 +40,9 @@ void CentSchedRouter::initialize() {
 	dataRate = par("dataRate");
     int numVCs = par("numVCs");
     int flitSize_B = par("flitSize");
+    string predictorType = par("predictorType");
+
+//    this->predictor = PredictorFactory::generat
 
     ticks = 0;
 
@@ -384,4 +388,5 @@ CentSchedRouter::~CentSchedRouter() {
     for(int i=0;i < numPorts; ++i) {
         delete ports[i];
     }
+    delete predictor;
 }
