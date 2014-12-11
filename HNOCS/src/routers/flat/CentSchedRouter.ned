@@ -21,7 +21,7 @@ package hnocs.routers.flat;
 // A simple router assuming all scheduling done elsewhere.
 // Forward packets by their destination using XY routing only 
 //
-module CentSchedRouter like hnocs.routers.Router_Ifc
+simple CentSchedRouter like hnocs.routers.Router_Ifc
 {
     parameters:
         int numPorts; // number of ports on this router
