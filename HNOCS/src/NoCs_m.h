@@ -45,7 +45,7 @@
  *     NOC_POP_MSG = 7;
  *     NOC_GEN_MSG = 8;
  *     NOC_APP_MSG = 9;
- * 
+ *     NOC_CONGESTION_MSG = 10;
  * }
  * </pre>
  */
@@ -57,7 +57,8 @@ enum NOC_MSGS {
     NOC_ACK_MSG = 5,
     NOC_POP_MSG = 7,
     NOC_GEN_MSG = 8,
-    NOC_APP_MSG = 9
+    NOC_APP_MSG = 9,
+    NOC_CONGESTION_MSG = 10
 };
 
 /**

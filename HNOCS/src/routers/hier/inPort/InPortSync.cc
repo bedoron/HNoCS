@@ -83,7 +83,7 @@ void InPortSync::initialize() {
 	    throw cRuntimeError(getParentModule(), "Can't find prediction module for Port");
 	}
 
-	m_predictor = check_and_cast<Predictor *>(predictor);
+//	m_predictor = check_and_cast<Predictor *>(predictor);
 }
 
 // obtain the attached info

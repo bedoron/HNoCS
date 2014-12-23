@@ -64,6 +64,7 @@ EXECUTE_ON_STARTUP(
     e->insert(NOC_POP_MSG, "NOC_POP_MSG");
     e->insert(NOC_GEN_MSG, "NOC_GEN_MSG");
     e->insert(NOC_APP_MSG, "NOC_APP_MSG");
+    e->insert(NOC_CONGESTION_MSG, "NOC_CONGESTION_MSG");
 );
 
 EXECUTE_ON_STARTUP(

@@ -24,9 +24,9 @@
 #include <queue>
 #include <vector>
 #include <map>
-#include <FlitMsgCtrl.h>
+#include "../hier/FlitMsgCtrl.h"
 #include "FlatPort.h"
-#include "Predictor.h"
+#include "predictors/Predictor.h"
 using std::queue;
 using std::vector;
 using std::map;
@@ -84,6 +84,8 @@ public:
     void callPredictor(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPortIfc* outPort, vc_t& inVC);
 
     int OPCalc(NoCFlitMsg* msg);
+
+
     ~CentSchedRouter();
 };
 

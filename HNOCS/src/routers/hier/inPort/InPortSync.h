@@ -21,7 +21,7 @@
 
 #include <omnetpp.h>
 #include <NoCs_m.h>
-#include <FlitMsgCtrl.h>
+#include "../FlitMsgCtrl.h"
 
 //
 // Input Port of a router
@@ -42,7 +42,7 @@
 // NOTE: on each in VC there is only 1 packet being received at a given time
 // NOTE: on each out port there is only 1 packet being sent at a given time
 //
-#include "Predictor.h"
+#include "_Predictor.h"
 
 class InPortSync: public cSimpleModule {
 private:
@@ -58,7 +58,7 @@ private:
 	std::vector<int> curOutPort; // current packet output port per in VC
 	std::vector<int> curPktId; // the current packet id on the VC (0 means not inside packet)
 
-	Predictor *m_predictor;
+	//Predictor *m_predictor;
 
 	// methods
 	void sendCredit(int vc, int numFlits);

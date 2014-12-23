@@ -9,7 +9,7 @@
 #include "CMP_m.h"
 #include "NoCs_m.h"
 #include <iostream>
-#include "FlitMsgCtrl.h"
+#include "hier/FlitMsgCtrl.h"
 using std::ostream;
 #ifndef UTILS_H_
 #define UTILS_H_

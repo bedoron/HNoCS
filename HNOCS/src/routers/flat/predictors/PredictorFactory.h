@@ -17,13 +17,21 @@
 #define PERDICTORFACTORY_H_
 #include "Random.h"
 #include "NoPredictor.h"
+#include "TCPPredictor.h"
+#include "AveragePredictor.h"
 
 class PredictorFactory {
     PredictorFactory();
 public:
     static Predictor* generatePredictor(const string& predictor) {
-        if (predictor.compare("Random") != 0) {
+        if (predictor.compare("Random") == 0) {
                 return new Random();
+        }
+        if (predictor.compare("TCP") == 0) {
+            return new TCPPredictor();
+        }
+        if (predictor.compare("Average") == 0) {
+            return new AveragePredictor();
         }
 
 

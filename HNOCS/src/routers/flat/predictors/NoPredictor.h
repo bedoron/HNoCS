@@ -8,7 +8,7 @@
 #ifndef NOPREDICTOR_H_
 #define NOPREDICTOR_H_
 
-#include <Predictor.h>
+#include "Predictor.h"
 
 class NoPredictor: public Predictor {
 protected:

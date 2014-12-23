@@ -295,10 +295,12 @@ $O/routers/flat/CentSchedRouter.o: routers/flat/CentSchedRouter.cc \
 	routers/flat/CentSchedRouter.h \
 	routers/flat/DoubleBufferFlatPort.h \
 	routers/flat/FlatPort.h \
+	routers/flat/predictors/AveragePredictor.h \
 	routers/flat/predictors/NoPredictor.h \
 	routers/flat/predictors/Predictor.h \
 	routers/flat/predictors/PredictorFactory.h \
 	routers/flat/predictors/Random.h \
+	routers/flat/predictors/TCPPredictor.h \
 	routers/hier/FlitMsgCtrl.h
 $O/routers/flat/DoubleBufferFlatPort.o: routers/flat/DoubleBufferFlatPort.cc \
 	App_m.h \
@@ -389,13 +391,15 @@ $O/routers/hier/inPort/InPortAsync.o: routers/hier/inPort/InPortAsync.cc \
 	App_m.h \
 	CMP_m.h \
 	NoCs_m.h \
-	ResponseDB.h \
 	SessionMeta.h \
-	Utils.h \
-	routers/flat/FlatPort.h \
-	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h \
-	routers/hier/inPort/InPortAsync.h
+	routers/hier/HierRouter.h \
+	routers/hier/PredictorIfc.h \
+	routers/hier/_Predictor.h \
+	routers/hier/inPort/InPortAsync.h \
+	routers/hier/opCalc/static/XYOPCalc.h \
+	routers/hier/sched/wormhole/SchedSync.h \
+	routers/hier/vcCalc/free/FLUVCCalc.h
 $O/routers/hier/inPort/InPortSync.o: routers/hier/inPort/InPortSync.cc \
 	App_m.h \
 	CMP_m.h \
@@ -406,7 +410,13 @@ $O/routers/hier/inPort/InPortSync.o: routers/hier/inPort/InPortSync.cc \
 	routers/flat/FlatPort.h \
 	routers/flat/predictors/Predictor.h \
 	routers/hier/FlitMsgCtrl.h \
-	routers/hier/inPort/InPortSync.h
+	routers/hier/HierRouter.h \
+	routers/hier/PredictorIfc.h \
+	routers/hier/_Predictor.h \
+	routers/hier/inPort/InPortSync.h \
+	routers/hier/opCalc/static/XYOPCalc.h \
+	routers/hier/sched/wormhole/SchedSync.h \
+	routers/hier/vcCalc/free/FLUVCCalc.h
 $O/routers/hier/opCalc/static/XYOPCalc.o: routers/hier/opCalc/static/XYOPCalc.cc \
 	App_m.h \
 	CMP_m.h \

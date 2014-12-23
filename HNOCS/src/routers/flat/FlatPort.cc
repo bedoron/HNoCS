@@ -108,7 +108,7 @@ void FlatPort::failIfCantAccept(vc_t* vc, NoCFlitMsg* msg) {
         buff << ((vc->state==EXTERNALY_TAKEN)?"EXTERNALLY":(vc->state==FREE?"FREE":"INTERNALLY")) << " ";
         buff << "by packet " << vc->pktId << " and had " << vc->credit << " credits";
         cerr << buff.str() << "\n";
-        dumpVC(vc);
+//        dumpVC(vc);
         cerr << "***************** REST OF VCS ******************\n";
         dumpAllVCs();
         cerr << "************************************************\n";
@@ -427,7 +427,7 @@ bool FlatPort::hasCredits(int vc) {
 }
 
 FlatPort::~FlatPort() {
-    dumpAllVCs();
+//    dumpAllVCs();
 }
 
 bool FlatPort::hasData() {

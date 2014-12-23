@@ -27,13 +27,34 @@ public:
         }
 
         inVC.predicted = true;
+        return predictionSuccess;
     }
+
+    // Put initialization stuff here
+    virtual void initialize(CentSchedRouter* router) {
+        this->router = router;
+        this->router_id = ((cSimpleModule*)router)->getIndex();
+    }
+
+
+    virtual ~Predictor() {}
 protected:
+    CentSchedRouter *router = nullptr;
+    int router_id;
+
+    static bool isResponse(NoCFlitMsg* msg) {
+        ResponseDB* respDB = ResponseDB::getInstance();
+        return respDB->exists(msg->getId()) && respDB->isResponse(msg->getId());
+    }
+
+    static bool isRequest(NoCFlitMsg* msg) {
+        ResponseDB* respDB = ResponseDB::getInstance();
+        return respDB->exists(msg->getId()) && respDB->isRequest(msg->getId());
+    }
+
     // Default behavior - predict only responses
     virtual bool shouldPredict(NoCFlitMsg* msg, FlatPortIfc* inPort, FlatPortIfc* outPort, vc_t& inVC) {
-        ResponseDB* respDB = ResponseDB::getInstance();
-        bool predict = respDB->exists(msg->getId()) && respDB->isResponse(msg->getId());
-        return predict;
+        return Predictor::isResponse(msg);
     }
 
     // Return true to bump packets

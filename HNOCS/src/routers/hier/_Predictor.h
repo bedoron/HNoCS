@@ -24,7 +24,7 @@
 //#include "InPortSync.h"
 #include "XYOPCalc.h"
 #include "SchedSync.h"
-#include "FLUVCCalc.h"
+#include "vcCalc/free/FLUVCCalc.h"
 
 using std::map;
 using std::vector;

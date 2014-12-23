@@ -305,6 +305,6 @@ CoreL1::~CoreL1()
     if (linesLeft > 0) {
         cerr << " has " << linesLeft << " instructions left\n";
     } else {
-        cerr << " gobbled up all instructions. hurray!!\n";
+//        cerr << " gobbled up all instructions. hurray!!\n";
     }
 }
